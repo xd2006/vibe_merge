@@ -111,7 +111,13 @@
   },
   "levels": [
     { "id": 1, "ordersRequired": 5, "unlocks": [], "reward": [{ "type": "hard", "amount": 10 }] },
-    { "id": 2, "ordersRequired": 8, "unlocks": ["zone2"], "orderLevelCap": { "wood": 4 } }
+    {
+      "id": 2,
+      "ordersRequired": 8,
+      "unlocks": ["zone2"],
+      "orderLevelCap": { "wood": 4 },
+      "reward": [{ "type": "item", "chain": "stone", "level": 3, "count": 1 }]
+    }
   ],
   "orders": {
     "slots": 3,
@@ -193,6 +199,18 @@
         "name": "Любое дерево",
         "match": { "chain": "wood", "levelRange": [1, 99] },
         "sources": ["merge", "generator", "reward"]
+      },
+      {
+        "id": "wood_popped",
+        "name": "Дерево из пузырей",
+        "match": { "chain": "wood", "levelRange": [1, 5] },
+        "sources": ["bubblePop"]
+      },
+      {
+        "id": "stone_delivered",
+        "name": "Камень сдан в заказы",
+        "match": { "chain": "stone", "levelRange": [1, 4] },
+        "sources": ["orderDelivered"]
       }
     ],
     "energySpent": { "total": true, "byGenerator": true }

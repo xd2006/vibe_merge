@@ -4,7 +4,7 @@ import { subjectName } from './names';
 import type { GameSession } from './session';
 import { useSessionValue } from './useSession';
 
-function Sheet({
+export function Sheet({
   title,
   onClose,
   children,

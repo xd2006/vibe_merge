@@ -18,6 +18,13 @@ async function tapCell(page: Page, x: number, y: number) {
   await page.mouse.click(c.x, c.y);
 }
 
+/** Редактор открывается первым; прототип запускается из него с демо-конфигом. */
+async function openGame(page: Page) {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Запустить прототип' }).click();
+  await expect(page.getByTestId('board')).toBeVisible();
+}
+
 type DebugHook = { cells(): Record<string, string> };
 
 /** Содержимое доски через отладочный хук dev-сборки: `{ "x,y": "wood:2" }`. */
@@ -28,7 +35,7 @@ const boardCells = (page: Page) =>
 // камешки (3,4) и (4,4), замки группы zone2 в (0,0)–(2,0).
 
 test('тап по генератору тратит энергию и создаёт предмет', async ({ page }) => {
-  await page.goto('/');
+  await openGame(page);
   await expect(page.getByTestId('energy-value')).toHaveText('100 / 100');
   const before = Object.keys(await boardCells(page)).length;
 
@@ -42,7 +49,7 @@ test('тап по генератору тратит энергию и созда
 });
 
 test('перетаскивание ветки на ветку сливает их в доску', async ({ page }) => {
-  await page.goto('/');
+  await openGame(page);
   const from = await cellCenter(page, 0, 4);
   const to = await cellCenter(page, 1, 4);
   await page.mouse.move(from.x, from.y);
@@ -56,7 +63,7 @@ test('перетаскивание ветки на ветку сливает и�
 });
 
 test('заказы показаны с кнопкой «Сдать»', async ({ page }) => {
-  await page.goto('/');
+  await openGame(page);
   for (const i of [0, 1, 2]) {
     await expect(
       page.getByTestId(`order-${i}`).getByRole('button', { name: 'Сдать' }),
@@ -67,18 +74,19 @@ test('заказы показаны с кнопкой «Сдать»', async ({ 
 });
 
 test('партия сохраняется и восстанавливается после перезагрузки', async ({ page }) => {
-  await page.goto('/');
+  await openGame(page);
   await tapCell(page, 1, 2);
   await expect(page.getByTestId('energy-value')).toHaveText('99 / 100');
   const cells = await boardCells(page);
 
   await page.reload();
+  await page.getByRole('button', { name: 'Запустить прототип' }).click();
   await expect(page.getByTestId('energy-value')).toHaveText('99 / 100');
   expect(await boardCells(page)).toEqual(cells);
 });
 
 test('забрать в хранилище и вернуть на выбранную клетку', async ({ page }) => {
-  await page.goto('/');
+  await openGame(page);
   await tapCell(page, 3, 4);
   await page.getByTestId('selection').getByRole('button', { name: 'Забрать' }).click();
   await expect(page.getByTestId('open-storage')).toHaveText('Склад · 1');
@@ -94,7 +102,7 @@ test('забрать в хранилище и вернуть на выбранн
 });
 
 test('читы: валюта и пропуск уровня открывают замки', async ({ page }) => {
-  await page.goto('/');
+  await openGame(page);
   await tapCell(page, 0, 0);
   await expect(page.getByTestId('selection')).toContainText('Откроется на уровне 2');
 

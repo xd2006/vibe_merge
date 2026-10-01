@@ -1,0 +1,49 @@
+{
+  "$schema": "../schema/game-config.schema.json",
+  "meta": { "name": "Новая игра", "seed": 1 },
+  "energy": { "max": 50, "start": 50, "regen": { "amount": 1, "intervalSec": 60 } },
+  "chains": [
+    {
+      "id": "item",
+      "name": "Предмет",
+      "levels": [{ "name": "Предмет 1" }, { "name": "Предмет 2" }, { "name": "Предмет 3" }]
+    }
+  ],
+  "generators": [
+    {
+      "id": "gen",
+      "name": "Генератор",
+      "levels": [{ "energyCost": 1, "produces": [{ "chain": "item", "level": 1, "weight": 1 }] }]
+    }
+  ],
+  "board": {
+    "width": 7,
+    "height": 9,
+    "legend": { ".": null, "G": { "generator": "gen", "level": 1 } },
+    "layout": [
+      ".......",
+      ".......",
+      ".......",
+      ".......",
+      "...G...",
+      ".......",
+      ".......",
+      ".......",
+      "......."
+    ]
+  },
+  "levels": [{ "id": 1, "ordersRequired": 5 }],
+  "orders": {
+    "slots": 3,
+    "templates": [
+      {
+        "id": "basic",
+        "weight": 1,
+        "boardLevels": [1, 99],
+        "maxRequirements": 1,
+        "requirements": [{ "chain": "item", "levelRange": [1, 3], "count": 1 }],
+        "rewards": [{ "type": "energy", "amount": "totalValue" }]
+      }
+    ]
+  }
+}

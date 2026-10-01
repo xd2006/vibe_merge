@@ -24,6 +24,14 @@ Android: Gradle 8.14 из шаблона Capacitor 8 требует **JDK 21** (
 
 Отладка в dev-сборке: `window.__vibeMerge` (сессия и `cells()`), используется e2e-тестами.
 
+Поток приложения: в браузере сначала открывается редактор (`src/editor`, грузится лениво), кнопка «Запустить прототип» открывает `Prototype`; на Android (`isNativeApp()`) сразу прототип с зашитым конфигом. E2E открывают игру через редактор (`openGame` в `tests/e2e/smoke.spec.ts`).
+
+Хранение: партия — localStorage `vibe-merge.save.v1` (с хешем конфига), черновик конфига — `vibe-merge.draft.v1`, сессии телеметрии — IndexedDB `vibe-merge` / `sessions`.
+
+Валидатор (`src/validator`) — единственное место проверок конфига для пользователя: схема Zod + логические проверки с путём, текстом и подсказкой. `compileRules` в ядре бросает `ConfigError` только как страховка. Новая проверка = код в `checks.ts` + строки `val.*`/`hint.*` в `ru.ts` + случай в `validator.test.ts`.
+
+Схема и форма редактора: поля-формулы помечены `format: 'formula'`, ссылки на id — `chainRef`/`generatorRef`/`lockGroupRef`/`templateRef` (через `.meta()` в `src/config/schema.ts`); русские подписи полей — `src/editor/labels.ts`.
+
 ## Структура
 
 ```

@@ -28,6 +28,8 @@ export class GameSession {
   lastRejection: Rejection | null = null;
   /** Тип последней применённой команды — подписчики решают по нему, сохранять ли партию. */
   lastCommandType: Command['type'] | null = null;
+  /** Реальное время игры с открытым прототипом, мс (для длительности сессии в метриках). */
+  playMs = 0;
 
   private listeners = new Set<() => void>();
   private frame = 0;
@@ -67,6 +69,8 @@ export class GameSession {
       this.lastFrameAt = now;
       const dtMs = Math.floor(elapsed);
       this.carryMs = elapsed - dtMs;
+      // Длительность игры для метрик: большой разрыв между кадрами — время в фоне, его не считаем.
+      this.playMs += Math.min(dtMs, 1000);
       if (dtMs > 0) this.dispatch({ type: 'tick', dtMs });
       this.frame = requestAnimationFrame(loop);
     };

@@ -344,6 +344,59 @@ body {
   margin-top: 12px;
 }
 
+.toolbar-left {
+  margin-right: auto;
+}
+
+/* ---------- Метрики ---------- */
+
+.check {
+  display: block;
+  margin: 12px 0 8px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 4px;
+  margin: 0;
+}
+
+.metrics-row {
+  display: contents;
+}
+
+.metrics dt {
+  color: var(--muted);
+}
+
+.metrics dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.metrics-h {
+  margin: 16px 0 6px;
+  font-size: 1rem;
+}
+
+.sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 12px 0 0 -8px;
+}
+
+.sheet-actions > * {
+  margin: 0 0 8px 8px;
+}
+
+.app-loading {
+  padding: 16px;
+  color: var(--muted);
+}
+
 .toast {
   position: fixed;
   left: 50%;

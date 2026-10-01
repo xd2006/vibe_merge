@@ -129,7 +129,8 @@
                 "type": "string",
                 "minLength": 1
               }
-            ]
+            ],
+            "format": "formula"
           },
           "levels": {
             "minItems": 1,
@@ -213,7 +214,8 @@
                     "properties": {
                       "chain": {
                         "type": "string",
-                        "pattern": "^[a-z][a-z0-9_]*$"
+                        "pattern": "^[a-z][a-z0-9_]*$",
+                        "format": "chainRef"
                       },
                       "level": {
                         "type": "integer",
@@ -280,7 +282,8 @@
                 "properties": {
                   "item": {
                     "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "format": "chainRef"
                   },
                   "level": {
                     "type": "integer",
@@ -292,14 +295,16 @@
                   "item",
                   "level"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "title": "Предмет"
               },
               {
                 "type": "object",
                 "properties": {
                   "generator": {
                     "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "format": "generatorRef"
                   },
                   "level": {
                     "type": "integer",
@@ -311,7 +316,8 @@
                   "generator",
                   "level"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "title": "Генератор"
               }
             ]
           }
@@ -359,7 +365,8 @@
                 "properties": {
                   "item": {
                     "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "format": "chainRef"
                   },
                   "level": {
                     "type": "integer",
@@ -412,7 +419,8 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^[a-z][a-z0-9_]*$"
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "format": "lockGroupRef"
             }
           },
           "orderLevelCap": {
@@ -448,14 +456,16 @@
                           "type": "string",
                           "minLength": 1
                         }
-                      ]
+                      ],
+                      "format": "formula"
                     }
                   },
                   "required": [
                     "type",
                     "amount"
                   ],
-                  "additionalProperties": false
+                  "additionalProperties": false,
+                  "title": "Энергия"
                 },
                 {
                   "type": "object",
@@ -473,14 +483,16 @@
                           "type": "string",
                           "minLength": 1
                         }
-                      ]
+                      ],
+                      "format": "formula"
                     }
                   },
                   "required": [
                     "type",
                     "amount"
                   ],
-                  "additionalProperties": false
+                  "additionalProperties": false,
+                  "title": "Хард-валюта"
                 },
                 {
                   "type": "object",
@@ -491,7 +503,8 @@
                     },
                     "chain": {
                       "type": "string",
-                      "pattern": "^[a-z][a-z0-9_]*$"
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "format": "chainRef"
                     },
                     "level": {
                       "type": "integer",
@@ -510,7 +523,8 @@
                     "chain",
                     "level"
                   ],
-                  "additionalProperties": false
+                  "additionalProperties": false,
+                  "title": "Предмет"
                 }
               ]
             }
@@ -542,7 +556,8 @@
         },
         "fallbackTemplate": {
           "type": "string",
-          "pattern": "^[a-z][a-z0-9_]*$"
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "format": "templateRef"
         },
         "reachability": {
           "default": {},
@@ -635,7 +650,8 @@
                   "properties": {
                     "chain": {
                       "type": "string",
-                      "pattern": "^[a-z][a-z0-9_]*$"
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "format": "chainRef"
                     },
                     "level": {
                       "type": "integer",
@@ -716,14 +732,16 @@
                               "type": "string",
                               "minLength": 1
                             }
-                          ]
+                          ],
+                          "format": "formula"
                         }
                       },
                       "required": [
                         "type",
                         "amount"
                       ],
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "title": "Энергия"
                     },
                     {
                       "type": "object",
@@ -741,14 +759,16 @@
                               "type": "string",
                               "minLength": 1
                             }
-                          ]
+                          ],
+                          "format": "formula"
                         }
                       },
                       "required": [
                         "type",
                         "amount"
                       ],
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "title": "Хард-валюта"
                     },
                     {
                       "type": "object",
@@ -759,7 +779,8 @@
                         },
                         "chain": {
                           "type": "string",
-                          "pattern": "^[a-z][a-z0-9_]*$"
+                          "pattern": "^[a-z][a-z0-9_]*$",
+                          "format": "chainRef"
                         },
                         "level": {
                           "type": "integer",
@@ -778,7 +799,8 @@
                         "chain",
                         "level"
                       ],
-                      "additionalProperties": false
+                      "additionalProperties": false,
+                      "title": "Предмет"
                     }
                   ]
                 }
@@ -862,7 +884,8 @@
                   "source",
                   "chance"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "title": "При генерации"
               },
               {
                 "type": "object",
@@ -923,7 +946,8 @@
                       "properties": {
                         "chain": {
                           "type": "string",
-                          "pattern": "^[a-z][a-z0-9_]*$"
+                          "pattern": "^[a-z][a-z0-9_]*$",
+                          "format": "chainRef"
                         },
                         "level": {
                           "type": "integer",
@@ -967,7 +991,8 @@
                   "maxOnBoard",
                   "content"
                 ],
-                "additionalProperties": false
+                "additionalProperties": false,
+                "title": "По таймеру"
               }
             ]
           }
@@ -991,7 +1016,8 @@
                   "type": "string",
                   "minLength": 1
                 }
-              ]
+              ],
+              "format": "formula"
             }
           },
           "additionalProperties": false
@@ -1049,7 +1075,8 @@
                     "type": "string",
                     "minLength": 1
                   }
-                ]
+                ],
+                "format": "formula"
               }
             },
             "required": [
@@ -1156,7 +1183,8 @@
                 "properties": {
                   "chain": {
                     "type": "string",
-                    "pattern": "^[a-z][a-z0-9_]*$"
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "format": "chainRef"
                   },
                   "level": {
                     "type": "integer",

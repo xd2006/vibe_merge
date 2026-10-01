@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GameConfig } from '@/config';
 import type { Cell, Entity } from '@/core';
 import { t } from '@/i18n/ru';
 import { BoardView, type BoardUi } from '@/render';
 import { exposeDebugHook } from './debug';
 import { EnergyBar, HardBalance, LevelProgress, RejectionToast } from './Hud';
+import { MetricsSheet } from './MetricsSheet';
 import { subjectName } from './names';
 import { OrdersBar } from './Orders';
-import { clearGame, loadGame, saveGame } from './persistence';
+import { clearGame, configHash, loadGame, saveGame } from './persistence';
+import { SessionRecorder } from './recorder';
 import { SelectionPanel } from './SelectionPanel';
 import { GameSession } from './session';
 import { CheatsSheet, StorageSheet } from './Sheets';
@@ -25,11 +27,14 @@ function openSession(config: GameConfig): GameSession {
 const SAVE_EVERY_MS = 5000;
 
 /** Экран прототипа: HUD и заказы сверху, доска, панель выбранного предмета и кнопки снизу. */
-export function Prototype({ config }: { config: GameConfig }) {
+export function Prototype({ config, onExit }: { config: GameConfig; onExit?: () => void }) {
   const [session, setSession] = useState(() => openSession(config));
   const [selectedUid, setSelectedUid] = useState<number | null>(null);
   const [placing, setPlacing] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<'storage' | 'cheats' | null>(null);
+  const [sheet, setSheet] = useState<'storage' | 'cheats' | 'metrics' | null>(null);
+  const hash = useMemo(() => configHash(config), [config]);
+  // Каждый запуск и каждый сброс партии — отдельная сессия телеметрии.
+  const recorder = useMemo(() => new SessionRecorder(session, hash), [session, hash]);
   const boardHost = useRef<HTMLDivElement>(null);
   const view = useRef<BoardView | null>(null);
   // Доска создаётся один раз на сессию, а обработчик тапа должен видеть актуальный режим.
@@ -80,6 +85,7 @@ export function Prototype({ config }: { config: GameConfig }) {
     let lastSave = Date.now();
     const save = () => {
       saveGame(config, session.state);
+      void recorder.save();
       lastSave = Date.now();
     };
     const unsubscribe = session.subscribe(() => {
@@ -104,7 +110,7 @@ export function Prototype({ config }: { config: GameConfig }) {
       view.current?.destroy();
       view.current = null;
     };
-  }, [session, config]);
+  }, [session, config, recorder]);
 
   const reset = () => {
     clearGame();
@@ -138,6 +144,11 @@ export function Prototype({ config }: { config: GameConfig }) {
         <SelectionPanel session={session} selectedUid={selectedUid} />
       )}
       <nav className="toolbar">
+        {onExit && (
+          <button type="button" className="btn toolbar-left" onClick={onExit}>
+            {t('app.backToEditor')}
+          </button>
+        )}
         {session.engine.rules.storage.enabled && (
           <button
             type="button"
@@ -156,6 +167,14 @@ export function Prototype({ config }: { config: GameConfig }) {
         >
           {t('cheats.title')}
         </button>
+        <button
+          type="button"
+          className="btn"
+          data-testid="open-metrics"
+          onClick={() => setSheet('metrics')}
+        >
+          {t('metrics.title')}
+        </button>
       </nav>
       {sheet === 'storage' && (
         <StorageSheet
@@ -170,6 +189,14 @@ export function Prototype({ config }: { config: GameConfig }) {
       )}
       {sheet === 'cheats' && (
         <CheatsSheet session={session} onClose={() => setSheet(null)} onReset={reset} />
+      )}
+      {sheet === 'metrics' && (
+        <MetricsSheet
+          session={session}
+          recorder={recorder}
+          configHash={hash}
+          onClose={() => setSheet(null)}
+        />
       )}
       <RejectionToast session={session} />
     </div>

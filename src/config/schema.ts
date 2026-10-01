@@ -10,6 +10,16 @@ export const IdSchema = z
   .string()
   .regex(/^[a-z][a-z0-9_]*$/, { error: () => t('schema.idFormat') });
 
+/**
+ * Ссылки на id других элементов. Формат в JSON Schema подсказывает редактору показать
+ * выбор из существующих id; на валидацию не влияет.
+ */
+const ref = (format: string) => IdSchema.meta({ format });
+const ChainRef = ref('chainRef');
+const GeneratorRef = ref('generatorRef');
+const LockGroupRef = ref('lockGroupRef');
+const TemplateRef = ref('templateRef');
+
 const Level = z.int().min(1);
 
 /** Диапазон `[min, max]` включительно. */
@@ -19,7 +29,7 @@ const range = (min: number) =>
     .refine(([a, b]) => a <= b, { error: () => t('schema.rangeOrder') });
 
 /** Число или формула на мини-языке выражений (проверяется отдельно, см. `expr`). */
-export const FormulaSchema = z.union([z.number(), z.string().min(1)]);
+export const FormulaSchema = z.union([z.number(), z.string().min(1)]).meta({ format: 'formula' });
 
 const Weight = z.number().min(0);
 
@@ -27,7 +37,7 @@ const Weight = z.number().min(0);
 const levelSelector = <T extends z.core.$ZodLooseShape>(shape: T) =>
   z
     .strictObject({
-      chain: IdSchema,
+      chain: ChainRef,
       level: Level.optional(),
       levelRange: range(1).optional(),
       ...shape,
@@ -75,7 +85,7 @@ const GeneratorLevelSchema = z.strictObject({
   energyCost: z.int().min(0),
   /** Сколько предметов выдаётся до кулдауна и сколько длится кулдаун. Без поля кулдауна нет. */
   cooldown: z.strictObject({ charges: z.int().min(1), seconds: z.number().positive() }).optional(),
-  produces: z.array(z.strictObject({ chain: IdSchema, level: Level, weight: Weight })).min(1),
+  produces: z.array(z.strictObject({ chain: ChainRef, level: Level, weight: Weight })).min(1),
 });
 
 const GeneratorSchema = z.strictObject({
@@ -86,8 +96,8 @@ const GeneratorSchema = z.strictObject({
 
 const LegendEntrySchema = z.union([
   z.null(),
-  z.strictObject({ item: IdSchema, level: Level }),
-  z.strictObject({ generator: IdSchema, level: Level }),
+  z.strictObject({ item: ChainRef, level: Level }).meta({ title: 'Предмет' }),
+  z.strictObject({ generator: GeneratorRef, level: Level }).meta({ title: 'Генератор' }),
 ]);
 
 const BoardSchema = z.strictObject({
@@ -103,27 +113,29 @@ const BoardSchema = z.strictObject({
         group: IdSchema,
         // DECISION: координаты клеток — [x, y]: столбец, затем строка; (0, 0) — левый верхний угол.
         cells: z.array(CellCoord).min(1),
-        content: z.strictObject({ item: IdSchema, level: Level }),
+        content: z.strictObject({ item: ChainRef, level: Level }),
       }),
     )
     .default([]),
 });
 
 const RewardSchema = z.discriminatedUnion('type', [
-  z.strictObject({ type: z.literal('energy'), amount: FormulaSchema }),
-  z.strictObject({ type: z.literal('hard'), amount: FormulaSchema }),
-  z.strictObject({
-    type: z.literal('item'),
-    chain: IdSchema,
-    level: Level,
-    count: z.int().min(1).default(1),
-  }),
+  z.strictObject({ type: z.literal('energy'), amount: FormulaSchema }).meta({ title: 'Энергия' }),
+  z.strictObject({ type: z.literal('hard'), amount: FormulaSchema }).meta({ title: 'Хард-валюта' }),
+  z
+    .strictObject({
+      type: z.literal('item'),
+      chain: ChainRef,
+      level: Level,
+      count: z.int().min(1).default(1),
+    })
+    .meta({ title: 'Предмет' }),
 ]);
 
 const BoardLevelSchema = z.strictObject({
   id: z.int().min(1),
   ordersRequired: z.int().min(1),
-  unlocks: z.array(IdSchema).default([]),
+  unlocks: z.array(LockGroupRef).default([]),
   /** Потолок уровня предмета в заказах по цепочкам. */
   orderLevelCap: z.record(IdSchema, Level).optional(),
   reward: z.array(RewardSchema).default([]),
@@ -146,7 +158,7 @@ const OrdersSchema = z.strictObject({
   slots: z.int().min(1),
   refillDelaySec: z.number().min(0).default(0),
   allowFromStorage: z.boolean().default(false),
-  fallbackTemplate: IdSchema.optional(),
+  fallbackTemplate: TemplateRef.optional(),
   reachability: z
     .strictObject({
       mode: z.enum(['auto', 'off']).default('auto'),
@@ -167,20 +179,24 @@ const LifetimeSchema = z.union([
 ]);
 
 const BubbleRuleSchema = z.discriminatedUnion('source', [
-  z.strictObject({
-    source: z.literal('generator'),
-    chance: z.number().min(0).max(1),
-    lifetimeSec: LifetimeSchema.default(null),
-    onExpire: z.literal('vanish').default('vanish'),
-  }),
-  z.strictObject({
-    source: z.literal('timer'),
-    everySec: z.number().positive(),
-    maxOnBoard: z.int().min(1),
-    lifetimeSec: LifetimeSchema.default(null),
-    onExpire: z.literal('vanish').default('vanish'),
-    content: z.array(levelSelector({ weight: Weight })).min(1),
-  }),
+  z
+    .strictObject({
+      source: z.literal('generator'),
+      chance: z.number().min(0).max(1),
+      lifetimeSec: LifetimeSchema.default(null),
+      onExpire: z.literal('vanish').default('vanish'),
+    })
+    .meta({ title: 'При генерации' }),
+  z
+    .strictObject({
+      source: z.literal('timer'),
+      everySec: z.number().positive(),
+      maxOnBoard: z.int().min(1),
+      lifetimeSec: LifetimeSchema.default(null),
+      onExpire: z.literal('vanish').default('vanish'),
+      content: z.array(levelSelector({ weight: Weight })).min(1),
+    })
+    .meta({ title: 'По таймеру' }),
 ]);
 
 const BubblesSchema = z.strictObject({

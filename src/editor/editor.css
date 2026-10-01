@@ -1,0 +1,354 @@
+/* Редактор работает только в десктопном браузере — здесь можно современный CSS. */
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--bg);
+}
+
+.editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.editor-toolbar h1 {
+  margin: 0 8px 0 0;
+  font-size: 1.1rem;
+}
+
+.editor-toolbar select,
+.editor input,
+.editor select,
+.editor textarea {
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+
+.editor-status {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.view-toggle {
+  display: none;
+  gap: 8px;
+  padding: 8px 16px 0;
+}
+
+.btn-on {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.editor-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 0;
+}
+
+.editor-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  overflow: auto;
+  border-right: 1px solid var(--line);
+}
+
+.tab {
+  display: flex;
+  justify-content: space-between;
+  font: inherit;
+  text-align: left;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.tab-on {
+  background: var(--panel);
+  font-weight: 600;
+}
+
+.tab-badge {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.editor-form {
+  position: relative;
+  overflow: auto;
+  padding: 12px 16px 32px;
+}
+
+.form-blocked {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fde2e1;
+  color: #7a1f1b;
+}
+
+.editor-json {
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--line);
+}
+
+.json-panel,
+.json-panel .cm-editor {
+  height: 100%;
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .view-toggle {
+    display: flex;
+  }
+  .editor-body {
+    grid-template-columns: 140px minmax(0, 1fr);
+  }
+  .editor-body-form .editor-json,
+  .editor-body-json .editor-form {
+    display: none;
+  }
+}
+
+/* ---------- Форма RJSF ---------- */
+
+.editor-form fieldset {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.editor-form legend {
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+.editor-form .form-group {
+  margin-bottom: 10px;
+}
+
+.editor-form label.control-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.editor-form .field-description {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.editor-form .error-detail {
+  margin: 4px 0 0;
+  padding-left: 16px;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.editor-form .array-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+}
+
+.editor-form .array-item-toolbox .btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.editor-form button.btn,
+.editor-form .btn {
+  padding: 2px 8px;
+}
+
+.editor-form .checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.formula {
+  display: flex;
+  flex-direction: column;
+}
+
+.formula-input {
+  font-family: ui-monospace, monospace !important;
+}
+
+.formula-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.formula-hint {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* ---------- Сетка раскладки ---------- */
+
+.board-editor {
+  margin-bottom: 16px;
+}
+
+.board-size {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.board-size input {
+  width: 64px;
+}
+
+.palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.swatch {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.swatch-on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.grid {
+  display: grid;
+  gap: 2px;
+  user-select: none;
+  touch-action: none;
+}
+
+.gcell {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font:
+    600 14px ui-monospace,
+    monospace;
+  border: 0;
+  border-radius: 4px;
+  background: #e9e4d8;
+  color: #1d1d1f;
+  cursor: crosshair;
+}
+
+.gcell-bad {
+  background: #fde2e1;
+}
+
+.gcell-lock {
+  background: #cfc9bb;
+}
+
+/* ---------- Проблемы ---------- */
+
+.issues {
+  max-height: 28vh;
+  overflow: auto;
+  padding: 8px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.issues ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.issue {
+  display: grid;
+  grid-template-columns: 20px auto 1fr;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.issues-ok {
+  color: var(--ok);
+}
+
+.issue-path {
+  font:
+    0.85rem ui-monospace,
+    monospace;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: left;
+}
+
+.issue-hint {
+  color: var(--muted);
+}
+
+.editor-form input:not([type='checkbox']):not([type='radio']),
+.editor-form select,
+.editor-form textarea {
+  width: 100%;
+  max-width: 420px;
+}
+
+.board-size input {
+  width: 64px !important;
+}
+
+.rjsf-btn {
+  min-width: 28px;
+}
+
+.rjsf-add {
+  margin-top: 4px;
+}
+
+.editor-form .array-item-toolbox .btn-group {
+  flex-wrap: nowrap;
+}

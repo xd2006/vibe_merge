@@ -1,34 +1,31 @@
+import { lazy, Suspense, useState } from 'react';
 import demo from '../presets/demo.json';
-import { parseConfig, type ConfigIssue, type GameConfig } from '@/config';
-import { ConfigError, compileRules } from '@/core';
+import type { GameConfig } from '@/config';
 import { t } from '@/i18n/ru';
+import { isNativeApp } from '@/platform';
 import { Prototype } from '@/ui';
+import { validateConfig, type Issue } from '@/validator';
 
-type Loaded = { ok: true; config: GameConfig } | { ok: false; issues: ConfigIssue[] };
+// Редактор нужен только в браузере на десктопе — в приложение он не загружается.
+const Editor = lazy(() => import('@/editor').then((m) => ({ default: m.Editor })));
 
-// На этапе 1 прототип запускается с демо-пресетом; выбор конфига появится вместе с редактором.
-function load(input: unknown): Loaded {
-  const parsed = parseConfig(input);
-  if (!parsed.ok) return parsed;
-  try {
-    compileRules(parsed.config);
-  } catch (e) {
-    if (e instanceof ConfigError)
-      return { ok: false, issues: [{ path: e.path, message: e.message }] };
-    throw e;
-  }
-  return parsed;
+/** Конфиг, зашитый в приложение. На этапе 5 сюда подставится выбранный при сборке конфиг. */
+function bundledConfig(): { config: GameConfig | null; issues: Issue[] } {
+  const r = validateConfig(demo);
+  return { config: r.ok ? r.config : null, issues: r.issues };
 }
 
-const loaded = load(demo);
-
 export function App() {
-  if (!loaded.ok) {
+  const native = isNativeApp();
+  const [bundled] = useState(() => (native ? bundledConfig() : null));
+  const [playing, setPlaying] = useState<GameConfig | null>(bundled?.config ?? null);
+
+  if (bundled && !bundled.config) {
     return (
       <main className="app">
         <h1>{t('error.configInvalid')}</h1>
         <ul>
-          {loaded.issues.map((i) => (
+          {bundled.issues.map((i) => (
             <li key={i.path + i.message}>
               <code>{i.path}</code>: {i.message}
             </li>
@@ -37,10 +34,21 @@ export function App() {
       </main>
     );
   }
+
+  if (playing) {
+    return (
+      <main className="app">
+        <h1 className="visually-hidden">{t('app.title')}</h1>
+        <Prototype config={playing} onExit={native ? undefined : () => setPlaying(null)} />
+      </main>
+    );
+  }
+
   return (
     <main className="app">
-      <h1 className="visually-hidden">{t('app.title')}</h1>
-      <Prototype config={loaded.config} />
+      <Suspense fallback={<p className="app-loading">{t('editor.loading')}</p>}>
+        <Editor onRun={setPlaying} />
+      </Suspense>
     </main>
   );
 }

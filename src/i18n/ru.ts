@@ -1,6 +1,39 @@
 /** Все строки интерфейса. Новые строки добавляются сюда, а не пишутся в компонентах. */
 export const ru = {
   'app.title': 'Merge-2 прототип',
+  'app.backToEditor': '← Редактор',
+
+  // Редактор
+  'editor.title': 'Конфиг',
+  'editor.loading': 'Загрузка редактора…',
+  'editor.preset': 'Пресет…',
+  'editor.load': 'Загрузить файл',
+  'editor.download': 'Скачать',
+  'editor.run': 'Запустить прототип',
+  'editor.runBlocked': 'Исправьте ошибки, чтобы запустить прототип',
+  'editor.errors': 'ошибок: {count}',
+  'editor.warnings': 'предупреждений: {count}',
+  'editor.valid': 'ошибок нет',
+  'editor.noIssues': 'Ошибок и предупреждений нет',
+  'editor.wholeConfig': 'весь конфиг',
+  'editor.form': 'Форма',
+  'editor.jsonInvalid':
+    'JSON содержит синтаксическую ошибку — форма недоступна, пока она не исправлена (см. отметку в тексте)',
+  'editor.replaceConfirm': 'Заменить текущий конфиг пресетом?',
+  'editor.formulaVars': 'Переменные: {vars}',
+  'editor.missingRef': 'нет такого',
+  'editor.btn.add': '+ Добавить',
+  'editor.btn.copy': 'Копировать',
+  'editor.btn.up': 'Выше',
+  'editor.btn.down': 'Ниже',
+  'editor.btn.remove': 'Удалить',
+  'editor.board.width': 'Ширина',
+  'editor.board.height': 'Высота',
+  'editor.board.palette': 'Символы легенды',
+  'editor.board.help':
+    'Выберите символ легенды и нажимайте или ведите по клеткам. 🔒 — клетки замков.',
+  'editor.board.empty': 'пусто',
+  'editor.board.unknownSymbol': 'нет в легенде',
 
   // Схема конфига
   'schema.idFormat':
@@ -31,6 +64,75 @@ export const ru = {
   'config.lockOverlap': 'Клетка замка ({x}, {y}) занята содержимым раскладки',
   'config.unknownLockGroup': 'Группа замков «{id}» не найдена',
   'config.unknownTemplate': 'Шаблон заказа «{id}» не найден',
+
+  // Валидатор: сообщения
+  'val.syntax': 'Синтаксическая ошибка JSON: {message}',
+  'val.syntaxAt': 'Синтаксическая ошибка JSON в строке {line}, столбце {column}: {message}',
+  'val.schema': '{message}',
+  'val.duplicateId': 'Идентификатор «{id}» повторяется: {kind} с таким id уже есть ({first})',
+  'val.unknownChain': 'Цепочка «{id}» не найдена',
+  'val.unknownGenerator': 'Генератор «{id}» не найден',
+  'val.unknownLockGroup': 'Группа замков «{id}» не найдена',
+  'val.unknownTemplate': 'Шаблон заказа «{id}» не найден',
+  'val.levelTooHigh': 'Уровень {level} больше максимального ({max}) у «{id}»',
+  'val.rangeTooHigh':
+    'Диапазон уровней [{from}, {to}] целиком выше максимального уровня ({max}) у «{id}»',
+  'val.zeroWeights': 'Сумма весов равна нулю: ни один вариант не может выпасть',
+  'val.formula': 'Формула «{source}» не разбирается: {message}',
+  'val.layoutRows': 'В раскладке {actual} строк, а высота доски {expected}',
+  'val.layoutCols': 'В строке {row} раскладки {actual} символов, а ширина доски {expected}',
+  'val.unknownSymbol': 'Символа «{char}» (строка {row}) нет в легенде',
+  'val.lockOutside': 'Клетка замка ({x}, {y}) вне доски {width}×{height}',
+  'val.lockOverlap': 'Клетка замка ({x}, {y}) занята содержимым раскладки «{char}»',
+  'val.lockDuplicate': 'Клетка ({x}, {y}) указана в замках несколько раз',
+  'val.emptySkipTime': 'Чит «сдвиг времени» включён, но список минут пуст',
+  'val.unknownPattern': 'Шаблон «{match}» ссылается на несуществующую цепочку или генератор «{id}»',
+  'val.artKey': 'Ключ арта «{key}» ссылается на несуществующий предмет',
+  'val.warnNoTemplate': 'На уровне {level} ни один шаблон заказов не проходит по достижимости',
+  'val.warnLockNeverOpens': 'Группа замков «{group}» не открывается ни одним уровнем',
+  'val.warnLockNoSource':
+    'Для предмета в замке «{name}» ({level} ур.) нет источника, из которого его можно получить слиянием',
+  'val.warnLockMaxLevel':
+    'Предмет в замке «{name}» максимального уровня — его нельзя слить, клетка не откроется',
+  'val.warnEnergyCost':
+    'Стоимость генерации {cost} больше максимума энергии {max}: генератором нельзя воспользоваться',
+  'val.warnNoGenerators': 'На стартовой доске нет ни одного генератора',
+  'val.warnReachOff':
+    'Проверка достижимости выключена: заказы могут требовать недоступные предметы',
+
+  // Валидатор: подсказки
+  'hint.syntax': 'Проверьте запятые, кавычки и скобки рядом с указанным местом',
+  'hint.unknownKey':
+    'Удалите поле или исправьте опечатку в названии: неизвестные поля не допускаются',
+  'hint.type': 'Проверьте тип значения: число, строка, список или объект',
+  'hint.tooSmall': 'Увеличьте значение или добавьте элементы',
+  'hint.tooBig': 'Уменьшите значение или уберите лишние элементы',
+  'hint.format': 'Значение не подходит под формат поля — см. описание поля',
+  'hint.union': 'Значение не подходит ни под один вариант: проверьте поле type или source',
+  'hint.value': 'Выберите одно из допустимых значений',
+  'hint.generic': 'Исправьте значение поля',
+  'hint.duplicateId': 'Переименуйте один из элементов: id должны быть уникальны',
+  'hint.unknownChain': 'Доступные цепочки: {list}',
+  'hint.unknownGenerator': 'Доступные генераторы: {list}',
+  'hint.unknownLockGroup': 'Группы замков задаются в board.locks[].group: {list}',
+  'hint.unknownTemplate': 'Доступные шаблоны: {list}',
+  'hint.levelTooHigh': 'Уменьшите уровень или добавьте уровни в цепочку',
+  'hint.zeroWeights': 'Задайте хотя бы одному варианту положительный вес',
+  'hint.formula':
+    'Переменные: {allowed}; функции: ceil, floor, round, min, max; операторы + - * / ^',
+  'hint.layout': 'Число строк и символов в строке должно совпадать с height и width',
+  'hint.unknownSymbol': 'Добавьте символ в board.legend или исправьте раскладку',
+  'hint.lockCell': 'Замки ставятся на пустые клетки раскладки («.»), координаты — [x, y] с нуля',
+  'hint.emptySkipTime': 'Добавьте значения в cheats.skipTime.minutes или выключите чит',
+  'hint.artKey': 'Ключ: «цепочка:уровень» или «generator.id:уровень» существующего предмета',
+  'hint.warnNoTemplate':
+    'Добавьте шаблон для этого уровня, увеличьте maxMergeDepth или добавьте источник предметов',
+  'hint.warnLockNeverOpens': 'Добавьте группу в levels[].unlocks нужного уровня',
+  'hint.warnLockNoSource': 'Добавьте генератор, который выдаёт эту цепочку не выше нужного уровня',
+  'hint.warnLockMaxLevel': 'Поставьте в замок предмет ниже максимального уровня',
+  'hint.warnEnergyCost': 'Уменьшите energyCost или увеличьте energy.max',
+  'hint.warnNoGenerators': 'Добавьте генератор в легенду и раскладку доски',
+  'hint.warnReachOff': 'Включите orders.reachability.mode: "auto", если это не сделано намеренно',
 
   // Отказы команд ядра
   'reject.noEnergy': 'Не хватает энергии',
@@ -99,6 +201,23 @@ export const ru = {
   'storage.readOnly': 'Предметы из хранилища нельзя вернуть на доску',
   'storage.choosePlace': 'Выберите свободную клетку для «{name}»',
   'storage.cancel': 'Отмена',
+
+  // Метрики
+  'metrics.title': 'Метрики',
+  'metrics.excludeCheats': 'Без чит-действий',
+  'metrics.energyTotal': 'Потрачено энергии',
+  'metrics.energyByGenerator': 'Энергия по генераторам',
+  'metrics.counters': 'Счётчики',
+  'metrics.noCounters': 'Счётчики не заданы (telemetry.counters)',
+  'metrics.orders': 'Выполнено заказов',
+  'metrics.bubbles': 'Лопнуто пузырей',
+  'metrics.hardSpent': 'Потрачено {currency}',
+  'metrics.duration': 'Длительность сессии',
+  'metrics.cheats': 'Чит-действий',
+  'metrics.sessions': 'Сохранённых сессий с этим конфигом: {count}',
+  'metrics.exportJson': 'Экспорт JSON',
+  'metrics.exportCsv': 'Экспорт CSV',
+  'metrics.clear': 'Удалить старые сессии',
 
   // Читы
   'cheats.title': 'Читы',
