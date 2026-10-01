@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { formatDuration, t } from '@/i18n/ru';
-import { downloadText, safeFileName } from '@/platform';
+import { exportText, safeFileName } from '@/platform';
 import { computeMetrics, exportCsv, exportJson } from '@/telemetry';
 import { generatorName } from './names';
 import { clearSessions, sessionsFor, type SessionRecorder } from './recorder';
@@ -37,9 +37,11 @@ export function MetricsSheet({
     await recorder.save();
     const sessions = await sessionsFor(configHash, recorder);
     const name = `${safeFileName(config.meta.name)}-metrics`;
-    if (kind === 'json')
-      downloadText(`${name}.json`, exportJson(config, sessions), 'application/json');
-    else downloadText(`${name}.csv`, exportCsv(config, sessions), 'text/csv');
+    if (kind === 'json') {
+      await exportText(`${name}.json`, exportJson(config, sessions), 'application/json');
+    } else {
+      await exportText(`${name}.csv`, exportCsv(config, sessions), 'text/csv');
+    }
   };
 
   return (

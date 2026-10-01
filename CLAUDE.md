@@ -7,16 +7,16 @@
 
 ## Команды
 
-| Команда                               | Что делает                                                                        |
-| ------------------------------------- | --------------------------------------------------------------------------------- |
-| `npm run dev`                         | Редактор и прототип в браузере (Vite)                                             |
-| `npm run check`                       | lint + prettier + typecheck + unit-тесты; должен быть зелёным после каждой задачи |
-| `npm run test` / `npm run test:watch` | Unit-тесты (Vitest)                                                               |
-| `npm run test:e2e`                    | Смоук в браузере (Playwright, Chromium)                                           |
-| `npm run build:web`                   | Статическая сборка в `dist/`                                                      |
-| `npm run format`                      | Форматирование Prettier                                                           |
-| `npm run schema`                      | JSON Schema конфига в `schema/game-config.schema.json`                            |
-| `npm run build:android`               | Веб-билд → `cap sync` → Gradle; debug APK в `dist/android/`                       |
+| Команда                               | Что делает                                                                                                                                               |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                         | Редактор и прототип в браузере (Vite)                                                                                                                    |
+| `npm run check`                       | lint + prettier + typecheck + unit-тесты; должен быть зелёным после каждой задачи                                                                        |
+| `npm run test` / `npm run test:watch` | Unit-тесты (Vitest)                                                                                                                                      |
+| `npm run test:e2e`                    | Смоук в браузере (Playwright, Chromium)                                                                                                                  |
+| `npm run build:web`                   | Статическая сборка в `dist/`                                                                                                                             |
+| `npm run format`                      | Форматирование Prettier                                                                                                                                  |
+| `npm run schema`                      | JSON Schema конфига в `schema/game-config.schema.json`                                                                                                   |
+| `npm run build:android [конфиг]`      | Проверка конфига → веб-билд + `bundled-config.json` и его арт → `cap sync` → Gradle; APK в `dist/android/` (то же в CI: `.github/workflows/android.yml`) |
 
 Окружение: Node 24 (`.nvmrc`). На машине разработчика git доступен только из SourceTree.
 

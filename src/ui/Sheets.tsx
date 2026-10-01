@@ -88,10 +88,14 @@ export function CheatsSheet({
   session,
   onClose,
   onReset,
+  showFps,
+  onToggleFps,
 }: {
   session: GameSession;
   onClose: () => void;
   onReset: () => void;
+  showFps: boolean;
+  onToggleFps: (on: boolean) => void;
 }) {
   const cheats = session.config.cheats;
   const dispatch = session.dispatch.bind(session);
@@ -147,6 +151,10 @@ export function CheatsSheet({
           {t('cheats.reset')}
         </button>
       </div>
+      <label className="check">
+        <input type="checkbox" checked={showFps} onChange={(e) => onToggleFps(e.target.checked)} />{' '}
+        {t('cheats.fps')}
+      </label>
     </Sheet>
   );
 }

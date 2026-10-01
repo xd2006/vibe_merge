@@ -70,6 +70,7 @@ export class BoardView {
     dragging: boolean;
   } | null = null;
   private destroyed = false;
+  private resizeObserver: ResizeObserver | null = null;
 
   private constructor(
     private readonly host: HTMLElement,
@@ -91,6 +92,10 @@ export class BoardView {
     view.entityLayer.sortableChildren = true;
     view.bindInput();
     view.app.renderer.on('resize', () => view.relayout());
+    // resizeTo следит только за окном; контейнер меняется и без этого (панель снизу
+    // стала выше) — подстраиваем холст под контейнер.
+    view.resizeObserver = new ResizeObserver(() => view.app.resize());
+    view.resizeObserver.observe(host);
     view.app.ticker.add((ticker) => view.animate(ticker.deltaMS));
     view.relayout();
     return view;
@@ -105,8 +110,14 @@ export class BoardView {
     if (hintChanged) this.drawHints();
   }
 
+  /** Текущая частота кадров рендера доски. */
+  fps(): number {
+    return this.app.ticker.FPS;
+  }
+
   destroy(): void {
     this.destroyed = true;
+    this.resizeObserver?.disconnect();
     this.app.destroy({ removeView: true }, { children: true });
   }
 

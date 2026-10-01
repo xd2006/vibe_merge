@@ -8,3 +8,4 @@ export {
   type ParseResult,
 } from './parse';
 export { FORMULA_CONTEXTS } from './formulas';
+export { BUNDLED_CONFIG_FILE } from './bundled';

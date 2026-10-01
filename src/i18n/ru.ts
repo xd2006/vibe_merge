@@ -2,6 +2,8 @@
 export const ru = {
   'app.title': 'Merge-2 прототип',
   'app.backToEditor': '← Редактор',
+  'app.loading': 'Загрузка…',
+  'cheats.fps': 'Показывать FPS',
 
   // Редактор
   'editor.title': 'Конфиг',

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GameConfig } from '@/config';
 import type { Cell, Entity } from '@/core';
 import { t } from '@/i18n/ru';
 import { ArtLibrary, BoardView, type BoardUi } from '@/render';
 import { exposeDebugHook } from './debug';
+import { FpsMeter } from './FpsMeter';
 import { EnergyBar, HardBalance, LevelProgress, RejectionToast } from './Hud';
 import { MetricsSheet } from './MetricsSheet';
 import { subjectName } from './names';
@@ -32,6 +33,8 @@ export function Prototype({ config, onExit }: { config: GameConfig; onExit?: () 
   const [selectedUid, setSelectedUid] = useState<number | null>(null);
   const [placing, setPlacing] = useState<string | null>(null);
   const [sheet, setSheet] = useState<'storage' | 'cheats' | 'metrics' | null>(null);
+  const [showFps, setShowFps] = useState(false);
+  const readFps = useCallback(() => view.current?.fps() ?? null, []);
   const hash = useMemo(() => configHash(config), [config]);
   // Каждый запуск и каждый сброс партии — отдельная сессия телеметрии.
   const recorder = useMemo(() => new SessionRecorder(session, hash), [session, hash]);
@@ -194,7 +197,13 @@ export function Prototype({ config, onExit }: { config: GameConfig; onExit?: () 
         />
       )}
       {sheet === 'cheats' && (
-        <CheatsSheet session={session} onClose={() => setSheet(null)} onReset={reset} />
+        <CheatsSheet
+          session={session}
+          onClose={() => setSheet(null)}
+          onReset={reset}
+          showFps={showFps}
+          onToggleFps={setShowFps}
+        />
       )}
       {sheet === 'metrics' && (
         <MetricsSheet
@@ -204,6 +213,7 @@ export function Prototype({ config, onExit }: { config: GameConfig; onExit?: () 
           onClose={() => setSheet(null)}
         />
       )}
+      {showFps && <FpsMeter read={readFps} />}
       <RejectionToast session={session} />
     </div>
   );

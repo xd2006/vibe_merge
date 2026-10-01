@@ -1,6 +1,6 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import demo from '../presets/demo.json';
-import type { GameConfig } from '@/config';
+import { BUNDLED_CONFIG_FILE, type GameConfig } from '@/config';
 import { t } from '@/i18n/ru';
 import { isNativeApp } from '@/platform';
 import { Prototype } from '@/ui';
@@ -9,16 +9,35 @@ import { validateConfig, type Issue } from '@/validator';
 // Редактор нужен только в браузере на десктопе — в приложение он не загружается.
 const Editor = lazy(() => import('@/editor').then((m) => ({ default: m.Editor })));
 
-/** Конфиг, зашитый в приложение. На этапе 5 сюда подставится выбранный при сборке конфиг. */
-function bundledConfig(): { config: GameConfig | null; issues: Issue[] } {
-  const r = validateConfig(demo);
+type Bundled = { config: GameConfig | null; issues: Issue[] };
+
+/** Конфиг, зашитый в приложение при сборке; если файла нет — демо-пресет. */
+async function loadBundledConfig(): Promise<Bundled> {
+  let input: unknown = demo;
+  try {
+    const res = await fetch(BUNDLED_CONFIG_FILE, { cache: 'no-store' });
+    if (res.ok) input = await res.json();
+  } catch {
+    // Нет файла — остаётся демо.
+  }
+  const r = validateConfig(input);
   return { config: r.ok ? r.config : null, issues: r.issues };
 }
 
 export function App() {
   const native = isNativeApp();
-  const [bundled] = useState(() => (native ? bundledConfig() : null));
-  const [playing, setPlaying] = useState<GameConfig | null>(bundled?.config ?? null);
+  const [bundled, setBundled] = useState<Bundled | null>(null);
+  const [playing, setPlaying] = useState<GameConfig | null>(null);
+
+  useEffect(() => {
+    if (!native) return;
+    void loadBundledConfig().then((b) => {
+      setBundled(b);
+      setPlaying(b.config);
+    });
+  }, [native]);
+
+  if (native && !bundled) return <p className="app-loading">{t('app.loading')}</p>;
 
   if (bundled && !bundled.config) {
     return (

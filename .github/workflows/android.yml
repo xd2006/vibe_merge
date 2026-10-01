@@ -1,0 +1,39 @@
+name: Android APK
+
+# Сборка APK тем же скриптом, что и локально, — для тех, у кого нет JDK и Android SDK.
+# Запуск вручную (Actions → Android APK → Run workflow) с путём к конфигу или при push в main.
+on:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: Путь к конфигу в репозитории
+        required: true
+        default: presets/demo.json
+  push:
+    branches: [main]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      # Android SDK уже есть на ubuntu-latest (ANDROID_HOME задан); ставим недостающие пакеты.
+      - uses: android-actions/setup-android@v3
+      - run: npm ci
+      # Скрипт gradlew из репозитория может прийти без права на выполнение (коммит с Windows).
+      - run: chmod +x android/gradlew
+      - run: npm run build:android -- "${{ github.event.inputs.config || 'presets/demo.json' }}"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: apk
+          path: dist/android/*.apk
+          retention-days: 14
