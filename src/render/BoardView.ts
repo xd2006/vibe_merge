@@ -16,6 +16,7 @@ import {
   type PlaceholderSpec,
   type PlaceholderView,
 } from './placeholder';
+import type { ArtLibrary } from './art';
 
 export interface BoardViewOptions {
   rules: Rules;
@@ -24,6 +25,8 @@ export interface BoardViewOptions {
   /** Тап по клетке (без перетаскивания), в том числе по пустой. */
   onTap: (cell: Cell, entity: Entity | null) => void;
   dark?: boolean;
+  /** Арт предметов; без него — плейсхолдеры. */
+  art?: ArtLibrary;
 }
 
 /** Что показать поверх состояния: выделение и режим выбора клетки. */
@@ -166,19 +169,25 @@ export class BoardView {
       const center = this.cellCenter(cellOf(state.board, i));
       if (entity.uid === this.ui.selectedUid) selectedCenter = center;
       const spec = this.placeholderSpec(entity, state);
-      const look = JSON.stringify(spec);
+      const texture = this.textureFor(entity);
+      const look = JSON.stringify(spec) + (texture ? ':art' : '');
       let sprite = this.sprites.get(entity.uid);
       if (sprite && sprite.look !== look) {
         // Внешний вид поменялся — новый плейсхолдер на месте старого.
         const { x, y } = sprite.view.root.position;
         sprite.view.root.destroy({ children: true });
-        sprite.view = createPlaceholder(spec, this.cellSize);
+        sprite.view = createPlaceholder(spec, this.cellSize, texture);
         sprite.view.root.position.set(x, y);
         sprite.look = look;
         this.entityLayer.addChild(sprite.view.root);
       }
       if (!sprite) {
-        sprite = { entity, look, view: createPlaceholder(spec, this.cellSize), target: center };
+        sprite = {
+          entity,
+          look,
+          view: createPlaceholder(spec, this.cellSize, texture),
+          target: center,
+        };
         sprite.view.root.position.set(center.x, center.y);
         // Появление: предмет «выпрыгивает» из маленького размера.
         sprite.view.root.scale.set(instant ? 1 : 0.3);
@@ -195,6 +204,15 @@ export class BoardView {
       this.sprites.delete(uid);
     }
     this.drawSelection(selectedCenter);
+  }
+
+  /** Текстура предмета; у замка — текстура его содержимого. */
+  private textureFor(e: Entity) {
+    const art = this.options.art;
+    if (!art) return null;
+    if (e.kind === 'generator')
+      return art.texture({ kind: 'generator', generator: e.generator, level: e.level });
+    return art.texture({ kind: 'item', chain: e.chain, level: e.level });
   }
 
   private placeholderSpec(e: Entity, state: GameState): PlaceholderSpec {

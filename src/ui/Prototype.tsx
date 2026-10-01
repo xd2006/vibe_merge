@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GameConfig } from '@/config';
 import type { Cell, Entity } from '@/core';
 import { t } from '@/i18n/ru';
-import { BoardView, type BoardUi } from '@/render';
+import { ArtLibrary, BoardView, type BoardUi } from '@/render';
 import { exposeDebugHook } from './debug';
 import { EnergyBar, HardBalance, LevelProgress, RejectionToast } from './Hud';
 import { MetricsSheet } from './MetricsSheet';
@@ -70,17 +70,23 @@ export function Prototype({ config, onExit }: { config: GameConfig; onExit?: () 
       setSelectedUid(entity.uid);
     };
 
-    void BoardView.create(host, {
-      rules: session.engine.rules,
-      onCommand: (c) => session.dispatch(c),
-      onTap,
-      dark: window.matchMedia('(prefers-color-scheme: dark)').matches,
-    }).then((v) => {
-      // StrictMode монтирует эффект дважды: первую доску уничтожаем, как только она создастся.
-      if (cancelled) return v.destroy();
-      view.current = v;
-      v.update(session.state, uiRef.current);
-    });
+    // Сначала арт (если есть), затем доска: без арта предметы рисуются плейсхолдерами.
+    void ArtLibrary.load(config)
+      .then((art) =>
+        BoardView.create(host, {
+          rules: session.engine.rules,
+          onCommand: (c) => session.dispatch(c),
+          onTap,
+          dark: window.matchMedia('(prefers-color-scheme: dark)').matches,
+          art,
+        }),
+      )
+      .then((v) => {
+        // StrictMode монтирует эффект дважды: первую доску уничтожаем, как только она создастся.
+        if (cancelled) return v.destroy();
+        view.current = v;
+        v.update(session.state, uiRef.current);
+      });
 
     let lastSave = Date.now();
     const save = () => {

@@ -1,9 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import { artDevServer } from './scripts/art/devPlugin';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), artDevServer()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
@@ -15,7 +16,7 @@ export default defineConfig({
     target: ['es2020', 'chrome83'],
   },
   test: {
-    include: ['src/**/*.test.ts', 'tests/unit/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'tests/unit/**/*.test.ts', 'scripts/**/*.test.ts'],
     environment: 'node',
   },
 });

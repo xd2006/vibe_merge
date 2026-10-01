@@ -348,6 +348,11 @@ body {
   margin-right: auto;
 }
 
+.toolbar .btn {
+  white-space: nowrap;
+  padding: 6px 10px;
+}
+
 /* ---------- Метрики ---------- */
 
 .check {

@@ -1,4 +1,4 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, type Texture } from 'pixi.js';
 
 /** Стабильный оттенок по строке: у каждой цепочки и генератора свой цвет. */
 export function hueOf(id: string): number {
@@ -52,7 +52,11 @@ function padlock(size: number, color: number): Graphics {
  * тем насыщеннее цвет. Генератор — тёмная плашка с цветной рамкой. Запечатанный замок —
  * серая плашка с замком; открытый для слияния — полупрозрачное содержимое с замком.
  */
-export function createPlaceholder(spec: PlaceholderSpec, size: number): PlaceholderView {
+export function createPlaceholder(
+  spec: PlaceholderSpec,
+  size: number,
+  texture: Texture | null = null,
+): PlaceholderView {
   const root = new Container();
   const pad = Math.max(2, size * 0.06);
   const inner = size - pad * 2;
@@ -71,17 +75,26 @@ export function createPlaceholder(spec: PlaceholderSpec, size: number): Placehol
 
   const content = new Container();
   root.addChild(content);
-  const bg = new Graphics();
-  if (isGenerator) {
-    bg.roundRect(-inner / 2, -inner / 2, inner, inner, radius)
-      .fill(hsl(hue, 35, 22))
-      .stroke({ width: Math.max(2, size * 0.06), color: hsl(hue, 70, 55) });
+  if (texture) {
+    // Арт вместо плашки: вписывается в клетку с полем, название не нужно — его видно на картинке.
+    const sprite = new Sprite(texture);
+    sprite.anchor.set(0.5);
+    const scale = inner / Math.max(texture.width, texture.height);
+    sprite.scale.set(scale);
+    content.addChild(sprite);
   } else {
-    bg.roundRect(-inner / 2, -inner / 2, inner, inner, radius).fill(
-      hsl(hue, 45 + 40 * t, 78 - 30 * t),
-    );
+    const bg = new Graphics();
+    if (isGenerator) {
+      bg.roundRect(-inner / 2, -inner / 2, inner, inner, radius)
+        .fill(hsl(hue, 35, 22))
+        .stroke({ width: Math.max(2, size * 0.06), color: hsl(hue, 70, 55) });
+    } else {
+      bg.roundRect(-inner / 2, -inner / 2, inner, inner, radius).fill(
+        hsl(hue, 45 + 40 * t, 78 - 30 * t),
+      );
+    }
+    content.addChild(bg);
   }
-  content.addChild(bg);
 
   const label = new Text({
     text: spec.name,
@@ -100,7 +113,8 @@ export function createPlaceholder(spec: PlaceholderSpec, size: number): Placehol
   const maxLabelWidth = inner - pad;
   if (label.width > maxLabelWidth) label.scale.set(maxLabelWidth / label.width);
   label.y = -size * 0.04;
-  content.addChild(label);
+  if (!texture) content.addChild(label);
+  else label.destroy();
 
   const badgeR = size * 0.14;
   const bx = inner / 2 - badgeR * 0.9;

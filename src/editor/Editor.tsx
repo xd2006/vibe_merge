@@ -4,6 +4,7 @@ import type { GameConfig } from '@/config';
 import { t } from '@/i18n/ru';
 import { downloadText, readFileText, safeFileName } from '@/platform';
 import { validateText } from '@/validator';
+import { ArtPanel } from './ArtPanel';
 import { BlockForm, issuesToErrorSchema, pathSegments } from './BlockForm';
 import { BoardEditor } from './BoardEditor';
 import { PRESETS, toText, useDraft } from './draft';
@@ -187,6 +188,13 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
         </nav>
         <section className="editor-form" data-testid="form" aria-disabled={disabled}>
           {disabled && <div className="form-blocked">{t('editor.jsonInvalid')}</div>}
+          {tab === 'art' && (
+            <ArtPanel
+              config={validation.ok ? validation.config : null}
+              raw={asObj(config.art)}
+              onArtChange={(art) => setBlock('art', art)}
+            />
+          )}
           {tab === 'board' ? (
             <>
               <BoardEditor board={asObj(config.board)} onChange={(b) => setBlock('board', b)} />

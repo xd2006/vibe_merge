@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "items": {
+    "1d898833": {
+      "file": "1d898833.png",
+      "key": "stone:2",
+      "name": "Булыжник",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.089Z"
+    },
+    "2d7cbd11": {
+      "file": "2d7cbd11.png",
+      "key": "wood:3",
+      "name": "Брус",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.134Z"
+    },
+    "55b7e703": {
+      "file": "55b7e703.png",
+      "key": "stone:4",
+      "name": "Колонна",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.110Z"
+    },
+    "6097c4b6": {
+      "file": "6097c4b6.png",
+      "key": "wood:2",
+      "name": "Доска",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.126Z"
+    },
+    "843a514c": {
+      "file": "843a514c.png",
+      "key": "wood:5",
+      "name": "Изба",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.153Z"
+    },
+    "875f72fb": {
+      "file": "875f72fb.png",
+      "key": "stone:1",
+      "name": "Камешек",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.076Z"
+    },
+    "8a0ed858": {
+      "file": "8a0ed858.png",
+      "key": "generator.quarry:1",
+      "name": "Карьер",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.035Z"
+    },
+    "9c35656f": {
+      "file": "9c35656f.png",
+      "key": "wood:1",
+      "name": "Ветка",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:49:53.089Z"
+    },
+    "ae25eab1": {
+      "file": "ae25eab1.png",
+      "key": "generator.sawmill:1",
+      "name": "Лесопилка",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.051Z"
+    },
+    "b148ebad": {
+      "file": "b148ebad.png",
+      "key": "generator.sawmill:2",
+      "name": "Большая лесопилка",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.063Z"
+    },
+    "db171654": {
+      "file": "db171654.png",
+      "key": "wood:4",
+      "name": "Сруб",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.143Z"
+    },
+    "e4d995e7": {
+      "file": "e4d995e7.png",
+      "key": "stone:3",
+      "name": "Блок",
+      "source": "manual",
+      "size": 256,
+      "createdAt": "2026-10-01T12:45:43.099Z"
+    }
+  }
+}

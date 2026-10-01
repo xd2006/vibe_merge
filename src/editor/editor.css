@@ -352,3 +352,70 @@
 .editor-form .array-item-toolbox .btn-group {
   flex-wrap: nowrap;
 }
+
+/* ---------- Арт ---------- */
+
+.art-panel {
+  margin-bottom: 16px;
+}
+
+.art-panel h3 {
+  margin: 0 0 4px;
+}
+
+.art-global {
+  display: block;
+  margin: 8px 0;
+}
+
+.art-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.art-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.art-thumb {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: repeating-conic-gradient(#ddd 0 25%, #fff 0 50%) 0 0 / 12px 12px;
+  color: #666;
+  font-weight: 700;
+}
+
+.art-thumb img {
+  max-width: 52px;
+  max-height: 52px;
+}
+
+.art-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.art-controls select {
+  width: auto !important;
+}
+
+.art-msg {
+  font-size: 0.85rem;
+  color: var(--ok);
+}
+
+.art-msg-error {
+  color: var(--danger);
+}

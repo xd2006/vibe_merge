@@ -5,5 +5,5 @@
     "lib": ["ES2023"],
     "types": []
   },
-  "include": ["src/core", "src/expr", "src/config", "src/validator", "src/telemetry"]
+  "include": ["src/core", "src/expr", "src/config", "src/validator", "src/telemetry", "src/art"]
 }

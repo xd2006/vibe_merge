@@ -30,6 +30,8 @@ Android: Gradle 8.14 из шаблона Capacitor 8 требует **JDK 21** (
 
 Валидатор (`src/validator`) — единственное место проверок конфига для пользователя: схема Zod + логические проверки с путём, текстом и подсказкой. `compileRules` в ядре бросает `ConfigError` только как страховка. Новая проверка = код в `checks.ts` + строки `val.*`/`hint.*` в `ru.ts` + случай в `validator.test.ts`.
 
+Арт: `npm run art:prompts [конфиг]` (art-pack/), `npm run art:import <папка> [конфиг]`, `npm run art:bake [конфиг] [--only ключ] [--force] [--model id]`; конфиг по умолчанию `presets/demo.json`. Общая логика (список предметов, промпты, id ассета) — `src/art` (логический модуль); постобработка, Gemini, хранилище — `scripts/art/lib`. Ассеты: `public/art/<id>.png` + `index.json`. Ключ — `GEMINI_API_KEY` в `.env` (gitignored, в сборку не попадает: Vite отдаёт клиенту только `VITE_*`). Эндпоинты редактора `/__art/generate|import` — плагин `scripts/art/devPlugin.ts`, только в dev. Не писать here-string с `/**` или `/>` в PowerShell-командах: защита принимает их за пути; временные скрипты — отдельными файлами.
+
 Схема и форма редактора: поля-формулы помечены `format: 'formula'`, ссылки на id — `chainRef`/`generatorRef`/`lockGroupRef`/`templateRef` (через `.meta()` в `src/config/schema.ts`); русские подписи полей — `src/editor/labels.ts`.
 
 ## Структура
