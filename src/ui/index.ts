@@ -1,2 +1,3 @@
 /** React HUD прототипа: энергия, заказы, хранилище, валюта, действия, читы, метрики. */
-export {};
+export { Prototype } from './Prototype';
+export { GameSession } from './session';

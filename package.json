@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build:web": "vite build",
+    "build:android": "tsx scripts/build-android.ts",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.logic.json && tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "lint": "eslint .",
@@ -17,13 +18,20 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "schema": "tsx scripts/schema.ts",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm run test"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "immer": "^11.1.18",
+    "pixi.js": "^8.21.0",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.3",
@@ -35,6 +43,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
     "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.0",
     "vite": "^8.3.1",

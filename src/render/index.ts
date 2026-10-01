@@ -1,2 +1,2 @@
 /** PixiJS-рендер доски: перетаскивание и тап, плейсхолдеры, загрузка ассетов. */
-export {};
+export { BoardView, type BoardViewOptions } from './BoardView';

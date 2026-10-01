@@ -9,6 +9,11 @@ export default defineConfig({
   },
   // Относительные пути нужны для Capacitor: веб-билд открывается из файлов приложения.
   base: './',
+  build: {
+    // Стоковый System WebView в Android 11 — Chromium 83; без обновления из Google Play
+    // новый синтаксис (??=, приватные методы и т. п.) в нём не разбирается.
+    target: ['es2020', 'chrome83'],
+  },
   test: {
     include: ['src/**/*.test.ts', 'tests/unit/**/*.test.ts'],
     environment: 'node',

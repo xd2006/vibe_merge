@@ -15,8 +15,14 @@
 | `npm run test:e2e`                    | Смоук в браузере (Playwright, Chromium)                                           |
 | `npm run build:web`                   | Статическая сборка в `dist/`                                                      |
 | `npm run format`                      | Форматирование Prettier                                                           |
+| `npm run schema`                      | JSON Schema конфига в `schema/game-config.schema.json`                            |
+| `npm run build:android`               | Веб-билд → `cap sync` → Gradle; debug APK в `dist/android/`                       |
 
-Окружение: Node 24 (`.nvmrc`). На машине разработчика git доступен только из SourceTree; Android-сборка требует Android Studio (JDK 21 + SDK).
+Окружение: Node 24 (`.nvmrc`). На машине разработчика git доступен только из SourceTree.
+
+Android: Gradle 8.14 из шаблона Capacitor 8 требует **JDK 21** (`JAVA_HOME`; JDK 25 из Android Studio и системная Java 26 не подходят) и `ANDROID_HOME`. Эмуляторы: `Pixel_API_30` (Android 11, WebView 83 — минимальная версия по ТЗ) и `Pixel_7` (Android 17). Проверка на эмуляторе: `adb install -r dist/android/merge-prototype-debug.apk`, `adb shell am start -n com.vibemerge.prototype/.MainActivity`, ввод — `adb shell input tap/swipe`, снимок — `adb shell screencap -p /sdcard/s.png` + `adb pull`. Веб-билд нацелен на Chromium 83: не использовать CSS `dvh`, `color-mix`, flex `gap` без фоллбэков.
+
+Отладка в dev-сборке: `window.__vibeMerge` (сессия и `cells()`), используется e2e-тестами.
 
 ## Структура
 

@@ -1,0 +1,207 @@
+{
+  "$schema": "../schema/game-config.schema.json",
+  "meta": {
+    "name": "Демо: Лесопилка и карьер",
+    "seed": 20260928,
+    "artStyle": "cozy cartoon, soft shading, centered object"
+  },
+  "currencies": { "hard": { "name": "Гемы", "start": 5 } },
+  "energy": {
+    "max": 100,
+    "start": 100,
+    "regen": { "amount": 1, "intervalSec": 60 },
+    "allowOverMax": true
+  },
+  "chains": [
+    {
+      "id": "wood",
+      "name": "Дерево",
+      "value": "2 ^ level",
+      "levels": [
+        { "name": "Ветка" },
+        { "name": "Доска" },
+        { "name": "Брус" },
+        { "name": "Сруб" },
+        { "name": "Изба" }
+      ]
+    },
+    {
+      "id": "stone",
+      "name": "Камень",
+      "value": "3 * 2 ^ (level - 1)",
+      "levels": [
+        { "name": "Камешек" },
+        { "name": "Булыжник" },
+        { "name": "Блок" },
+        { "name": "Колонна" }
+      ]
+    }
+  ],
+  "generators": [
+    {
+      "id": "sawmill",
+      "name": "Лесопилка",
+      "levels": [
+        {
+          "energyCost": 1,
+          "cooldown": { "charges": 12, "seconds": 120 },
+          "produces": [
+            { "chain": "wood", "level": 1, "weight": 80 },
+            { "chain": "wood", "level": 2, "weight": 20 }
+          ]
+        },
+        {
+          "name": "Большая лесопилка",
+          "energyCost": 1,
+          "cooldown": { "charges": 20, "seconds": 90 },
+          "produces": [
+            { "chain": "wood", "level": 2, "weight": 70 },
+            { "chain": "wood", "level": 3, "weight": 30 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quarry",
+      "name": "Карьер",
+      "levels": [
+        {
+          "energyCost": 2,
+          "produces": [
+            { "chain": "stone", "level": 1, "weight": 90 },
+            { "chain": "stone", "level": 2, "weight": 10 }
+          ]
+        }
+      ]
+    }
+  ],
+  "board": {
+    "width": 7,
+    "height": 9,
+    "legend": {
+      ".": null,
+      "S": { "generator": "sawmill", "level": 1 },
+      "Q": { "generator": "quarry", "level": 1 },
+      "w": { "item": "wood", "level": 1 },
+      "W": { "item": "wood", "level": 2 },
+      "s": { "item": "stone", "level": 1 }
+    },
+    "layout": [
+      ".......",
+      ".......",
+      ".S...Q.",
+      ".......",
+      "ww.ss..",
+      "W......",
+      ".......",
+      "......S",
+      "......."
+    ],
+    "locks": [
+      {
+        "group": "zone2",
+        "cells": [
+          [0, 0],
+          [1, 0],
+          [2, 0]
+        ],
+        "content": { "item": "wood", "level": 2 }
+      }
+    ]
+  },
+  "levels": [
+    { "id": 1, "ordersRequired": 5, "unlocks": [], "reward": [{ "type": "hard", "amount": 10 }] },
+    { "id": 2, "ordersRequired": 8, "unlocks": ["zone2"], "orderLevelCap": { "wood": 4 } }
+  ],
+  "orders": {
+    "slots": 3,
+    "refillDelaySec": 5,
+    "allowFromStorage": false,
+    "fallbackTemplate": "small",
+    "reachability": {
+      "mode": "auto",
+      "maxMergeDepth": 3,
+      "countSources": ["generator", "lockedCellsAfterUnlock"],
+      "onNoValidTemplate": "fallbackTemplate"
+    },
+    "templates": [
+      {
+        "id": "small",
+        "weight": 70,
+        "boardLevels": [1, 5],
+        "maxRequirements": 2,
+        "requirements": [{ "chain": "wood", "levelRange": [2, 3], "count": [1, 2] }],
+        "rewards": [{ "type": "energy", "amount": "ceil(totalValue * 0.5)" }]
+      },
+      {
+        "id": "big",
+        "weight": 30,
+        "boardLevels": [2, 99],
+        "maxRequirements": 3,
+        "requirements": [
+          { "chain": "wood", "level": 3, "count": [2, 3] },
+          { "chain": "stone", "levelRange": [2, 3], "count": 1 }
+        ],
+        "rewards": [
+          { "type": "hard", "amount": 2 },
+          { "type": "item", "chain": "wood", "level": 2, "count": 1 }
+        ]
+      }
+    ]
+  },
+  "bubbles": {
+    "spawnRules": [
+      { "source": "generator", "chance": 0.1, "lifetimeSec": 120, "onExpire": "vanish" },
+      {
+        "source": "timer",
+        "everySec": 90,
+        "maxOnBoard": 2,
+        "lifetimeSec": { "min": 60, "max": 180 },
+        "onExpire": "vanish",
+        "content": [{ "chain": "wood", "levelRange": [2, 3], "weight": 1 }]
+      }
+    ],
+    "popCost": { "currency": "hard", "formula": "ceil(itemValue / 2)" }
+  },
+  "storage": { "enabled": true, "returnToBoard": true },
+  "itemActions": [
+    { "match": "generator.sawmill", "pickUp": true, "delete": false },
+    {
+      "match": "wood.*",
+      "pickUp": true,
+      "delete": true,
+      "sell": { "currency": "hard", "amount": 0 }
+    },
+    { "match": "*", "pickUp": true, "delete": true }
+  ],
+  "cheats": {
+    "addHard": { "enabled": true, "amount": 100 },
+    "refillEnergy": { "enabled": true },
+    "skipLevel": { "enabled": true },
+    "skipTime": { "enabled": true, "minutes": [10, 60, 240] }
+  },
+  "telemetry": {
+    "counters": [
+      {
+        "id": "wood3_merged",
+        "name": "Брус слиянием",
+        "match": { "chain": "wood", "level": 3 },
+        "sources": ["merge"]
+      },
+      {
+        "id": "wood_any",
+        "name": "Любое дерево",
+        "match": { "chain": "wood", "levelRange": [1, 99] },
+        "sources": ["merge", "generator", "reward"]
+      }
+    ],
+    "energySpent": { "total": true, "byGenerator": true }
+  },
+  "art": {
+    "mode": "manual",
+    "chromaKey": "green",
+    "targetSizePx": 256,
+    "items": { "wood:2": { "mode": "manual" } },
+    "overrides": {}
+  }
+}
