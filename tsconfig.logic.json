@@ -1,0 +1,9 @@
+// Логические модули без DOM: обращение к window, document и т. п. здесь не скомпилируется.
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": []
+  },
+  "include": ["src/core", "src/expr", "src/config", "src/validator", "src/telemetry"]
+}
