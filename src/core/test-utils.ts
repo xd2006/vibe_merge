@@ -72,5 +72,7 @@ export function run(engine: ReturnType<typeof makeEngine>, state: GameState, com
 export function at(state: GameState, x: number, y: number): string {
   const e = entityAt(state.board, { x, y });
   if (!e) return '.';
-  return e.kind === 'item' ? `${e.chain}:${e.level}` : `${e.generator}:${e.level}`;
+  if (e.kind === 'item') return `${e.bubble ? 'bubble:' : ''}${e.chain}:${e.level}`;
+  if (e.kind === 'lock') return `lock:${e.chain}:${e.level}`;
+  return `${e.generator}:${e.level}`;
 }

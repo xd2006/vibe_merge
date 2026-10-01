@@ -1,2 +1,2 @@
 /** Платформенные сервисы: хранение (IndexedDB или Capacitor), «Поделиться», работа с файлами. */
-export {};
+export { readJSON, removeKey, writeJSON } from './storage';

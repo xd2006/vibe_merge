@@ -1,4 +1,4 @@
-import { Application, Container, type FederatedPointerEvent } from 'pixi.js';
+import { Application, Container, Graphics, type FederatedPointerEvent } from 'pixi.js';
 import {
   cellOf,
   entityAt,
@@ -10,19 +10,35 @@ import {
   type Rules,
 } from '@/core';
 import { formatDuration } from '@/i18n/ru';
-import { createCellBackground, createPlaceholder, type PlaceholderView } from './placeholder';
+import {
+  createCellBackground,
+  createPlaceholder,
+  type PlaceholderSpec,
+  type PlaceholderView,
+} from './placeholder';
 
 export interface BoardViewOptions {
   rules: Rules;
-  /** Команда игрока; доска не меняет состояние сама, только отправляет команды. */
+  /** Перенос предмета; доска не меняет состояние сама, только отправляет команды. */
   onCommand: (command: Command) => void;
+  /** Тап по клетке (без перетаскивания), в том числе по пустой. */
+  onTap: (cell: Cell, entity: Entity | null) => void;
   dark?: boolean;
+}
+
+/** Что показать поверх состояния: выделение и режим выбора клетки. */
+export interface BoardUi {
+  selectedUid: number | null;
+  /** Подсветить свободные клетки (возврат предмета из хранилища). */
+  highlightFree: boolean;
 }
 
 interface Sprite {
   entity: Entity;
+  /** Внешний вид; при смене (лопнул пузырь, замок стал открываемым) спрайт пересоздаётся. */
+  look: string;
   view: PlaceholderView;
-  /** Куда сприт плавно едет: центр клетки. */
+  /** Куда спрайт плавно едет: центр клетки. */
   target: { x: number; y: number };
 }
 
@@ -36,13 +52,16 @@ const DRAG_THRESHOLD = 8;
 export class BoardView {
   private readonly app = new Application();
   private readonly cellsLayer = new Container();
+  private readonly hintLayer = new Container();
   private readonly entityLayer = new Container();
+  private readonly selection = new Graphics();
   private readonly sprites = new Map<number, Sprite>();
   private state: GameState | null = null;
+  private ui: BoardUi = { selectedUid: null, highlightFree: false };
   private cellSize = 0;
   private origin = { x: 0, y: 0 };
   private press: {
-    uid: number;
+    uid: number | null;
     cell: Cell;
     start: { x: number; y: number };
     dragging: boolean;
@@ -65,7 +84,7 @@ export class BoardView {
       preference: 'webgl',
     });
     host.appendChild(view.app.canvas);
-    view.app.stage.addChild(view.cellsLayer, view.entityLayer);
+    view.app.stage.addChild(view.cellsLayer, view.hintLayer, view.entityLayer, view.selection);
     view.entityLayer.sortableChildren = true;
     view.bindInput();
     view.app.renderer.on('resize', () => view.relayout());
@@ -74,9 +93,13 @@ export class BoardView {
     return view;
   }
 
-  update(state: GameState): void {
+  update(state: GameState, ui: BoardUi): void {
+    const hintChanged =
+      ui.highlightFree !== this.ui.highlightFree || state.board !== this.state?.board;
     this.state = state;
+    this.ui = ui;
     this.sync();
+    if (hintChanged) this.drawHints();
   }
 
   destroy(): void {
@@ -111,6 +134,7 @@ export class BoardView {
     for (const s of this.sprites.values()) s.view.root.destroy({ children: true });
     this.sprites.clear();
     this.sync(true);
+    this.drawHints();
   }
 
   private cellCenter(c: Cell) {
@@ -135,17 +159,26 @@ export class BoardView {
     const state = this.state;
     if (!state || this.destroyed || this.cellSize <= 0) return;
     const seen = new Set<number>();
+    let selectedCenter: { x: number; y: number } | null = null;
     state.board.cells.forEach((entity, i) => {
       if (!entity) return;
       seen.add(entity.uid);
       const center = this.cellCenter(cellOf(state.board, i));
+      if (entity.uid === this.ui.selectedUid) selectedCenter = center;
+      const spec = this.placeholderSpec(entity, state);
+      const look = JSON.stringify(spec);
       let sprite = this.sprites.get(entity.uid);
+      if (sprite && sprite.look !== look) {
+        // Внешний вид поменялся — новый плейсхолдер на месте старого.
+        const { x, y } = sprite.view.root.position;
+        sprite.view.root.destroy({ children: true });
+        sprite.view = createPlaceholder(spec, this.cellSize);
+        sprite.view.root.position.set(x, y);
+        sprite.look = look;
+        this.entityLayer.addChild(sprite.view.root);
+      }
       if (!sprite) {
-        sprite = {
-          entity,
-          view: createPlaceholder(this.placeholderSpec(entity), this.cellSize),
-          target: center,
-        };
+        sprite = { entity, look, view: createPlaceholder(spec, this.cellSize), target: center };
         sprite.view.root.position.set(center.x, center.y);
         // Появление: предмет «выпрыгивает» из маленького размера.
         sprite.view.root.scale.set(instant ? 1 : 0.3);
@@ -154,48 +187,92 @@ export class BoardView {
       }
       sprite.entity = entity;
       sprite.target = center;
-      this.updateCooldown(sprite, state);
+      this.updateTimer(sprite, state);
     });
     for (const [uid, sprite] of this.sprites) {
       if (seen.has(uid)) continue;
       sprite.view.root.destroy({ children: true });
       this.sprites.delete(uid);
     }
+    this.drawSelection(selectedCenter);
   }
 
-  private placeholderSpec(e: Entity) {
+  private placeholderSpec(e: Entity, state: GameState): PlaceholderSpec {
     const { chains, generators } = this.options.rules;
-    if (e.kind === 'item') {
-      const chain = chains.get(e.chain)!;
+    if (e.kind === 'generator') {
+      const gen = generators.get(e.generator)!;
       return {
-        colorKey: e.chain,
-        name: chain.levelNames[e.level - 1] ?? chain.name,
+        colorKey: e.generator,
+        name: gen.levels[e.level - 1]?.name ?? gen.name,
         level: e.level,
-        maxLevel: chain.maxLevel,
-        isGenerator: false,
+        maxLevel: gen.maxLevel,
+        variant: 'generator',
+        bubble: false,
       };
     }
-    const gen = generators.get(e.generator)!;
+    const chain = chains.get(e.chain)!;
     return {
-      colorKey: e.generator,
-      name: gen.levels[e.level - 1]?.name ?? gen.name,
+      colorKey: e.chain,
+      name: chain.levelNames[e.level - 1] ?? chain.name,
       level: e.level,
-      maxLevel: gen.maxLevel,
-      isGenerator: true,
+      maxLevel: chain.maxLevel,
+      variant:
+        e.kind === 'item'
+          ? 'item'
+          : state.lockGroups[e.group] === 'unlockable'
+            ? 'lockUnlockable'
+            : 'lockSealed',
+      bubble: e.kind === 'item' && !!e.bubble,
     };
   }
 
-  private updateCooldown(sprite: Sprite, state: GameState) {
-    const cd = sprite.view.cooldown;
-    if (!cd || sprite.entity.kind !== 'generator') return;
-    const until = sprite.entity.cooldownUntil;
-    const active = until !== null;
-    cd.overlay.visible = active;
-    cd.label.visible = active;
-    if (active) {
+  private updateTimer(sprite: Sprite, state: GameState) {
+    const { timer, overlay } = sprite.view;
+    if (!timer) return;
+    const e = sprite.entity;
+    const until =
+      e.kind === 'generator'
+        ? e.cooldownUntil
+        : e.kind === 'item'
+          ? (e.bubble?.expiresAt ?? null)
+          : null;
+    timer.visible = until !== null;
+    if (overlay) overlay.visible = until !== null;
+    if (until !== null) {
       const text = formatDuration(until - state.nowMs);
-      if (cd.label.text !== text) cd.label.text = text;
+      if (timer.text !== text) timer.text = text;
     }
+  }
+
+  private drawSelection(center: { x: number; y: number } | null) {
+    this.selection.clear();
+    if (!center) return;
+    const half = this.cellSize / 2;
+    this.selection
+      .roundRect(
+        center.x - half + 1,
+        center.y - half + 1,
+        this.cellSize - 2,
+        this.cellSize - 2,
+        this.cellSize * 0.16,
+      )
+      .stroke({ width: Math.max(2, this.cellSize * 0.05), color: 0xe8a317 });
+  }
+
+  private drawHints() {
+    this.hintLayer.removeChildren().forEach((c) => c.destroy());
+    const state = this.state;
+    if (!state || !this.ui.highlightFree) return;
+    const pad = Math.max(1, this.cellSize * 0.03);
+    state.board.cells.forEach((e, i) => {
+      if (e) return;
+      const { x, y } = cellOf(state.board, i);
+      const g = new Graphics()
+        .roundRect(pad, pad, this.cellSize - pad * 2, this.cellSize - pad * 2, this.cellSize * 0.14)
+        .fill({ color: 0x6fcf97, alpha: 0.35 });
+      g.position.set(this.origin.x + x * this.cellSize, this.origin.y + y * this.cellSize);
+      this.hintLayer.addChild(g);
+    });
   }
 
   private animate(deltaMs: number) {
@@ -222,14 +299,18 @@ export class BoardView {
     stage.on('pointerupoutside', () => this.onUp());
   }
 
+  /** Перетаскивать можно обычные предметы и генераторы; замки и пузыри — нет. */
+  private static draggable(e: Entity | null): boolean {
+    return !!e && (e.kind === 'generator' || (e.kind === 'item' && !e.bubble));
+  }
+
   private onDown(e: FederatedPointerEvent) {
     if (!this.state || this.press) return;
     const cell = this.cellAt(e.global);
     if (!cell) return;
     const entity = entityAt(this.state.board, cell);
-    if (!entity) return;
     this.press = {
-      uid: entity.uid,
+      uid: BoardView.draggable(entity) ? entity!.uid : null,
       cell,
       start: { x: e.global.x, y: e.global.y },
       dragging: false,
@@ -238,7 +319,7 @@ export class BoardView {
 
   private onMove(e: FederatedPointerEvent) {
     const press = this.press;
-    if (!press) return;
+    if (!press || press.uid === null) return;
     const sprite = this.sprites.get(press.uid);
     if (!sprite) return;
     if (!press.dragging) {
@@ -255,21 +336,19 @@ export class BoardView {
     const press = this.press;
     this.press = null;
     if (!press || !this.state) return;
-    const sprite = this.sprites.get(press.uid);
+    const sprite = press.uid === null ? undefined : this.sprites.get(press.uid);
     if (sprite) {
       sprite.view.root.zIndex = 0;
       sprite.view.root.scale.set(1);
     }
     if (!press.dragging) {
-      if (sprite?.entity.kind === 'generator') {
-        this.options.onCommand({ type: 'tapGenerator', at: press.cell });
-      }
+      this.options.onTap(press.cell, entityAt(this.state.board, press.cell));
       return;
     }
     const target = sprite ? this.cellAt(sprite.view.root.position) : null;
     if (target && (target.x !== press.cell.x || target.y !== press.cell.y)) {
       this.options.onCommand({ type: 'move', from: press.cell, to: target });
     }
-    // Если перенос отклонён или цель вне доски, сприт сам вернётся в свою клетку.
+    // Если перенос отклонён или цель вне доски, спрайт сам вернётся в свою клетку.
   }
 }

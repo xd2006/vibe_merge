@@ -17,7 +17,11 @@ export function exposeDebugHook(session: GameSession): () => void {
         if (!e) return;
         const { x, y } = cellOf(board, i);
         out[`${x},${y}`] =
-          e.kind === 'item' ? `${e.chain}:${e.level}` : `${e.generator}:${e.level}`;
+          e.kind === 'item'
+            ? `${e.bubble ? 'bubble:' : ''}${e.chain}:${e.level}`
+            : e.kind === 'lock'
+              ? `lock:${e.chain}:${e.level}`
+              : `${e.generator}:${e.level}`;
       });
       return out;
     },

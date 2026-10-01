@@ -1,9 +1,16 @@
+/*
+ * Совместимость: стоковый WebView Android 11 — Chromium 83. Не используем flex gap (84+),
+ * dvh без фоллбэка (108+), color-mix (111+). Для сеток — grid gap (поддерживается).
+ */
 :root {
   --bg: #f6f3ec;
   --fg: #1d1d1f;
   --muted: #6b6b70;
   --panel: #ffffff;
+  --line: rgba(128, 128, 128, 0.25);
   --accent: #e8a317;
+  --ok: #2f9e5b;
+  --danger: #c2413b;
   font-family: system-ui, sans-serif;
   color-scheme: light dark;
 }
@@ -14,6 +21,7 @@
     --fg: #ececf0;
     --muted: #9a9aa2;
     --panel: #22252b;
+    --ok: #5cc98a;
   }
 }
 
@@ -50,29 +58,34 @@ body {
 .prototype {
   display: flex;
   flex-direction: column;
-  /* vh — для WebView без поддержки dvh (Chromium < 108). */
+  /* vh — для WebView без поддержки dvh. */
   height: 100vh;
   height: 100dvh;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
     env(safe-area-inset-left);
 }
 
+/* ---------- HUD ---------- */
+
 .hud {
-  display: flex;
-  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  column-gap: 16px;
+  row-gap: 4px;
+  align-items: baseline;
+  padding: 8px 16px;
   background: var(--panel);
-  border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+  border-bottom: 1px solid var(--line);
 }
 
-.hud-energy {
+.hud-item {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
 }
 
-/* Отступы через margin: flex gap нет в WebView Android 11 (Chromium 83). */
-.hud-energy > * + * {
-  margin-left: 8px;
+.hud-item > * + * {
+  margin-left: 6px;
 }
 
 .hud-label {
@@ -80,15 +93,114 @@ body {
 }
 
 .hud-value {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-variant-numeric: tabular-nums;
 }
 
 .hud-sub {
   color: var(--muted);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-variant-numeric: tabular-nums;
 }
+
+@media (max-width: 480px) {
+  .hud {
+    grid-template-columns: auto 1fr;
+  }
+  .hud-label {
+    font-size: 0;
+  }
+  .hud-label::first-letter {
+    font-size: 1rem;
+  }
+}
+
+/* ---------- Заказы ---------- */
+
+.orders {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 16px;
+}
+
+.orders-error {
+  display: block;
+  color: var(--danger);
+}
+
+.order {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+.order > * + * {
+  margin-top: 6px;
+}
+
+.order-empty {
+  justify-content: center;
+  color: var(--muted);
+  text-align: center;
+}
+
+.order-reqs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.req {
+  display: flex;
+  justify-content: space-between;
+}
+
+.req-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.req-name small {
+  color: var(--muted);
+}
+
+.req-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.req-ok .req-count {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.order-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 4px 0 0 -4px;
+}
+
+.chip {
+  margin: 0 0 4px 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg);
+  white-space: nowrap;
+}
+
+/* ---------- Доска ---------- */
 
 .board {
   flex: 1;
@@ -102,10 +214,140 @@ body {
   display: block;
 }
 
+/* ---------- Панель выбранного предмета и кнопки ---------- */
+
+.panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  min-height: 52px;
+  padding: 6px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+}
+
+.panel-hint {
+  background: #fff4d6;
+  color: #1d1d1f;
+}
+
+.panel-text {
+  margin: 4px 8px 4px 0;
+}
+
+.panel-actions > * + * {
+  margin-left: 8px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+}
+
+.toolbar > * + * {
+  margin-left: 8px;
+}
+
+.btn {
+  font: inherit;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1d1d1f;
+  font-weight: 600;
+}
+
+.btn-danger {
+  color: var(--danger);
+}
+
+/* ---------- Листы: хранилище и читы ---------- */
+
+.sheet-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 70vh;
+  overflow: auto;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+  border-radius: 16px 16px 0 0;
+  background: var(--panel);
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheet-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.stacks {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.stack {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.stack small {
+  color: var(--muted);
+}
+
+.stack-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.cheats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(24px + env(safe-area-inset-bottom));
+  bottom: calc(80px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
   width: max-content;
   max-width: calc(100% - 32px);

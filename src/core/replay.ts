@@ -11,15 +11,20 @@ export function stableStringify(value: unknown): string {
   return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableStringify(v)}`).join(',')}}`;
 }
 
-/** Хеш состояния партии (FNV-1a, 32 бита) для сравнения партий в тестах и отладке. */
-export function hashState(state: GameState): string {
-  const s = stableStringify(state);
+/** Хеш значения (FNV-1a, 32 бита) по его стабильному JSON. */
+export function hashValue(value: unknown): string {
+  const s = stableStringify(value);
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 0x01000193);
   }
   return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+/** Хеш состояния партии для сравнения партий в тестах и отладке. */
+export function hashState(state: GameState): string {
+  return hashValue(state);
 }
 
 export interface ReplayResult {

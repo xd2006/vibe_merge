@@ -26,20 +26,26 @@ export class GameSession {
   readonly log: Command[] = [];
   readonly events: GameEvent[] = [];
   lastRejection: Rejection | null = null;
+  /** Тип последней применённой команды — подписчики решают по нему, сохранять ли партию. */
+  lastCommandType: Command['type'] | null = null;
 
   private listeners = new Set<() => void>();
   private frame = 0;
   private lastFrameAt = 0;
   private carryMs = 0;
 
-  constructor(readonly config: GameConfig) {
+  constructor(
+    readonly config: GameConfig,
+    saved?: GameState,
+  ) {
     this.engine = createEngine(config);
-    this.state = this.engine.initialState();
+    this.state = saved ?? this.engine.initialState();
   }
 
   dispatch(command: Command): ApplyResult {
     const result = this.engine.apply(this.state, command);
     appendCommand(this.log, command);
+    this.lastCommandType = command.type;
     if (result.rejected) {
       this.lastRejection = { reason: result.rejected, seq: (this.lastRejection?.seq ?? 0) + 1 };
     } else {
@@ -55,6 +61,8 @@ export class GameSession {
     this.lastFrameAt = performance.now();
     const loop = (now: number) => {
       // Время передаётся целыми миллисекундами, дробный остаток копится до следующего кадра.
+      // Пока вкладка или приложение в фоне, кадров нет — первый кадр после возврата
+      // приносит всё прошедшее время одним тиком.
       const elapsed = now - this.lastFrameAt + this.carryMs;
       this.lastFrameAt = now;
       const dtMs = Math.floor(elapsed);
