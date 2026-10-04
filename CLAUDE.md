@@ -4,6 +4,7 @@
 
 - ТЗ: [docs/merge_framework.md](docs/merge_framework.md)
 - План реализации и статус этапов: [docs/mvp_plan.md](docs/mvp_plan.md). Раздел 1 плана имеет приоритет над ТЗ там, где они расходятся.
+- После MVP — доработки под фичу Spice merge (MyCafe): сравнение, решения и этапы S1–S6 — [docs/spice_merge_gap.md](docs/spice_merge_gap.md). Раздел 4 («Решения») имеет приоритет над спекой фичи.
 
 ## Команды
 
