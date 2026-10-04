@@ -6,67 +6,11 @@ import type { GameConfigInput } from '@/config';
 import { validateConfig } from '@/validator';
 import { isReachable, reachableNow } from '../reach';
 import { itemValue } from '../rules';
-import { baseConfig, makeEngine, run } from '../test-utils';
+import { baseConfig, fulfil, makeEngine, run, spiceConfig } from '../test-utils';
 import type { GameState } from '../types';
 
 type Engine = ReturnType<typeof makeEngine>;
 
-/** Специи 4 / 10 / 30, призовая цепочка, три уровня, три категории. */
-function spiceConfig(c: GameConfigInput): void {
-  c.chains = [
-    {
-      id: 'spice',
-      name: 'Специи',
-      levels: [
-        { name: 'Роза', collect: 'storage', value: 4 },
-        { name: 'Анис', collect: 'storage', value: 10 },
-        { name: 'Мускат', collect: 'storage', value: 30 },
-        { name: 'Пряность' },
-      ],
-    },
-    { id: 'prize', name: 'Приз', levels: [{ name: 'p1' }, { name: 'p2' }] },
-  ];
-  c.generators = [
-    {
-      id: 'saw',
-      name: 'Сад',
-      levels: [{ energyCost: 1, produces: [{ chain: 'spice', level: 1, weight: 1 }] }],
-    },
-  ];
-  c.board = {
-    width: 4,
-    height: 4,
-    legend: { '.': null, S: { generator: 'saw', level: 1 } },
-    layout: ['S...', '....', '....', '....'],
-  };
-  c.levels = [
-    { id: 1, ordersRequired: 1 },
-    { id: 2, ordersRequired: 1 },
-    { id: 3, ordersRequired: 5 },
-  ];
-  c.orders = {
-    mode: 'difficulty',
-    difficulty: {
-      categories: [
-        {
-          id: 'easy',
-          name: 'Лёгкий',
-          value: [8, 20],
-          rewards: [
-            { weight: 3, reward: { type: 'item', chain: 'prize', level: 1 } },
-            { weight: 1, reward: { type: 'item', chain: 'prize', level: 2 } },
-          ],
-        },
-        { id: 'medium', name: 'Средний', value: [21, 40] },
-        { id: 'hard', name: 'Сложный', value: [41, 90] },
-      ],
-      allocation: [
-        { fromLevel: 1, slots: { easy: 2, medium: 1 } },
-        { fromLevel: 2, slots: { easy: 1, medium: 2, hard: 1 } },
-      ],
-    },
-  };
-}
 const engine = (patch?: (c: GameConfigInput) => void) =>
   makeEngine((c) => {
     spiceConfig(c);
@@ -104,20 +48,6 @@ function expectValidOrders(e: Engine, s: GameState) {
       expect(isReachable(reach, r.chain, r.level)).toBe(true);
     }
   }
-}
-
-/** Кладёт на свободные клетки предметы заказа слота и сдаёт его. */
-function fulfil(e: Engine, s: GameState, slot: number): GameState {
-  const order = s.orders.slots[slot]!.order!;
-  const filled = produce(s, (d) => {
-    for (const r of order.requirements) {
-      for (let k = 0; k < r.count; k++) {
-        const i = d.board.cells.findIndex((c, idx) => c === null && !d.board.gates[idx]);
-        d.board.cells[i] = { uid: d.nextUid++, kind: 'item', chain: r.chain, level: r.level };
-      }
-    }
-  });
-  return run(e, filled, [{ type: 'deliverOrder', slot }]).state;
 }
 
 describe('заказы по сложности', () => {

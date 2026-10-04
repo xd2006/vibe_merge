@@ -110,6 +110,23 @@ export function exportCsv(config: GameConfig, sessions: readonly SessionRecord[]
       all.ordersCompleted,
       clean.ordersCompleted,
     ]);
+    if (config.orders.bonus) {
+      const names = {
+        created: 'Бонусных заказов появилось',
+        completed: 'Бонусных заказов сдано',
+        expired: 'Бонусных заказов исчезло',
+      };
+      for (const key of ['created', 'completed', 'expired'] as const) {
+        rows.push([
+          ...base,
+          'metric',
+          `bonus_orders_${key}`,
+          names[key],
+          all.bonusOrders[key],
+          clean.bonusOrders[key],
+        ]);
+      }
+    }
     rows.push([
       ...base,
       'metric',

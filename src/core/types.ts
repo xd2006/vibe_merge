@@ -107,11 +107,21 @@ export interface OrderSlot {
   category: string | null;
 }
 
+export interface BonusState {
+  /**
+   * Бонусный заказ появится, когда `level.totalOrdersDone` дойдёт до этого числа;
+   * `null` — бонусных заказов нет в конфиге.
+   */
+  dueAtOrders: number | null;
+  /** Текущий бонусный заказ: тир и когда исчезнет (игровое время, мс). */
+  active: { order: Order; tier: string; expiresAt: number } | null;
+}
+
 /** Состояние группы замков. Открытые клетки — обычные клетки, у группы отдельного статуса нет. */
 export type LockGroupState = 'sealed' | 'unlockable';
 
 export interface GameState {
-  version: 4;
+  version: 5;
   /** Игровое время с начала партии, мс. Меняется только командой `tick`. */
   nowMs: number;
   nextUid: number;
@@ -157,6 +167,7 @@ export interface GameState {
   };
   /** Время следующего появления пузыря по таймеру; индекс как в `rules.bubbles.timers`. */
   bubbleTimers: number[];
+  bonus: BonusState;
 }
 
 export type CheatCommand =
@@ -178,9 +189,10 @@ export type Command =
   | { type: 'itemAction'; at: Cell; action: ItemAction }
   | { type: 'returnFromStorage'; key: string; to: Cell }
   | { type: 'deliverOrder'; slot: number }
+  | { type: 'deliverBonus' }
   | CheatCommand;
 
-export type RewardSource = 'order' | 'level' | 'collect';
+export type RewardSource = 'order' | 'bonus' | 'level' | 'collect';
 
 export type SpawnSource = 'generator' | 'reward' | 'bubbleTimer' | 'bubbleMerge' | 'collect';
 
@@ -263,6 +275,23 @@ type EventBody =
       totalValue: number;
     }
   | { type: 'orders_stopped' }
+  | {
+      type: 'bonus_order_created';
+      orderId: number;
+      tier: string;
+      requirements: OrderRequirement[];
+      totalValue: number;
+      expiresAt: number;
+    }
+  | {
+      type: 'bonus_order_completed';
+      orderId: number;
+      tier: string;
+      requirements: OrderRequirement[];
+      rewards: ResolvedReward[];
+      totalValue: number;
+    }
+  | { type: 'bonus_order_expired'; orderId: number; tier: string }
   | { type: 'reward_granted'; reward: ResolvedReward; source: RewardSource }
   | { type: 'level_completed'; level: number; last: boolean }
   | { type: 'cheat_used'; name: CheatCommand['cheat']; amount?: number; minutes?: number };

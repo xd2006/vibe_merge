@@ -143,6 +143,8 @@ export const ru = {
     'Правило пузырей при слиянии задано повторно — действует только первое',
   'val.warnBubblesOff': 'bubbles.maxOnBoard = 0: пузыри не появятся, хотя правила заданы',
   'val.warnNoTemplate': 'На уровне {level} ни один шаблон заказов не проходит по достижимости',
+  'val.warnBonusTierUnreachable':
+    'Бонусный заказ «{tier}» ({min}–{max}) не собрать из специй, достижимых даже на последнем уровне',
   'val.warnCategoryUnreachable':
     'На уровне {level} заказ «{category}» ({min}–{max}) не собрать из достижимых специй',
   'val.warnLockNeverOpens': 'Группа замков «{group}» не открывается ни одним уровнем',
@@ -256,6 +258,7 @@ export const ru = {
   'orders.title': 'Заказы',
   'orders.deliver': 'Сдать',
   'orders.category': '{name} · {value}',
+  'orders.bonus': '★ Бонус: {name} · {time}',
   'orders.waiting': 'Новый заказ через {time}',
   'orders.pending': 'Нет подходящих заказов',
   'orders.stopped': 'Генерация заказов остановлена: нет подходящего шаблона',
@@ -305,6 +308,8 @@ export const ru = {
   'metrics.counters': 'Счётчики',
   'metrics.noCounters': 'Счётчики не заданы (telemetry.counters)',
   'metrics.orders': 'Выполнено заказов',
+  'metrics.bonus': 'Бонусные заказы',
+  'metrics.bonusValue': 'сдано {completed} из {created}, исчезло {expired}',
   'metrics.bubbles': 'Лопнуто пузырей',
   'metrics.hardSpent': 'Потрачено {currency}',
   'metrics.duration': 'Длительность сессии',

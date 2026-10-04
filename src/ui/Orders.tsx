@@ -17,6 +17,57 @@ function RewardChip({ reward, session }: { reward: ResolvedReward; session: Game
   );
 }
 
+/** Бонусный заказ: отдельная карточка с таймером первой в списке заказов. */
+function BonusOrderCard({ session }: { session: GameSession }) {
+  const rules = session.engine.rules;
+  const active = useSessionValue(session, (s) => s.state.bonus.active);
+  const leftSec = useSessionValue(session, (s) =>
+    s.state.bonus.active ? Math.ceil((s.state.bonus.active.expiresAt - s.state.nowMs) / 1000) : 0,
+  );
+  if (!active) return null;
+  const tier = rules.orders.bonus?.tiers.find((x) => x.id === active.tier);
+  const status = orderStatus(rules, session.state, active.order);
+  return (
+    <div className="order order-bonus" data-testid="bonus-order">
+      <div className="order-category order-category-bonus">
+        {t('orders.bonus', {
+          name: tier?.name ?? active.tier,
+          time: formatDuration(leftSec * 1000),
+        })}
+      </div>
+      <ul className="order-reqs">
+        {status.requirements.map((r) => (
+          <li
+            key={`${r.chain}:${r.level}`}
+            className={r.available >= r.count ? 'req req-ok' : 'req'}
+          >
+            <span className="req-name">
+              {itemName(rules, r.chain, r.level)}{' '}
+              <small>{t('item.level', { level: r.level })}</small>
+            </span>
+            <span className="req-count">
+              {Math.min(r.available, r.count)}/{r.count}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="order-rewards">
+        {active.order.rewards.map((rw, ri) => (
+          <RewardChip key={ri} reward={rw} session={session} />
+        ))}
+      </div>
+      <button
+        type="button"
+        className="btn btn-primary"
+        disabled={!status.ready}
+        onClick={() => session.dispatch({ type: 'deliverBonus' })}
+      >
+        {t('orders.deliver')}
+      </button>
+    </div>
+  );
+}
+
 /** Оттенок плашки категории: 0 — самая лёгкая, 3 — самая сложная (дальше — как 3). */
 function categoryTone(rules: GameSession['engine']['rules'], id: string): number {
   const i = rules.orders.difficulty?.categories.findIndex((c) => c.id === id) ?? 0;
@@ -41,6 +92,7 @@ export function OrdersBar({ session }: { session: GameSession }) {
 
   return (
     <section className="orders" aria-label={t('orders.title')}>
+      <BonusOrderCard session={session} />
       {orders.slots.map((slot, i) => {
         if (!slot.order) {
           const wait = waitSec[i];

@@ -115,6 +115,12 @@ export const FIELD_LABELS: Record<string, string> = {
   itemsPerOrder: 'Предметов в заказе [от, до]',
   allocation: 'Слоты категорий по уровням',
   fromLevel: 'С уровня (id)',
+  // Spice merge (этап S5)
+  bonus: 'Бонусный заказ',
+  afterOrders: 'Через сколько заказов [от, до]',
+  durationSec: 'Время на выполнение, с [от, до]',
+  requireOpenGenerators: 'Только когда все генераторы открыты',
+  tiers: 'Тиры',
 };
 
 /** Вкладки формы — верхнеуровневые блоки конфига. */

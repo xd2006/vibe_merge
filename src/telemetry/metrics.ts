@@ -15,6 +15,8 @@ export interface Metrics {
   energySpent: { total: number | null; byGenerator: Record<string, number> | null };
   counters: CounterValue[];
   ordersCompleted: number;
+  /** Бонусные заказы: появилось, сдано, исчезло по времени. */
+  bonusOrders: { created: number; completed: number; expired: number };
   bubblesPopped: number;
   /** Потраченная хард-валюта: лопание пузырей и пропуск кулдаунов. */
   hardSpent: number;
@@ -54,6 +56,7 @@ function produced(e: GameEvent): Produced[] {
     case 'bubble_popped':
       return [{ chain: e.chain, level: e.level, count: 1, source: 'bubblePop' }];
     case 'order_completed':
+    case 'bonus_order_completed':
       return e.requirements.map((r) => ({
         chain: r.chain,
         level: r.level,
@@ -88,6 +91,7 @@ export function computeMetrics(
     levelsCompleted: 0,
     cheatsUsed: 0,
   };
+  const bonusOrders = { created: 0, completed: 0, expired: 0 };
   const resourcesGained: Record<string, number> = Object.fromEntries(
     config.currencies.resources.map((r) => [r.id, 0]),
   );
@@ -102,6 +106,15 @@ export function computeMetrics(
         break;
       case 'order_completed':
         m.ordersCompleted++;
+        break;
+      case 'bonus_order_created':
+        bonusOrders.created++;
+        break;
+      case 'bonus_order_completed':
+        bonusOrders.completed++;
+        break;
+      case 'bonus_order_expired':
+        bonusOrders.expired++;
         break;
       case 'bubble_popped':
         m.bubblesPopped++;
@@ -144,6 +157,7 @@ export function computeMetrics(
     },
     counters: counters.map((c, i) => ({ id: c.id, name: c.name, value: values[i]! })),
     resourcesGained,
+    bonusOrders,
     ...m,
   };
 }

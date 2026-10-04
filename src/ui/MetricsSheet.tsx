@@ -70,6 +70,18 @@ export function MetricsSheet({
           ))}
         <dt>{t('metrics.orders')}</dt>
         <dd>{m.ordersCompleted}</dd>
+        {config.orders.bonus && (
+          <>
+            <dt>{t('metrics.bonus')}</dt>
+            <dd>
+              {t('metrics.bonusValue', {
+                completed: m.bonusOrders.completed,
+                created: m.bonusOrders.created,
+                expired: m.bonusOrders.expired,
+              })}
+            </dd>
+          </>
+        )}
         <dt>{t('metrics.bubbles')}</dt>
         <dd>{m.bubblesPopped}</dd>
         <dt>{t('metrics.hardSpent', { currency: config.currencies.hard.name })}</dt>

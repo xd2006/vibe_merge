@@ -1,4 +1,5 @@
 import type { Ctx } from '../context';
+import { expireBonus, maybeStartBonus } from './bonus';
 import { expireBubble, spawnTimerBubble } from './bubbles';
 import { regenStep } from './energy';
 import { endCooldown } from './generators';
@@ -17,6 +18,7 @@ const COOLDOWN = 1;
 const BUBBLE_EXPIRE = 2;
 const BUBBLE_SPAWN = 3;
 const ORDER_REFILL = 4;
+const BONUS_EXPIRE = 5;
 const order = (category: number, index: number) => category * 1_000_000 + index;
 
 /** Ближайший таймер, который сработает не позже `limit`. */
@@ -53,6 +55,10 @@ function nextTimer(ctx: Ctx, limit: number): Timer | null {
       consider({ at: slot.refillAt, order: order(ORDER_REFILL, i), run: () => refillSlot(ctx, i) });
     }
   });
+  if (s.bonus.active) {
+    const at = s.bonus.active.expiresAt;
+    consider({ at, order: order(BONUS_EXPIRE, 0), run: () => expireBonus(ctx) });
+  }
   return best;
 }
 
@@ -68,6 +74,7 @@ export function advanceTime(ctx: Ctx, dtMs: number): void {
     timer.run();
     // Таймер мог изменить условия (например, появился предмет) — ожидающие слоты пробуют снова.
     retryPendingSlots(ctx);
+    maybeStartBonus(ctx);
   }
   ctx.s.nowMs = target;
 }

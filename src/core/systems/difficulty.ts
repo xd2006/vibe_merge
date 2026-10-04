@@ -1,7 +1,13 @@
 import { boardLevelId, type Ctx } from '../context';
 import { isReachable, reachableNow } from '../reach';
-import { nextInt, pickWeighted } from '../rng';
-import { itemValue, type DifficultyRules, type Range, type Rules } from '../rules';
+import { nextInt, pickWeighted, type RngState } from '../rng';
+import {
+  itemValue,
+  type DifficultyCategoryRules,
+  type DifficultyRules,
+  type Range,
+  type Rules,
+} from '../rules';
 import type { GameState, Order, OrderRequirement, OrderSlot } from '../types';
 import { resolveRewards } from './rewards';
 
@@ -107,20 +113,31 @@ export function syncSlots(ctx: Ctx): void {
  * предметов (из тех, для которых есть наборы), затем набор — равновероятно.
  */
 export function buildDifficultyOrder(ctx: Ctx, categoryId: string): Order | null {
-  const { s, rules } = ctx;
-  const d = rules.orders.difficulty!;
+  const d = ctx.rules.orders.difficulty!;
   const cat = d.categories.find((c) => c.id === categoryId);
-  if (!cat) return null;
+  return cat ? composeOrder(ctx, cat, d.items, ctx.s.rng.orders) : null;
+}
+
+/**
+ * Заказ на сумму в диапазоне `cat.value` из `items` достижимых специй и одна награда по весам
+ * (общее для заказов по сложности и бонусного заказа). `null` — набора нет, `rng` не тронут.
+ */
+export function composeOrder(
+  ctx: Ctx,
+  cat: DifficultyCategoryRules,
+  items: Range,
+  rng: RngState,
+): Order | null {
+  const { s, rules } = ctx;
   const reach = reachableNow(rules, s as GameState);
   const pool = spicePool(rules, (chain, level) => isReachable(reach, chain, level));
   const bySize: number[][][] = [];
-  for (let n = d.items[0]; n <= d.items[1]; n++) {
+  for (let n = items[0]; n <= items[1]; n++) {
     const combos = difficultyCombos(pool, cat.value, n);
     if (combos.length > 0) bySize.push(combos);
   }
   if (bySize.length === 0) return null;
 
-  const rng = s.rng.orders;
   const combos = bySize[nextInt(rng, 0, bySize.length - 1)]!;
   const combo = combos[nextInt(rng, 0, combos.length - 1)]!;
   const requirements: OrderRequirement[] = [];

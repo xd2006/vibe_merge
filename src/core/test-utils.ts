@@ -1,8 +1,9 @@
 // Общие заготовки для тестов ядра.
+import { produce } from 'immer';
 import { GameConfigSchema, type GameConfigInput } from '@/config';
 import { createEngine } from './engine';
 import { cellState, entityAt, indexOf } from './board';
-import type { Command, GameState } from './types';
+import type { Command, GameState, Order } from './types';
 
 /** Минимальный корректный конфиг: доска 3×3, лесопилка в левом верхнем углу. */
 export function baseConfig(): GameConfigInput {
@@ -79,4 +80,80 @@ export function at(state: GameState, x: number, y: number): string {
   if (!e) return prefix + '.';
   if (e.kind === 'item') return `${prefix}${e.bubble ? 'bubble:' : ''}${e.chain}:${e.level}`;
   return `${prefix}${e.generator}:${e.level}`;
+}
+
+// ---------- Spice merge: заказы по сложности и бонусный заказ ----------
+
+/** Специи 4 / 10 / 30, призовая цепочка, три уровня, три категории. */
+export function spiceConfig(c: GameConfigInput): void {
+  c.chains = [
+    {
+      id: 'spice',
+      name: 'Специи',
+      levels: [
+        { name: 'Роза', collect: 'storage', value: 4 },
+        { name: 'Анис', collect: 'storage', value: 10 },
+        { name: 'Мускат', collect: 'storage', value: 30 },
+        { name: 'Пряность' },
+      ],
+    },
+    { id: 'prize', name: 'Приз', levels: [{ name: 'p1' }, { name: 'p2' }] },
+  ];
+  c.generators = [
+    {
+      id: 'saw',
+      name: 'Сад',
+      levels: [{ energyCost: 1, produces: [{ chain: 'spice', level: 1, weight: 1 }] }],
+    },
+  ];
+  c.board = {
+    width: 4,
+    height: 4,
+    legend: { '.': null, S: { generator: 'saw', level: 1 } },
+    layout: ['S...', '....', '....', '....'],
+  };
+  c.levels = [
+    { id: 1, ordersRequired: 1 },
+    { id: 2, ordersRequired: 1 },
+    { id: 3, ordersRequired: 5 },
+  ];
+  c.orders = {
+    mode: 'difficulty',
+    difficulty: {
+      categories: [
+        {
+          id: 'easy',
+          name: 'Лёгкий',
+          value: [8, 20],
+          rewards: [
+            { weight: 3, reward: { type: 'item', chain: 'prize', level: 1 } },
+            { weight: 1, reward: { type: 'item', chain: 'prize', level: 2 } },
+          ],
+        },
+        { id: 'medium', name: 'Средний', value: [21, 40] },
+        { id: 'hard', name: 'Сложный', value: [41, 90] },
+      ],
+      allocation: [
+        { fromLevel: 1, slots: { easy: 2, medium: 1 } },
+        { fromLevel: 2, slots: { easy: 1, medium: 2, hard: 1 } },
+      ],
+    },
+  };
+}
+/** Кладёт на свободные открытые клетки предметы заказа. */
+export function placeItems(s: GameState, order: Order): GameState {
+  return produce(s, (d) => {
+    for (const r of order.requirements) {
+      for (let k = 0; k < r.count; k++) {
+        const i = d.board.cells.findIndex((c, idx) => c === null && !d.board.gates[idx]);
+        d.board.cells[i] = { uid: d.nextUid++, kind: 'item', chain: r.chain, level: r.level };
+      }
+    }
+  });
+}
+
+/** Кладёт на поле предметы заказа слота и сдаёт его. */
+export function fulfil(e: ReturnType<typeof makeEngine>, s: GameState, slot: number): GameState {
+  const filled = placeItems(s, s.orders.slots[slot]!.order!);
+  return run(e, filled, [{ type: 'deliverOrder', slot }]).state;
 }

@@ -186,25 +186,7 @@ export function deliverOrder(ctx: Ctx, slotIndex: number): RejectReason | undefi
   if (!slot || !order) return 'reject.noOrder';
   const status = orderStatus(rules, s, order);
   if (!status.ready) return 'reject.orderNotReady';
-
-  // DECISION: сначала списываются предметы с доски (в порядке чтения), затем из хранилища.
-  for (const r of order.requirements) {
-    let left = r.count;
-    for (let i = 0; i < s.board.cells.length && left > 0; i++) {
-      const e = activeItemAt(s, i);
-      if (e && e.chain === r.chain && e.level === r.level) {
-        s.board.cells[i] = null;
-        left--;
-      }
-    }
-    if (left > 0) {
-      const st = s.storage.find(
-        (x) => x.kind === 'item' && x.chain === r.chain && x.level === r.level,
-      )!;
-      st.count -= left;
-      if (st.count === 0) s.storage.splice(s.storage.indexOf(st), 1);
-    }
-  }
+  consumeRequirements(ctx, order);
 
   const done: Order = isDraft(order) ? current(order) : order;
   emitNow(ctx, {
@@ -225,4 +207,27 @@ export function deliverOrder(ctx: Ctx, slotIndex: number): RejectReason | undefi
   const index = s.orders.slots.indexOf(slot);
   if (rules.orders.refillMs === 0 && index >= 0) refillSlot(ctx, index);
   return undefined;
+}
+
+/** Списывает предметы заказа (готовность проверена заранее). */
+export function consumeRequirements(ctx: Ctx, order: Order): void {
+  const { s } = ctx;
+  // DECISION: сначала списываются предметы с доски (в порядке чтения), затем из хранилища.
+  for (const r of order.requirements) {
+    let left = r.count;
+    for (let i = 0; i < s.board.cells.length && left > 0; i++) {
+      const e = activeItemAt(s, i);
+      if (e && e.chain === r.chain && e.level === r.level) {
+        s.board.cells[i] = null;
+        left--;
+      }
+    }
+    if (left > 0) {
+      const st = s.storage.find(
+        (x) => x.kind === 'item' && x.chain === r.chain && x.level === r.level,
+      )!;
+      st.count -= left;
+      if (st.count === 0) s.storage.splice(s.storage.indexOf(st), 1);
+    }
+  }
 }

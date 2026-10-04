@@ -200,6 +200,55 @@ test('заказы по сложности: плашка категории, н�
   await expect(page.getByTestId('order-2')).toHaveCount(0);
 });
 
+test('бонусный заказ: появляется после заказа, сдаётся, даёт награду', async ({ page }) => {
+  const bonusConfig = {
+    ...config,
+    chains: [
+      { id: 'spice', name: 'Специи', levels: [{ name: 'Роза', collect: 'storage', value: 4 }] },
+    ],
+    board: {
+      ...config.board,
+      legend: { '.': null, G: { generator: 'gen', level: 1 }, r: { item: 'spice', level: 1 } },
+      layout: ['rrr', 'rrr', '..G'],
+    },
+    orders: {
+      mode: 'difficulty',
+      difficulty: {
+        categories: [{ id: 'easy', name: 'Лёгкий', value: [8, 8] }],
+        allocation: [{ fromLevel: 1, slots: { easy: 1 } }],
+      },
+      bonus: {
+        afterOrders: [1, 1],
+        durationSec: [600, 600],
+        tiers: [
+          {
+            id: 'regular',
+            name: 'Обычный',
+            value: [8, 12],
+            rewards: [{ weight: 1, reward: { type: 'resource', resource: 'crystal', amount: 7 } }],
+          },
+        ],
+      },
+    },
+  };
+  await page.goto('/');
+  await page.getByTestId('load-file').setInputFiles({
+    name: 'bonus.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(bonusConfig)),
+  });
+  await expect(page.getByTestId('editor-status')).toContainText('ошибок нет');
+  await page.getByRole('button', { name: 'Запустить прототип' }).click();
+
+  await expect(page.getByTestId('bonus-order')).toHaveCount(0);
+  await page.getByTestId('order-0').getByRole('button', { name: 'Сдать' }).click();
+  const bonus = page.getByTestId('bonus-order');
+  await expect(bonus).toContainText(/Бонус: Обычный · (10:00|9:\d\d)/);
+  await bonus.getByRole('button', { name: 'Сдать' }).click();
+  await expect(bonus).toHaveCount(0);
+  await expect(page.getByTestId('resource-crystal')).toContainText('7');
+});
+
 test('кулдаун после цикла, пропуск за хард, сбор двойным тапом', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('load-file').setInputFiles({

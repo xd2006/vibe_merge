@@ -5,7 +5,7 @@
 export type RngState = [number, number, number, number];
 
 /** Отдельный поток на подсистему: правка одной не сдвигает случайность в других. */
-export const RNG_STREAMS = ['generators', 'orders', 'bubbles', 'rewards'] as const;
+export const RNG_STREAMS = ['generators', 'orders', 'bubbles', 'rewards', 'bonus'] as const;
 export type RngStream = (typeof RNG_STREAMS)[number];
 
 function hashString(s: string): number {

@@ -175,6 +175,13 @@ body {
 .order-category-3 {
   background: #a8435c;
 }
+.order-category-bonus {
+  background: #b8860b;
+}
+.order.order-bonus {
+  border-color: #d9a520;
+  box-shadow: 0 0 0 1px #d9a520;
+}
 
 .order-reqs {
   list-style: none;

@@ -106,6 +106,15 @@ export interface DifficultyRules {
   allocation: { fromLevel: number; slots: Record<string, number> }[];
 }
 
+export interface BonusRules {
+  afterOrders: Range;
+  durationMs: Range;
+  requireOpenGenerators: boolean;
+  items: Range;
+  /** Тир — как категория сложности, плюс вес выбора. */
+  tiers: (DifficultyCategoryRules & { weight: number })[];
+}
+
 export interface TemplateRules {
   id: string;
   weight: number;
@@ -145,6 +154,7 @@ export interface Rules {
     /** Слоты режима шаблонов; в режиме сложности — 0, слоты задаёт `difficulty.allocation`. */
     slots: number;
     difficulty: DifficultyRules | null;
+    bonus: BonusRules | null;
     refillMs: number;
     allowFromStorage: boolean;
     templates: TemplateRules[];
@@ -450,6 +460,25 @@ export function compileRules(config: GameConfig): Rules {
         .sort((a, b) => a.fromLevel - b.fromLevel),
     };
   }
+  const b = orders.bonus;
+  const bonus: BonusRules | null = b
+    ? {
+        afterOrders: [b.afterOrders[0], b.afterOrders[1]],
+        durationMs: [secToMs(b.durationSec[0]), secToMs(b.durationSec[1])],
+        requireOpenGenerators: b.requireOpenGenerators,
+        items: [b.itemsPerOrder[0], b.itemsPerOrder[1]],
+        tiers: b.tiers.map((tier, ti) => ({
+          id: tier.id,
+          name: tier.name,
+          weight: tier.weight,
+          value: [tier.value[0], tier.value[1]],
+          rewards: tier.rewards.map((r, ri) => ({
+            weight: r.weight,
+            reward: reward(r.reward, `orders.bonus.tiers[${ti}].rewards[${ri}].reward`),
+          })),
+        })),
+      }
+    : null;
   let fallback: TemplateRules | null = null;
   if (orders.fallbackTemplate !== undefined) {
     fallback = templates.find((tpl) => tpl.id === orders.fallbackTemplate) ?? null;
@@ -523,6 +552,7 @@ export function compileRules(config: GameConfig): Rules {
       mode: orders.mode,
       slots: orders.mode === 'templates' ? (orders.slots ?? 0) : 0,
       difficulty,
+      bonus,
       refillMs: Math.round(orders.refillDelaySec * 1000),
       allowFromStorage: orders.allowFromStorage,
       templates,
@@ -570,6 +600,7 @@ export function orderRewards(rules: Rules): RewardRules[] {
   return [
     ...rules.orders.templates.flatMap((tpl) => tpl.rewards),
     ...(rules.orders.difficulty?.categories.flatMap((c) => c.rewards.map((r) => r.reward)) ?? []),
+    ...(rules.orders.bonus?.tiers.flatMap((c) => c.rewards.map((r) => r.reward)) ?? []),
   ];
 }
 

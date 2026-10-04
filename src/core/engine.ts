@@ -3,6 +3,7 @@ import type { GameConfig } from '@/config';
 import { freshGenerator, type Ctx } from './context';
 import { RNG_STREAMS, seedRng, type RngState, type RngStream } from './rng';
 import { compileRules, type Rules } from './rules';
+import { deliverBonus, maybeStartBonus, resetBonusQueue } from './systems/bonus';
 import { popBubble } from './systems/bubbles';
 import { cheat } from './systems/cheats';
 import { skipCooldown, tapGenerator } from './systems/generators';
@@ -35,7 +36,7 @@ export function createEngine(config: GameConfig): Engine {
     });
     const { start, max, regenMs } = rules.energy;
     const base: GameState = {
-      version: 4,
+      version: 5,
       nowMs: 0,
       nextUid,
       nextOrderId: 1,
@@ -63,12 +64,14 @@ export function createEngine(config: GameConfig): Engine {
         stopped: false,
       },
       bubbleTimers: rules.bubbles.timers.map((timer) => timer.everyMs),
+      bonus: { dueAtOrders: null, active: null },
     };
     // Начальные события (первые заказы) не нужны вызывающему: это часть стартового состояния.
     return produce(base, (s) => {
       const ctx: Ctx = { rules, s, emit: () => {} };
       unlockGroups(ctx, rules.levels[0]!.unlocks);
       fillAllSlots(ctx);
+      resetBonusQueue(ctx);
     });
   }
 
@@ -93,6 +96,8 @@ export function createEngine(config: GameConfig): Engine {
         return returnFromStorage(ctx, command.key, command.to);
       case 'deliverOrder':
         return deliverOrder(ctx, command.slot);
+      case 'deliverBonus':
+        return deliverBonus(ctx);
       case 'cheat':
         return cheat(ctx, command);
     }
@@ -111,6 +116,7 @@ export function createEngine(config: GameConfig): Engine {
         placeQueuedRewards(ctx);
         // Команда могла изменить условия достижимости — ожидающие слоты заказов пробуют снова.
         retryPendingSlots(ctx);
+        maybeStartBonus(ctx);
       }
     });
     // При отказе возвращается исходное состояние, даже если обработчик успел что-то изменить в черновике.

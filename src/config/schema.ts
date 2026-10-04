@@ -273,6 +273,31 @@ const DifficultySchema = z.strictObject({
     .min(1),
 });
 
+/**
+ * Бонусный заказ (Spice merge): появляется после `afterOrders` выполненных заказов,
+ * висит `durationSec` секунд; тир — по весу, специи — на сумму в диапазоне тира.
+ */
+const BonusSchema = z.strictObject({
+  /** Через сколько выполненных заказов появляется (случайно в диапазоне, заново после каждого). */
+  afterOrders: range(1),
+  /** Сколько секунд висит (случайно в диапазоне); идёт и офлайн. */
+  durationSec: range(1),
+  /** Появляется, только когда все генераторы на поле в открытых клетках. */
+  requireOpenGenerators: z.boolean().default(true),
+  itemsPerOrder: range(1).default([2, 3]),
+  tiers: z
+    .array(
+      z.strictObject({
+        id: IdSchema,
+        name: z.string().min(1),
+        weight: Weight.default(1),
+        value: range(0),
+        rewards: z.array(z.strictObject({ weight: Weight, reward: RewardSchema })).default([]),
+      }),
+    )
+    .min(1),
+});
+
 const OrdersSchema = z.strictObject({
   /** `templates` — заказы по шаблонам; `difficulty` — по сложности (блок `difficulty`). */
   mode: z.enum(['templates', 'difficulty']).default('templates'),
@@ -291,6 +316,7 @@ const OrdersSchema = z.strictObject({
     .prefault({}),
   templates: z.array(OrderTemplateSchema).default([]),
   difficulty: DifficultySchema.optional(),
+  bonus: BonusSchema.optional(),
 });
 
 const LifetimeSchema = z.union([

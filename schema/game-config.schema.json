@@ -1533,6 +1533,298 @@
             "allocation"
           ],
           "additionalProperties": false
+        },
+        "bonus": {
+          "type": "object",
+          "properties": {
+            "afterOrders": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "durationSec": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "requireOpenGenerators": {
+              "default": true,
+              "type": "boolean"
+            },
+            "itemsPerOrder": {
+              "default": [
+                2,
+                3
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "tiers": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "weight": {
+                    "default": 1,
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "value": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "rewards": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "weight": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "reward": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "energy"
+                                },
+                                "amount": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  ],
+                                  "format": "formula"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "amount"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Энергия"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "hard"
+                                },
+                                "amount": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  ],
+                                  "format": "formula"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "amount"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Хард-валюта"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "resource"
+                                },
+                                "resource": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$",
+                                  "format": "resourceRef"
+                                },
+                                "amount": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  ],
+                                  "format": "formula"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "resource",
+                                "amount"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Ресурс"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "item"
+                                },
+                                "chain": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$",
+                                  "format": "chainRef"
+                                },
+                                "level": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "count": {
+                                  "default": 1,
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "chain",
+                                "level"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Предмет"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "generator"
+                                },
+                                "generator": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$",
+                                  "format": "generatorRef"
+                                },
+                                "level": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "count": {
+                                  "default": 1,
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "generator",
+                                "level"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Генератор"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "weight",
+                        "reward"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "value"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "afterOrders",
+            "durationSec",
+            "tiers"
+          ],
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

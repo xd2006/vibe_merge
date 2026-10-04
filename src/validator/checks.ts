@@ -400,6 +400,7 @@ export function semanticIssues(c: GameConfig): Issue[] {
     'orders.templates',
   );
   const difficulty = c.orders.difficulty;
+  const hasSpices = c.chains.some((ch) => ch.levels.some((l) => l.collect === 'storage'));
   if (c.orders.mode === 'templates') {
     if (c.orders.slots === undefined)
       error('orders.slots', 'ordersSlots', 'val.ordersSlots', {}, 'hint.ordersSlots');
@@ -435,8 +436,31 @@ export function semanticIssues(c: GameConfig): Issue[] {
           );
       }),
     );
-    const hasSpices = c.chains.some((ch) => ch.levels.some((l) => l.collect === 'storage'));
     if (!hasSpices) error('orders.difficulty', 'noSpices', 'val.noSpices', {}, 'hint.noSpices');
+  }
+  const bonus = c.orders.bonus;
+  if (bonus) {
+    duplicates(
+      bonus.tiers.map((x) => x.id),
+      (i) => `orders.bonus.tiers[${i}].id`,
+      'тир',
+    );
+    weights(
+      bonus.tiers.map((x) => x.weight),
+      'orders.bonus.tiers',
+    );
+    bonus.tiers.forEach((tier, ti) => {
+      const path = `orders.bonus.tiers[${ti}].rewards`;
+      rewards(
+        tier.rewards.map((r) => r.reward),
+        path,
+      );
+      weights(
+        tier.rewards.map((r) => r.weight),
+        path,
+      );
+    });
+    if (!hasSpices) error('orders.bonus', 'noSpices', 'val.noSpices', {}, 'hint.noSpices');
   }
   if (c.orders.fallbackTemplate !== undefined && !templateIds.includes(c.orders.fallbackTemplate)) {
     error(
@@ -677,6 +701,21 @@ export function semanticIssues(c: GameConfig): Issue[] {
         },
         level.orderLevelCap,
       );
+      // Бонусный тир должен собираться хотя бы к последнему уровню.
+      const b = rules.orders.bonus;
+      if (b && li === rules.levels.length - 1) {
+        const pool = spicePool(rules, (chain, l) => reach.get(chain)?.has(l) ?? false);
+        b.tiers.forEach((tier, ti) => {
+          if (tier.weight > 0 && !categoryFeasible(pool, tier.value, b.items))
+            warn(
+              `orders.bonus.tiers[${ti}]`,
+              'bonusTierUnreachable',
+              'val.warnBonusTierUnreachable',
+              { tier: tier.name, min: tier.value[0], max: tier.value[1] },
+              'hint.warnCategoryUnreachable',
+            );
+        });
+      }
       const d = rules.orders.difficulty;
       if (d) {
         // Каждая категория со слотами на этом уровне должна собираться из достижимых специй.

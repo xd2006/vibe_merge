@@ -17,7 +17,7 @@ export const configHash = (config: GameConfig) => hashValue(config);
 /** Сохранённая партия для этого конфига и сколько реального времени прошло с сохранения. */
 export function loadGame(config: GameConfig): { state: GameState; elapsedMs: number } | null {
   const save = readJSON<SaveFile>(SAVE_KEY);
-  if (!save || save.configHash !== configHash(config) || save.state?.version !== 4) return null;
+  if (!save || save.configHash !== configHash(config) || save.state?.version !== 5) return null;
   return { state: save.state, elapsedMs: Math.max(0, Date.now() - save.savedAt) };
 }
 
