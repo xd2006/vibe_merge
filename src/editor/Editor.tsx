@@ -3,12 +3,14 @@ import { useMemo, useRef, useState } from 'react';
 import type { GameConfig } from '@/config';
 import { t } from '@/i18n/ru';
 import { downloadText, readFileText, safeFileName } from '@/platform';
+import type { ReportEntry } from '@/sheet';
 import { validateText } from '@/validator';
 import { ArtPanel } from './ArtPanel';
 import { BlockForm, issuesToErrorSchema, pathSegments } from './BlockForm';
 import { BoardEditor } from './BoardEditor';
 import { PRESETS, toText, useDraft } from './draft';
 import { blockSchema, blocks } from './editorSchema';
+import { ImportReport } from './ImportReport';
 import { IssuesPanel } from './IssuesPanel';
 import { JsonPanel } from './JsonPanel';
 import { BLOCK_LABELS } from './labels';
@@ -43,6 +45,9 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
   const [tab, setTab] = useState('meta');
   const [view, setView] = useState<'form' | 'json'>('form');
   const fileInput = useRef<HTMLInputElement>(null);
+  const sheetInput = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [report, setReport] = useState<readonly ReportEntry[] | null>(null);
   const config = asObj(value);
   const issues = validation.issues;
   const errors = issues.filter((i) => i.level === 'error').length;
@@ -72,6 +77,28 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
     // Форма может прислать то же самое при монтировании — не трогаем текст без изменений.
     if (JSON.stringify(data) === JSON.stringify(config[block])) return;
     setValue({ ...config, [block]: data });
+  };
+
+  // Импорт таблицы Spice merge: .xlsx → конфиг; отчёт показывается над формой.
+  const importFile = async (file: File) => {
+    setImporting(true);
+    try {
+      const [{ readXlsx }, { importSheet }] = await Promise.all([
+        import('@/platform/xlsx'),
+        import('@/sheet'),
+      ]);
+      const result = importSheet(await readXlsx(await file.arrayBuffer()));
+      const next = toText(result.config);
+      if (next !== text && !window.confirm(t('editor.replaceConfirm'))) return;
+      setText(next);
+      setReport(result.report);
+    } catch (e) {
+      window.alert(
+        t('editor.importFailed', { message: e instanceof Error ? e.message : String(e) }),
+      );
+    } finally {
+      setImporting(false);
+    }
   };
 
   const loadPreset = (id: string) => {
@@ -137,6 +164,26 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
         >
           {t('editor.download')}
         </button>
+        <button
+          type="button"
+          className="btn"
+          disabled={importing}
+          onClick={() => sheetInput.current?.click()}
+        >
+          {importing ? t('editor.importing') : t('editor.importSheet')}
+        </button>
+        <input
+          ref={sheetInput}
+          type="file"
+          accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          hidden
+          data-testid="import-sheet"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void importFile(file);
+            e.target.value = '';
+          }}
+        />
         <span className="editor-status" data-testid="editor-status">
           {errors > 0 ? `⛔ ${t('editor.errors', { count: errors })}` : `✓ ${t('editor.valid')}`}
           {warnings > 0 && ` · ⚠ ${t('editor.warnings', { count: warnings })}`}
@@ -155,6 +202,8 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
           {t('editor.run')}
         </button>
       </header>
+
+      {report && <ImportReport report={report} onClose={() => setReport(null)} />}
 
       <div className="view-toggle">
         <button

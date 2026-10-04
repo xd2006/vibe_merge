@@ -3,11 +3,13 @@ import { readJSON, writeJSON } from '@/platform';
 import { parseJsonText, validateText, type ValidationResult } from '@/validator';
 import demo from '../../presets/demo.json';
 import empty from '../../presets/empty.json';
+import spice from '../../presets/spice.json';
 
 const DRAFT_KEY = 'vibe-merge.draft.v1';
 
 export const PRESETS = [
   { id: 'demo', title: 'Демо: лесопилка и карьер', config: demo },
+  { id: 'spice', title: 'Spice merge (импорт таблицы)', config: spice },
   { id: 'empty', title: 'Пустой шаблон', config: empty },
 ] as const;
 

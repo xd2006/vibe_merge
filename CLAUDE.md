@@ -16,6 +16,7 @@
 | `npm run test:e2e`                    | Смоук в браузере (Playwright, Chromium)                                                                                                                  |
 | `npm run build:web`                   | Статическая сборка в `dist/`                                                                                                                             |
 | `npm run format`                      | Форматирование Prettier                                                                                                                                  |
+| `npm run import:sheet [файл.xlsx]`    | Импорт таблицы Spice merge (.xlsx) в `presets/spice.json` с отчётом; то же — кнопка «Импорт из таблицы» в редакторе                                      |
 | `npm run schema`                      | JSON Schema конфига в `schema/game-config.schema.json`                                                                                                   |
 | `npm run build:android [конфиг]`      | Проверка конфига → веб-билд + `bundled-config.json` и его арт → `cap sync` → Gradle; APK в `dist/android/` (то же в CI: `.github/workflows/android.yml`) |
 
@@ -48,6 +49,7 @@ src/
     engine.ts  createEngine: начальное состояние и apply() — только диспетчеризация команд
   validator/   логические проверки конфига
   telemetry/   метрики из журнала событий, экспорт
+  sheet/       импорт таблицы Spice merge (книга → конфиг + отчёт)
   render/      PixiJS-доска
   ui/          React HUD
   editor/      React-редактор конфига
@@ -61,7 +63,7 @@ tests/e2e      Playwright
 
 ## Правила
 
-- **Логические модули** (`core`, `expr`, `config`, `validator`, `telemetry`) не импортируют `render`, `ui`, `editor`, `platform`, React, PixiJS и Capacitor; не используют DOM (`tsconfig.logic.json` без lib DOM), `Math.random` и `Date.now`. Это проверяют ESLint и typecheck.
+- **Логические модули** (`core`, `expr`, `config`, `validator`, `telemetry`, `art`, `sheet`) не импортируют `render`, `ui`, `editor`, `platform`, React, PixiJS и Capacitor; не используют DOM (`tsconfig.logic.json` без lib DOM), `Math.random` и `Date.now`. Это проверяют ESLint и typecheck.
 - **Ядро** — чистая функция `apply(state, command) → { state, events[] }`. Время приходит только командой `tick(dtMs)`, случайность — только из seeded RNG с отдельным потоком на подсистему.
 - **Импорты** между модулями через алиас `@/…`.
 - **Строки интерфейса** только через `t()` из `src/i18n/ru.ts`.

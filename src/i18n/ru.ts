@@ -10,6 +10,10 @@ export const ru = {
   'editor.loading': 'Загрузка редактора…',
   'editor.preset': 'Пресет…',
   'editor.load': 'Загрузить файл',
+  'editor.importSheet': 'Импорт из таблицы',
+  'editor.importing': 'Импорт таблицы…',
+  'editor.importFailed': 'Не удалось прочитать таблицу: {message}',
+  'editor.importReport': 'Отчёт импорта таблицы',
   'editor.download': 'Скачать',
   'editor.run': 'Запустить прототип',
   'editor.runBlocked': 'Исправьте ошибки, чтобы запустить прототип',
@@ -263,6 +267,62 @@ export const ru = {
   'orders.pending': 'Нет подходящих заказов',
   'orders.stopped': 'Генерация заказов остановлена: нет подходящего шаблона',
   'orders.fromStorage': 'с учётом хранилища',
+
+  // Импорт таблицы (Spice merge)
+  'import.summary':
+    'Импортировано: цепочек {chains}, генераторов {generators}, поле {width}×{height}, уровней {levels} ({from}–{to}), категорий заказов {categories}, тиров бонусного заказа {tiers}',
+  'import.serviceSheets': 'Служебные листы не переносятся: {list}',
+  'import.unknownSheet': 'Лист «{name}» не поддержан и пропущен',
+  'import.unknownSetting': 'Настройка «{key}» листа Settings не поддержана',
+  'import.icons':
+    'Иконки объектов (object_icon) не переносятся — картинки задаются во вкладке «Арт»',
+  'import.energyReward':
+    'energy_reward листа Spice Chain Order не перенесён: энергия за специю в заказах кофейни — вне прототипа',
+  'import.spawnsAfterUsed':
+    'Колонка «# Spawns After Used» листа Interactables не поддержана (значения: {list})',
+  'import.unknownObject': 'Объект «{id}» ({where}) не найден в листах Objects / Chains — пропущен',
+  'import.noInteractable': 'У генератора «{id}» нет строки в Interactables — генератор пропущен',
+  'import.producesGenerator': 'Генератор «{id}» выдаёт генератор «{produced}» — не поддержано',
+  'import.unknownExtra':
+    'Колонка C листа Objects: «{value}» у {id} не распознано (не специя и не призовой ресурс)',
+  'import.unknownReward': 'Награды «{name}» нет в листе #Rewards — заведён ресурс «{id}»',
+  'import.lockedEmpty': 'Клетка ({x}, {y}) отмечена locked, но пустая — блокировка снята',
+  'import.lockedMaxLevel':
+    'Клетка ({x}, {y}): {id} — объект последнего уровня, слиянием его не открыть — блокировка снята',
+  'import.duplicateRow':
+    'Строка {row} листа {sheet} повторяет предыдущую ({text}) — оставлена как есть',
+  'import.multiReward': 'Строка {row} листа Bonus Order Reward: перенесён только первый предмет',
+  'import.cyrillic': 'Кириллические буквы в id объектов заменены на латинские: {list}',
+  'import.startLevel': 'Стартовый уровень игрока — access_level = {level}',
+  'import.names':
+    'Названий объектов в таблице нет (колонка C листа Objects — id специи или ресурса): предметы названы A1, A2…, специи — по-русски, цепочки и генераторы — по тексту листа #Data',
+  'import.energyCost': 'Тап по генератору стоит 1 энергию (по спеке)',
+  'import.energyStart': 'Стартовая энергия — {value} (решение Р14)',
+  'import.ordersPerLevel': 'Новый уровень — за {count} выполненных заказов (решение Р11)',
+  'import.lastLevel':
+    'Уровни {from}–{to}: последний — наибольший из уровней поля, распределения заказов и очереди генераторов',
+  'import.generatorQueue':
+    'Награда за уровень — генератор по очереди: {list} (решение Р17); дальше генераторы не выдаются',
+  'import.prizeCollect':
+    'Призовые цепочки {list}: собираются двойным тапом, ресурс по уровням {amounts} (решение Р16); merge_energy — энергия мержа',
+  'import.mergesInto':
+    '{chain}: два объекта последнего уровня сливаются в {generator} (решение Р15)',
+  'import.orderTypeAlias': 'Тип заказа Orders Rewards {alias} (одна и та же категория)',
+  'import.itemsPerOrder': 'В заказе {min}–{max} специи (по спеке)',
+  'import.maxMergeDepth':
+    'Глубина слияния для достижимости — {depth}: специя попадает в заказы, если есть генератор её цепочки',
+  'import.tierWeight':
+    'Весов тиров бонусного заказа в таблице нет — тиры равновероятны (вес 1, решение S5)',
+  'import.bonusDefault': 'Бонусный заказ: {field} нет в таблице — взято {value}',
+  'import.bubbles':
+    'Пузыри — копия результата слияния, их можно перемещать, цена лопания — base_cost',
+  'import.storage': 'Склад специй: собранное на поле не возвращается (returnToBoard: false)',
+  'import.counters': 'Счётчики телеметрии — собранные специи',
+  'import.counterName': 'Собрано: {name}',
+  'import.level.imported': 'Перенесено',
+  'import.level.default': 'По умолчанию',
+  'import.level.unsupported': 'Не поддержано',
+  'import.level.warning': 'Внимание',
 
   // Выбранный предмет
   'item.level': 'ур. {level}',

@@ -1,0 +1,2496 @@
+{
+  "$schema": "../schema/game-config.schema.json",
+  "meta": {
+    "name": "Spice merge",
+    "seed": 1
+  },
+  "currencies": {
+    "hard": {
+      "name": "Сапфиры"
+    },
+    "resources": [
+      {
+        "id": "crystal",
+        "name": "Кристаллы"
+      },
+      {
+        "id": "ticket",
+        "name": "Билеты"
+      },
+      {
+        "id": "box1",
+        "name": "box1 — Простой"
+      },
+      {
+        "id": "box2",
+        "name": "box2 — Розовый"
+      },
+      {
+        "id": "booster_bunny",
+        "name": "booster_bunny"
+      },
+      {
+        "id": "trophy_booster",
+        "name": "trophy_booster"
+      },
+      {
+        "id": "pink_collection_box",
+        "name": "pink_collection_box"
+      },
+      {
+        "id": "blue_collection_box",
+        "name": "blue_collection_box"
+      }
+    ]
+  },
+  "energy": {
+    "max": 100,
+    "start": 100,
+    "regen": {
+      "amount": 1,
+      "intervalSec": 120
+    }
+  },
+  "chains": [
+    {
+      "id": "chain_a",
+      "name": "Специя A",
+      "levels": [
+        {
+          "name": "A1",
+          "deletable": true,
+          "baseCost": 5
+        },
+        {
+          "name": "A2",
+          "deletable": true,
+          "baseCost": 9
+        },
+        {
+          "name": "Роза",
+          "deletable": false,
+          "baseCost": 17,
+          "collect": "storage",
+          "value": 4
+        },
+        {
+          "name": "A4",
+          "deletable": true,
+          "baseCost": 0,
+          "bubbleProbability": 0.6
+        },
+        {
+          "name": "A5",
+          "deletable": true,
+          "baseCost": 0,
+          "bubbleProbability": 0.8
+        },
+        {
+          "name": "Анис",
+          "deletable": true,
+          "baseCost": 1,
+          "collect": "storage",
+          "value": 32
+        }
+      ]
+    },
+    {
+      "id": "chain_b",
+      "name": "Специя B",
+      "levels": [
+        {
+          "name": "B1",
+          "deletable": true,
+          "baseCost": 2
+        },
+        {
+          "name": "B2",
+          "deletable": true,
+          "baseCost": 4
+        },
+        {
+          "name": "B3",
+          "deletable": true,
+          "baseCost": 8
+        },
+        {
+          "name": "Бадьян",
+          "deletable": true,
+          "baseCost": 16,
+          "bubbleProbability": 0.6,
+          "collect": "storage",
+          "value": 8
+        },
+        {
+          "name": "B5",
+          "deletable": true,
+          "baseCost": 32,
+          "bubbleProbability": 0.8
+        },
+        {
+          "name": "B6",
+          "deletable": true,
+          "baseCost": 0
+        },
+        {
+          "name": "Мускат",
+          "deletable": false,
+          "baseCost": 0,
+          "collect": "storage",
+          "value": 96
+        }
+      ]
+    },
+    {
+      "id": "chain_c",
+      "name": "Специя C",
+      "levels": [
+        {
+          "name": "C1",
+          "deletable": true,
+          "baseCost": 9
+        },
+        {
+          "name": "C2",
+          "deletable": true,
+          "baseCost": 18
+        },
+        {
+          "name": "C3",
+          "deletable": true,
+          "baseCost": 6
+        },
+        {
+          "name": "C4",
+          "deletable": true,
+          "baseCost": 10
+        },
+        {
+          "name": "Женьшень",
+          "deletable": true,
+          "baseCost": 18,
+          "collect": "storage",
+          "value": 16
+        },
+        {
+          "name": "C6",
+          "deletable": true,
+          "baseCost": 35
+        },
+        {
+          "name": "C7",
+          "deletable": true,
+          "baseCost": 68,
+          "bubbleProbability": 0.6
+        },
+        {
+          "name": "C8",
+          "deletable": true,
+          "baseCost": 1,
+          "bubbleProbability": 0.8
+        },
+        {
+          "name": "Калган",
+          "deletable": true,
+          "baseCost": 2,
+          "collect": "storage",
+          "value": 256
+        }
+      ]
+    },
+    {
+      "id": "chain_d",
+      "name": "Специи D",
+      "levels": [
+        {
+          "name": "D1",
+          "deletable": false,
+          "baseCost": 0
+        },
+        {
+          "name": "D2",
+          "deletable": false,
+          "baseCost": 0
+        },
+        {
+          "name": "D3",
+          "deletable": false,
+          "baseCost": 0
+        },
+        {
+          "name": "D4",
+          "deletable": false,
+          "baseCost": 0
+        }
+      ],
+      "mergesInto": {
+        "generator": "generator_converter",
+        "level": 1
+      }
+    },
+    {
+      "id": "chain_f",
+      "name": "Специи F",
+      "levels": [
+        {
+          "name": "F1",
+          "deletable": false,
+          "baseCost": 0
+        },
+        {
+          "name": "F2",
+          "deletable": true,
+          "baseCost": 1
+        },
+        {
+          "name": "F3",
+          "deletable": true,
+          "baseCost": 1
+        },
+        {
+          "name": "Гуарана",
+          "deletable": false,
+          "baseCost": 2,
+          "collect": "storage",
+          "value": 32
+        },
+        {
+          "name": "F5",
+          "deletable": true,
+          "baseCost": 3,
+          "bubbleProbability": 0.6
+        },
+        {
+          "name": "Шафран",
+          "deletable": false,
+          "baseCost": 5,
+          "bubbleProbability": 0.8,
+          "collect": "storage",
+          "value": 96
+        }
+      ]
+    },
+    {
+      "id": "chain_g",
+      "name": "Специи G",
+      "levels": [
+        {
+          "name": "G1",
+          "deletable": true,
+          "baseCost": 9,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "G2",
+          "deletable": true,
+          "baseCost": 18,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "G3",
+          "deletable": true,
+          "baseCost": 36,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "Кардамон",
+          "deletable": true,
+          "baseCost": 1,
+          "collect": "storage",
+          "value": 32
+        },
+        {
+          "name": "G5",
+          "deletable": true,
+          "baseCost": 2
+        },
+        {
+          "name": "Тапиока",
+          "deletable": false,
+          "baseCost": 3,
+          "bubbleProbability": 0.2,
+          "collect": "storage",
+          "value": 96
+        }
+      ]
+    },
+    {
+      "id": "chain_i",
+      "name": "Специи I",
+      "levels": [
+        {
+          "name": "I1",
+          "deletable": true,
+          "baseCost": 6,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "I2",
+          "deletable": true,
+          "baseCost": 12,
+          "bubbleProbability": 0.8
+        },
+        {
+          "name": "I3",
+          "deletable": true,
+          "baseCost": 4
+        },
+        {
+          "name": "I4",
+          "deletable": true,
+          "baseCost": 6,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "I5",
+          "deletable": true,
+          "baseCost": 12,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "I6",
+          "deletable": true,
+          "baseCost": 24,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "I7",
+          "deletable": true,
+          "baseCost": 45,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "Золото",
+          "deletable": false,
+          "baseCost": 3,
+          "collect": "storage",
+          "value": 96
+        }
+      ]
+    },
+    {
+      "id": "chain_e",
+      "name": "Энергия E",
+      "levels": [
+        {
+          "name": "E1",
+          "deletable": true,
+          "baseCost": 5,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "E2",
+          "deletable": true,
+          "baseCost": 8,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "E3",
+          "deletable": true,
+          "baseCost": 16,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "E4",
+          "deletable": true,
+          "baseCost": 30,
+          "bubbleProbability": 0.2
+        },
+        {
+          "name": "E5",
+          "deletable": true,
+          "baseCost": 60,
+          "bubbleProbability": 0.2,
+          "collect": [
+            {
+              "type": "energy",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "name": "E6",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "energy",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "name": "E7",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "energy",
+              "amount": 4
+            }
+          ]
+        },
+        {
+          "name": "E8",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "energy",
+              "amount": 8
+            }
+          ]
+        },
+        {
+          "name": "E9",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "energy",
+              "amount": 16
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chain_k",
+      "name": "Кристаллы K",
+      "levels": [
+        {
+          "name": "K1",
+          "deletable": false
+        },
+        {
+          "name": "K2",
+          "deletable": false
+        },
+        {
+          "name": "K3",
+          "deletable": false
+        },
+        {
+          "name": "K4",
+          "deletable": false
+        },
+        {
+          "name": "K5",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "crystal",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "name": "K6",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "crystal",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "name": "K7",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "crystal",
+              "amount": 4
+            }
+          ]
+        },
+        {
+          "name": "K8",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "crystal",
+              "amount": 8
+            }
+          ]
+        },
+        {
+          "name": "K9",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "crystal",
+              "amount": 16
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chain_t",
+      "name": "Билеты T",
+      "levels": [
+        {
+          "name": "T1",
+          "deletable": false
+        },
+        {
+          "name": "T2",
+          "deletable": false
+        },
+        {
+          "name": "T3",
+          "deletable": false
+        },
+        {
+          "name": "T4",
+          "deletable": false
+        },
+        {
+          "name": "T5",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "ticket",
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "name": "T6",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "ticket",
+              "amount": 2
+            }
+          ]
+        },
+        {
+          "name": "T7",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "ticket",
+              "amount": 4
+            }
+          ]
+        },
+        {
+          "name": "T8",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "ticket",
+              "amount": 8
+            }
+          ]
+        },
+        {
+          "name": "T9",
+          "deletable": false,
+          "collect": [
+            {
+              "type": "resource",
+              "resource": "ticket",
+              "amount": 16
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "generators": [
+    {
+      "id": "generator_or",
+      "name": "Генератор обыных специй",
+      "levels": [
+        {
+          "name": "OR1",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 30
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_a",
+              "level": 1,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "OR2",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 30
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_a",
+              "level": 1,
+              "count": 3
+            },
+            {
+              "chain": "chain_a",
+              "level": 2,
+              "count": 2
+            },
+            {
+              "chain": "chain_b",
+              "level": 1,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "OR3",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 30
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_a",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_a",
+              "level": 2,
+              "count": 3
+            },
+            {
+              "chain": "chain_a",
+              "level": 3,
+              "count": 1
+            },
+            {
+              "chain": "chain_b",
+              "level": 1,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "OR4",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 30
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_a",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_a",
+              "level": 2,
+              "count": 3
+            },
+            {
+              "chain": "chain_a",
+              "level": 3,
+              "count": 1
+            },
+            {
+              "chain": "chain_b",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_b",
+              "level": 2,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "OR5",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 30
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_a",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_a",
+              "level": 2,
+              "count": 3
+            },
+            {
+              "chain": "chain_a",
+              "level": 3,
+              "count": 1
+            },
+            {
+              "chain": "chain_b",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_b",
+              "level": 2,
+              "count": 2
+            }
+          ]
+        },
+        {
+          "name": "OR6",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 30
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_a",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_a",
+              "level": 2,
+              "count": 3
+            },
+            {
+              "chain": "chain_a",
+              "level": 3,
+              "count": 2
+            },
+            {
+              "chain": "chain_b",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_b",
+              "level": 2,
+              "count": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generator_bl",
+      "name": "Генератор синих специй",
+      "levels": [
+        {
+          "name": "BL1",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_c",
+              "level": 1,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "BL2",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_c",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_c",
+              "level": 2,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "BL3",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_c",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_c",
+              "level": 2,
+              "count": 2
+            }
+          ]
+        },
+        {
+          "name": "BL4",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_c",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_c",
+              "level": 2,
+              "count": 2
+            },
+            {
+              "chain": "chain_c",
+              "level": 3,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "BL5",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_c",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_c",
+              "level": 2,
+              "count": 3
+            },
+            {
+              "chain": "chain_c",
+              "level": 3,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "BL6",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_c",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_c",
+              "level": 2,
+              "count": 3
+            },
+            {
+              "chain": "chain_c",
+              "level": 3,
+              "count": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generator_gl",
+      "name": "Генератор золотых",
+      "levels": [
+        {
+          "name": "GL1",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_d",
+              "level": 1,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "GL2",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_d",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_i",
+              "level": 1,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "GL3",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_d",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_d",
+              "level": 2,
+              "count": 1
+            },
+            {
+              "chain": "chain_i",
+              "level": 1,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "GL4",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_d",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_d",
+              "level": 2,
+              "count": 2
+            },
+            {
+              "chain": "chain_i",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_i",
+              "level": 2,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "GL5",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_d",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_d",
+              "level": 2,
+              "count": 2
+            },
+            {
+              "chain": "chain_i",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_i",
+              "level": 2,
+              "count": 1
+            }
+          ]
+        },
+        {
+          "name": "GL6",
+          "energyCost": 1,
+          "cooldown": {
+            "cycles": 15,
+            "seconds": 300,
+            "skipCost": 50,
+            "freeSkipSec": 0
+          },
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_d",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_d",
+              "level": 2,
+              "count": 2
+            },
+            {
+              "chain": "chain_d",
+              "level": 3,
+              "count": 1
+            },
+            {
+              "chain": "chain_i",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_i",
+              "level": 2,
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generator_converter",
+      "name": "Генератор",
+      "levels": [
+        {
+          "name": "Converter1",
+          "energyCost": 1,
+          "uses": 1,
+          "deletable": false,
+          "produces": [
+            {
+              "chain": "chain_f",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_g",
+              "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_f",
+              "level": 2,
+              "count": 2
+            },
+            {
+              "chain": "chain_g",
+              "level": 2,
+              "count": 2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "board": {
+    "width": 9,
+    "height": 7,
+    "legend": {
+      ".": null,
+      "a": {
+        "item": "chain_i",
+        "level": 1
+      },
+      "b": {
+        "item": "chain_d",
+        "level": 2
+      },
+      "c": {
+        "item": "chain_d",
+        "level": 1
+      },
+      "d": {
+        "item": "chain_c",
+        "level": 4
+      },
+      "e": {
+        "item": "chain_b",
+        "level": 6
+      },
+      "f": {
+        "item": "chain_a",
+        "level": 5
+      },
+      "g": {
+        "item": "chain_b",
+        "level": 2
+      },
+      "h": {
+        "item": "chain_d",
+        "level": 3
+      },
+      "i": {
+        "item": "chain_f",
+        "level": 4
+      },
+      "j": {
+        "item": "chain_g",
+        "level": 5
+      },
+      "k": {
+        "item": "chain_c",
+        "level": 7
+      },
+      "l": {
+        "item": "chain_a",
+        "level": 3
+      },
+      "m": {
+        "item": "chain_a",
+        "level": 4
+      },
+      "n": {
+        "item": "chain_i",
+        "level": 2
+      },
+      "o": {
+        "item": "chain_c",
+        "level": 3
+      },
+      "p": {
+        "item": "chain_b",
+        "level": 4
+      },
+      "q": {
+        "item": "chain_a",
+        "level": 2
+      },
+      "r": {
+        "item": "chain_a",
+        "level": 1
+      },
+      "s": {
+        "item": "chain_i",
+        "level": 6
+      },
+      "t": {
+        "item": "chain_i",
+        "level": 3
+      },
+      "u": {
+        "item": "chain_c",
+        "level": 2
+      },
+      "v": {
+        "generator": "generator_gl",
+        "level": 1
+      },
+      "w": {
+        "item": "chain_c",
+        "level": 5
+      },
+      "x": {
+        "generator": "generator_bl",
+        "level": 1
+      },
+      "y": {
+        "generator": "generator_or",
+        "level": 1
+      },
+      "z": {
+        "item": "chain_f",
+        "level": 1
+      },
+      "A": {
+        "item": "chain_c",
+        "level": 8
+      },
+      "B": {
+        "item": "chain_b",
+        "level": 3
+      },
+      "C": {
+        "item": "chain_f",
+        "level": 3
+      },
+      "D": {
+        "item": "chain_g",
+        "level": 1
+      },
+      "E": {
+        "item": "chain_c",
+        "level": 1
+      },
+      "F": {
+        "item": "chain_g",
+        "level": 3
+      },
+      "G": {
+        "item": "chain_c",
+        "level": 6
+      },
+      "H": {
+        "item": "chain_f",
+        "level": 2
+      },
+      "I": {
+        "item": "chain_f",
+        "level": 6
+      },
+      "J": {
+        "item": "chain_i",
+        "level": 4
+      },
+      "K": {
+        "item": "chain_b",
+        "level": 5
+      },
+      "L": {
+        "item": "chain_b",
+        "level": 1
+      }
+    },
+    "layout": [
+      "ahnsvzChH",
+      "biotwcDFI",
+      "cjoedAubJ",
+      "dgpuxBEGK",
+      "ekgflmqod",
+      "flq...qfB",
+      "gmr.y.mgL"
+    ],
+    "cells": [
+      {
+        "cell": [0, 0],
+        "requiredLevel": 14,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [0, 1],
+        "requiredLevel": 12,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [0, 2],
+        "requiredLevel": 10,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [0, 3],
+        "requiredLevel": 7,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [0, 4],
+        "requiredLevel": 7,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [0, 5],
+        "requiredLevel": 5,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [0, 6],
+        "requiredLevel": 6,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [1, 0],
+        "requiredLevel": 14,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [1, 1],
+        "requiredLevel": 12,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [1, 2],
+        "requiredLevel": 10,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [1, 3],
+        "requiredLevel": 6,
+        "locked": true
+      },
+      {
+        "cell": [1, 4],
+        "requiredLevel": 7,
+        "locked": true
+      },
+      {
+        "cell": [1, 5],
+        "requiredLevel": 5,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [1, 6],
+        "requiredLevel": 5,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [2, 0],
+        "requiredLevel": 12,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [2, 1],
+        "requiredLevel": 10,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [2, 2],
+        "requiredLevel": 8,
+        "locked": true
+      },
+      {
+        "cell": [2, 3],
+        "requiredLevel": 7,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [2, 4],
+        "requiredLevel": 6,
+        "locked": true
+      },
+      {
+        "cell": [2, 5],
+        "requiredLevel": 5,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [2, 6],
+        "requiredLevel": 5,
+        "locked": true
+      },
+      {
+        "cell": [3, 0],
+        "requiredLevel": 12,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [3, 1],
+        "requiredLevel": 10,
+        "locked": true
+      },
+      {
+        "cell": [3, 2],
+        "requiredLevel": 8,
+        "locked": true
+      },
+      {
+        "cell": [3, 3],
+        "requiredLevel": 7,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [3, 4],
+        "requiredLevel": 5,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [4, 0],
+        "requiredLevel": 10
+      },
+      {
+        "cell": [4, 1],
+        "requiredLevel": 10,
+        "locked": true
+      },
+      {
+        "cell": [4, 2],
+        "requiredLevel": 8,
+        "locked": true
+      },
+      {
+        "cell": [4, 3],
+        "requiredLevel": 7,
+        "locked": true
+      },
+      {
+        "cell": [4, 4],
+        "requiredLevel": 5,
+        "locked": true
+      },
+      {
+        "cell": [5, 0],
+        "requiredLevel": 12,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [5, 1],
+        "requiredLevel": 10,
+        "locked": true
+      },
+      {
+        "cell": [5, 2],
+        "requiredLevel": 8,
+        "locked": true
+      },
+      {
+        "cell": [5, 3],
+        "requiredLevel": 7,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [5, 4],
+        "requiredLevel": 5,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [6, 0],
+        "requiredLevel": 12,
+        "locked": true
+      },
+      {
+        "cell": [6, 1],
+        "requiredLevel": 10,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [6, 2],
+        "requiredLevel": 8,
+        "locked": true
+      },
+      {
+        "cell": [6, 3],
+        "requiredLevel": 7,
+        "locked": true
+      },
+      {
+        "cell": [6, 4],
+        "requiredLevel": 5,
+        "locked": true
+      },
+      {
+        "cell": [6, 5],
+        "requiredLevel": 5,
+        "locked": true
+      },
+      {
+        "cell": [6, 6],
+        "requiredLevel": 5,
+        "locked": true
+      },
+      {
+        "cell": [7, 0],
+        "requiredLevel": 14,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [7, 1],
+        "requiredLevel": 12,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [7, 2],
+        "requiredLevel": 10,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [7, 3],
+        "requiredLevel": 7,
+        "locked": true
+      },
+      {
+        "cell": [7, 4],
+        "requiredLevel": 7,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [7, 5],
+        "requiredLevel": 5,
+        "locked": true
+      },
+      {
+        "cell": [7, 6],
+        "requiredLevel": 6,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [8, 0],
+        "requiredLevel": 14,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [8, 1],
+        "requiredLevel": 12,
+        "closed": true
+      },
+      {
+        "cell": [8, 2],
+        "requiredLevel": 10,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [8, 3],
+        "requiredLevel": 7,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [8, 4],
+        "requiredLevel": 7,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [8, 5],
+        "requiredLevel": 6,
+        "closed": true,
+        "locked": true
+      },
+      {
+        "cell": [8, 6],
+        "requiredLevel": 6,
+        "closed": true,
+        "locked": true
+      }
+    ]
+  },
+  "levels": [
+    {
+      "id": 5,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_or",
+          "level": 1
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_bl",
+          "level": 1
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_gl",
+          "level": 1
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_or",
+          "level": 2
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_bl",
+          "level": 2
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_gl",
+          "level": 2
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_or",
+          "level": 3
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_bl",
+          "level": 3
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_gl",
+          "level": 3
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_or",
+          "level": 4
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_bl",
+          "level": 4
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_gl",
+          "level": 4
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_or",
+          "level": 5
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_bl",
+          "level": 5
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_gl",
+          "level": 5
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_or",
+          "level": 6
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_bl",
+          "level": 6
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "ordersRequired": 10,
+      "reward": [
+        {
+          "type": "generator",
+          "generator": "generator_gl",
+          "level": 6
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 24,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 25,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 26,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 27,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 28,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 29,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 30,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 31,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 32,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 33,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 34,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 35,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 36,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 37,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 38,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 39,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 40,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 41,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 42,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 43,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 44,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 45,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 46,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 47,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 48,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 49,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 50,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 51,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 52,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 53,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 54,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 55,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 56,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 57,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 58,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 59,
+      "ordersRequired": 10,
+      "reward": []
+    },
+    {
+      "id": 60,
+      "ordersRequired": 10,
+      "reward": []
+    }
+  ],
+  "orders": {
+    "mode": "difficulty",
+    "reachability": {
+      "maxMergeDepth": 8
+    },
+    "difficulty": {
+      "categories": [
+        {
+          "id": "easy",
+          "name": "Лёгкий",
+          "value": [8, 40],
+          "rewards": [
+            {
+              "weight": 80,
+              "reward": {
+                "type": "item",
+                "chain": "chain_e",
+                "level": 1
+              }
+            },
+            {
+              "weight": 60,
+              "reward": {
+                "type": "item",
+                "chain": "chain_e",
+                "level": 2
+              }
+            },
+            {
+              "weight": 40,
+              "reward": {
+                "type": "item",
+                "chain": "chain_e",
+                "level": 3
+              }
+            }
+          ]
+        },
+        {
+          "id": "medium",
+          "name": "Средний",
+          "value": [41, 70],
+          "rewards": [
+            {
+              "weight": 80,
+              "reward": {
+                "type": "item",
+                "chain": "chain_e",
+                "level": 1
+              }
+            },
+            {
+              "weight": 60,
+              "reward": {
+                "type": "item",
+                "chain": "chain_e",
+                "level": 2
+              }
+            },
+            {
+              "weight": 40,
+              "reward": {
+                "type": "item",
+                "chain": "chain_e",
+                "level": 3
+              }
+            }
+          ]
+        },
+        {
+          "id": "hard",
+          "name": "Сложный",
+          "value": [71, 100],
+          "rewards": [
+            {
+              "weight": 80,
+              "reward": {
+                "type": "item",
+                "chain": "chain_k",
+                "level": 1
+              }
+            },
+            {
+              "weight": 60,
+              "reward": {
+                "type": "item",
+                "chain": "chain_k",
+                "level": 2
+              }
+            },
+            {
+              "weight": 40,
+              "reward": {
+                "type": "item",
+                "chain": "chain_k",
+                "level": 3
+              }
+            }
+          ]
+        },
+        {
+          "id": "super_hard",
+          "name": "Очень сложный",
+          "value": [101, 200],
+          "rewards": [
+            {
+              "weight": 80,
+              "reward": {
+                "type": "item",
+                "chain": "chain_t",
+                "level": 1
+              }
+            },
+            {
+              "weight": 60,
+              "reward": {
+                "type": "item",
+                "chain": "chain_t",
+                "level": 2
+              }
+            },
+            {
+              "weight": 40,
+              "reward": {
+                "type": "item",
+                "chain": "chain_t",
+                "level": 3
+              }
+            }
+          ]
+        }
+      ],
+      "itemsPerOrder": [2, 3],
+      "allocation": [
+        {
+          "fromLevel": 5,
+          "slots": {
+            "easy": 2,
+            "medium": 3,
+            "hard": 0,
+            "super_hard": 0
+          }
+        },
+        {
+          "fromLevel": 7,
+          "slots": {
+            "easy": 2,
+            "medium": 3,
+            "hard": 1,
+            "super_hard": 0
+          }
+        },
+        {
+          "fromLevel": 10,
+          "slots": {
+            "easy": 2,
+            "medium": 4,
+            "hard": 1,
+            "super_hard": 0
+          }
+        },
+        {
+          "fromLevel": 15,
+          "slots": {
+            "easy": 1,
+            "medium": 4,
+            "hard": 1,
+            "super_hard": 1
+          }
+        },
+        {
+          "fromLevel": 20,
+          "slots": {
+            "easy": 0,
+            "medium": 5,
+            "hard": 1,
+            "super_hard": 1
+          }
+        },
+        {
+          "fromLevel": 30,
+          "slots": {
+            "easy": 0,
+            "medium": 4,
+            "hard": 2,
+            "super_hard": 1
+          }
+        },
+        {
+          "fromLevel": 40,
+          "slots": {
+            "easy": 0,
+            "medium": 4,
+            "hard": 2,
+            "super_hard": 1
+          }
+        },
+        {
+          "fromLevel": 50,
+          "slots": {
+            "easy": 0,
+            "medium": 4,
+            "hard": 2,
+            "super_hard": 1
+          }
+        },
+        {
+          "fromLevel": 60,
+          "slots": {
+            "easy": 0,
+            "medium": 4,
+            "hard": 2,
+            "super_hard": 1
+          }
+        }
+      ]
+    },
+    "bonus": {
+      "afterOrders": [9, 12],
+      "durationSec": [1000, 1200],
+      "itemsPerOrder": [2, 3],
+      "tiers": [
+        {
+          "id": "regular",
+          "name": "Обычный",
+          "weight": 1,
+          "value": [100, 150],
+          "rewards": [
+            {
+              "weight": 50,
+              "reward": {
+                "type": "resource",
+                "resource": "box1",
+                "amount": 1
+              }
+            },
+            {
+              "weight": 50,
+              "reward": {
+                "type": "resource",
+                "resource": "box2",
+                "amount": 1
+              }
+            },
+            {
+              "weight": 50,
+              "reward": {
+                "type": "resource",
+                "resource": "box2",
+                "amount": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "hard",
+          "name": "Сложный",
+          "weight": 1,
+          "value": [150, 200],
+          "rewards": [
+            {
+              "weight": 40,
+              "reward": {
+                "type": "resource",
+                "resource": "booster_bunny",
+                "amount": 300
+              }
+            },
+            {
+              "weight": 40,
+              "reward": {
+                "type": "resource",
+                "resource": "trophy_booster",
+                "amount": 600
+              }
+            },
+            {
+              "weight": 40,
+              "reward": {
+                "type": "resource",
+                "resource": "crystal",
+                "amount": 100
+              }
+            }
+          ]
+        },
+        {
+          "id": "super_hard",
+          "name": "Очень сложный",
+          "weight": 1,
+          "value": [200, 300],
+          "rewards": [
+            {
+              "weight": 30,
+              "reward": {
+                "type": "resource",
+                "resource": "pink_collection_box",
+                "amount": 2
+              }
+            },
+            {
+              "weight": 30,
+              "reward": {
+                "type": "resource",
+                "resource": "blue_collection_box",
+                "amount": 1
+              }
+            },
+            {
+              "weight": 30,
+              "reward": {
+                "type": "resource",
+                "resource": "ticket",
+                "amount": 5
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "bubbles": {
+    "spawnRules": [
+      {
+        "source": "merge",
+        "lifetimeSec": 30
+      }
+    ],
+    "maxOnBoard": 5,
+    "minLevel": 5,
+    "movable": true,
+    "popCost": {
+      "formula": "baseCost"
+    }
+  },
+  "storage": {
+    "enabled": true,
+    "returnToBoard": false
+  },
+  "telemetry": {
+    "counters": [
+      {
+        "id": "collected_chain_a_3",
+        "name": "Собрано: Роза",
+        "match": {
+          "chain": "chain_a",
+          "level": 3
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_a_6",
+        "name": "Собрано: Анис",
+        "match": {
+          "chain": "chain_a",
+          "level": 6
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_b_4",
+        "name": "Собрано: Бадьян",
+        "match": {
+          "chain": "chain_b",
+          "level": 4
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_b_7",
+        "name": "Собрано: Мускат",
+        "match": {
+          "chain": "chain_b",
+          "level": 7
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_c_5",
+        "name": "Собрано: Женьшень",
+        "match": {
+          "chain": "chain_c",
+          "level": 5
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_c_9",
+        "name": "Собрано: Калган",
+        "match": {
+          "chain": "chain_c",
+          "level": 9
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_f_4",
+        "name": "Собрано: Гуарана",
+        "match": {
+          "chain": "chain_f",
+          "level": 4
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_f_6",
+        "name": "Собрано: Шафран",
+        "match": {
+          "chain": "chain_f",
+          "level": 6
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_g_4",
+        "name": "Собрано: Кардамон",
+        "match": {
+          "chain": "chain_g",
+          "level": 4
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_g_6",
+        "name": "Собрано: Тапиока",
+        "match": {
+          "chain": "chain_g",
+          "level": 6
+        },
+        "sources": ["collect"]
+      },
+      {
+        "id": "collected_chain_i_8",
+        "name": "Собрано: Золото",
+        "match": {
+          "chain": "chain_i",
+          "level": 8
+        },
+        "sources": ["collect"]
+      }
+    ]
+  }
+}

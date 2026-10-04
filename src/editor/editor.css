@@ -419,3 +419,37 @@
 .art-msg-error {
   color: var(--danger);
 }
+
+.import-report {
+  margin: 8px 16px;
+  padding: 8px 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-height: 40vh;
+  overflow: auto;
+}
+.import-report header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.import-group h3 {
+  margin: 8px 0 4px;
+  font-size: 0.9rem;
+}
+.import-group ul {
+  margin: 0;
+  padding-left: 4px;
+  list-style: none;
+}
+.import-group li {
+  margin: 2px 0;
+  font-size: 0.85rem;
+}
+.import-warning .import-icon {
+  color: #c27a2c;
+}
+.import-imported .import-icon {
+  color: #3c8d3c;
+}

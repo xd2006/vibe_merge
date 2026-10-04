@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import demo from '../../presets/demo.json';
 import empty from '../../presets/empty.json';
+import spice from '../../presets/spice.json';
 import type { GameConfigInput } from '@/config';
 import { baseConfig } from '@/core/test-utils';
 import { parseJsonText, validateConfig, validateText, type Issue } from '.';
@@ -14,9 +15,10 @@ function issuesOf(patch: (c: GameConfigInput) => void): Issue[] {
 const brief = (issues: Issue[]) => issues.map((i) => `${i.level}:${i.code}@${i.path}`);
 
 describe('пресеты', () => {
-  it('демо и пустой шаблон проходят без ошибок и предупреждений', () => {
+  it('демо, пустой шаблон и Spice merge проходят без ошибок и предупреждений', () => {
     expect(validateConfig(demo).issues).toEqual([]);
     expect(validateConfig(empty).issues).toEqual([]);
+    expect(validateConfig(spice).issues).toEqual([]);
   });
 });
 

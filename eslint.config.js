@@ -13,6 +13,7 @@ const logicModules = [
   'src/validator/**',
   'src/telemetry/**',
   'src/art/**',
+  'src/sheet/**',
 ];
 
 export default defineConfig(
