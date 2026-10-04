@@ -268,10 +268,24 @@ const BubbleRuleSchema = z.discriminatedUnion('source', [
       content: z.array(levelSelector({ weight: Weight })).min(1),
     })
     .meta({ title: 'По таймеру' }),
+  z
+    .strictObject({
+      /** Копия результата слияния в пузыре; шанс — `bubbleProbability` уровня цепочки. */
+      source: z.literal('merge'),
+      lifetimeSec: LifetimeSchema.default(null),
+      onExpire: z.literal('vanish').default('vanish'),
+    })
+    .meta({ title: 'При слиянии' }),
 ]);
 
 const BubblesSchema = z.strictObject({
   spawnRules: z.array(BubbleRuleSchema).default([]),
+  /** Не больше стольких пузырей на доске одновременно (все источники); 0 — пузыри не появляются. */
+  maxOnBoard: z.int().min(0).optional(),
+  /** Пузыри появляются начиная с этого уровня (поле `id` уровня). */
+  minLevel: z.int().min(1).optional(),
+  /** Пузырь можно перемещать: в свободную клетку или обменом с другим предметом. */
+  movable: z.boolean().default(false),
   popCost: z
     .strictObject({
       currency: z.literal('hard').default('hard'),

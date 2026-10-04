@@ -67,6 +67,49 @@ type DebugHook = { cells(): Record<string, string> };
 const boardCells = (page: Page) =>
   page.evaluate(() => (window as unknown as { __vibeMerge: DebugHook }).__vibeMerge.cells());
 
+async function drag(page: Page, from: [number, number], to: [number, number]) {
+  const a = await cellCenter(page, ...from);
+  const b = await cellCenter(page, ...to);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 10 });
+  await page.mouse.up();
+}
+
+test('пузырь — копия результата слияния, его можно перетащить', async ({ page }) => {
+  const bubbleConfig = {
+    ...config,
+    chains: [
+      {
+        id: 'spice',
+        name: 'Специи',
+        levels: [{ name: 'Роза' }, { name: 'Анис', bubbleProbability: 1 }],
+      },
+    ],
+    board: {
+      ...config.board,
+      legend: { '.': null, G: { generator: 'gen', level: 1 }, r: { item: 'spice', level: 1 } },
+      layout: ['rr.', '...', '..G'],
+    },
+    bubbles: { spawnRules: [{ source: 'merge', lifetimeSec: 60 }], movable: true },
+  };
+  await page.goto('/');
+  await page.getByTestId('load-file').setInputFiles({
+    name: 'bubble.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(bubbleConfig)),
+  });
+  await expect(page.getByTestId('editor-status')).toContainText('ошибок нет');
+  await page.getByRole('button', { name: 'Запустить прототип' }).click();
+
+  await drag(page, [0, 0], [1, 0]);
+  expect(await boardCells(page)).toMatchObject({ '1,0': 'spice:2', '0,0': 'bubble:spice:2' });
+  await drag(page, [0, 0], [1, 1]);
+  const cells = await boardCells(page);
+  expect(cells['1,1']).toBe('bubble:spice:2');
+  expect(cells['0,0']).toBeUndefined();
+});
+
 test('кулдаун после цикла, пропуск за хард, сбор двойным тапом', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('load-file').setInputFiles({

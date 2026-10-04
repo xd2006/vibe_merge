@@ -136,6 +136,13 @@ export interface Rules {
   bubbles: {
     /** Правила появления при генерации; индекс — номер правила в `spawnRules`. */
     onGenerate: { rule: number; chance: number; lifetime: LifetimeRules }[];
+    /** Правило «копия результата слияния»; шанс — `bubbleProbability` уровня цепочки. */
+    onMerge: { rule: number; lifetime: LifetimeRules } | null;
+    /** Общий лимит пузырей на доске; `null` — без лимита. */
+    maxOnBoard: number | null;
+    /** Пузыри появляются начиная с уровня с этим `id`; `null` — с любого. */
+    minLevel: number | null;
+    movable: boolean;
     timers: {
       rule: number;
       everyMs: number;
@@ -399,9 +406,13 @@ export function compileRules(config: GameConfig): Rules {
 
   const onGenerate: Rules['bubbles']['onGenerate'] = [];
   const timers: Rules['bubbles']['timers'] = [];
+  let onMerge: Rules['bubbles']['onMerge'] = null;
   config.bubbles.spawnRules.forEach((rule, ri) => {
     if (rule.source === 'generator') {
       onGenerate.push({ rule: ri, chance: rule.chance, lifetime: lifetime(rule.lifetimeSec) });
+    } else if (rule.source === 'merge') {
+      // DECISION: действует первое правило `merge`; остальные игнорируются (валидатор предупреждает).
+      onMerge ??= { rule: ri, lifetime: lifetime(rule.lifetimeSec) };
     } else {
       timers.push({
         rule: ri,
@@ -458,6 +469,10 @@ export function compileRules(config: GameConfig): Rules {
     bubbles: {
       onGenerate,
       timers,
+      onMerge,
+      maxOnBoard: config.bubbles.maxOnBoard ?? null,
+      minLevel: config.bubbles.minLevel ?? null,
+      movable: config.bubbles.movable,
       popCost: formula(
         config.bubbles.popCost.formula,
         'bubbles.popCost.formula',

@@ -336,9 +336,10 @@ export class BoardView {
     stage.on('pointerupoutside', () => this.onUp());
   }
 
-  /** Перетаскивать можно обычные предметы и генераторы; замки и пузыри — нет. */
-  private static draggable(e: Entity | null): boolean {
-    return !!e && (e.kind === 'generator' || (e.kind === 'item' && !e.bubble));
+  /** Перетаскивать можно предметы и генераторы; замки — нет, пузыри — только при ubbles.movable. */
+  private draggable(e: Entity | null): boolean {
+    if (!e || e.kind === 'lock') return false;
+    return e.kind === 'generator' || !e.bubble || this.options.rules.bubbles.movable;
   }
 
   private onDown(e: FederatedPointerEvent) {
@@ -347,7 +348,7 @@ export class BoardView {
     if (!cell) return;
     const entity = entityAt(this.state.board, cell);
     this.press = {
-      uid: BoardView.draggable(entity) ? entity!.uid : null,
+      uid: this.draggable(entity) ? entity!.uid : null,
       cell,
       start: { x: e.global.x, y: e.global.y },
       dragging: false,

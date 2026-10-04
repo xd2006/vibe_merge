@@ -188,8 +188,11 @@
     ]
   },
   "bubbles": {
+    "maxOnBoard": 4,
+    "movable": true,
     "spawnRules": [
       { "source": "generator", "chance": 0.1, "lifetimeSec": 120, "onExpire": "vanish" },
+      { "source": "merge", "lifetimeSec": 60, "onExpire": "vanish" },
       {
         "source": "timer",
         "everySec": 90,

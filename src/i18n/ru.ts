@@ -120,6 +120,11 @@ export const ru = {
   'val.cooldownCharges': 'В режиме мешка (count) кулдаун задаётся циклами — cycles, а не charges',
   'val.cooldownCycles': 'В режиме весов (weight) кулдаун задаётся тапами — charges, а не cycles',
   'val.warnCollectNoStorage': 'Предмет собирается на склад, но хранилище выключено',
+  'val.warnMergeBubbleNoRule':
+    'У объектов задана вероятность пузыря (bubbleProbability), но нет правила появления при слиянии',
+  'val.warnMergeBubbleDuplicate':
+    'Правило пузырей при слиянии задано повторно — действует только первое',
+  'val.warnBubblesOff': 'bubbles.maxOnBoard = 0: пузыри не появятся, хотя правила заданы',
   'val.warnNoTemplate': 'На уровне {level} ни один шаблон заказов не проходит по достижимости',
   'val.warnLockNeverOpens': 'Группа замков «{group}» не открывается ни одним уровнем',
   'val.warnLockNoSource':
@@ -163,6 +168,9 @@ export const ru = {
   'hint.cooldownCycles': 'Замените cycles на charges — число тапов до перезарядки',
   'hint.warnCollectNoStorage':
     'Собранные предметы всё равно попадут на склад; включите storage.enabled, чтобы склад был виден',
+  'hint.warnMergeBubbleNoRule': 'Добавьте в bubbles.spawnRules правило { "source": "merge" }',
+  'hint.warnMergeBubbleDuplicate': 'Удалите лишние правила с source: "merge"',
+  'hint.warnBubblesOff': 'Увеличьте maxOnBoard или уберите правила пузырей',
   'hint.warnNoTemplate':
     'Добавьте шаблон для этого уровня, увеличьте maxMergeDepth или добавьте источник предметов',
   'hint.warnLockNeverOpens': 'Добавьте группу в levels[].unlocks нужного уровня',

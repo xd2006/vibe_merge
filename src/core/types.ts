@@ -164,7 +164,7 @@ export type Command =
 
 export type RewardSource = 'order' | 'level' | 'collect';
 
-export type SpawnSource = 'generator' | 'reward' | 'bubbleTimer' | 'collect';
+export type SpawnSource = 'generator' | 'reward' | 'bubbleTimer' | 'bubbleMerge' | 'collect';
 
 type EventBody =
   | { type: 'energy_spent'; generator: string; level: number; amount: number }

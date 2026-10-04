@@ -358,6 +358,33 @@ export function semanticIssues(c: GameConfig): Issue[] {
     );
   });
   formula(c.bubbles.popCost.formula, 'bubbles.popCost.formula', FORMULA_CONTEXTS.popCost);
+  const mergeRules = c.bubbles.spawnRules.flatMap((r, i) => (r.source === 'merge' ? [i] : []));
+  const withProbability = c.chains.some((ch) =>
+    ch.levels.some((l) => (l.bubbleProbability ?? 0) > 0),
+  );
+  if (withProbability && mergeRules.length === 0) {
+    warn(
+      'bubbles.spawnRules',
+      'mergeBubbleNoRule',
+      'val.warnMergeBubbleNoRule',
+      {},
+      'hint.warnMergeBubbleNoRule',
+    );
+  }
+  mergeRules
+    .slice(1)
+    .forEach((i) =>
+      warn(
+        `bubbles.spawnRules[${i}]`,
+        'mergeBubbleDuplicate',
+        'val.warnMergeBubbleDuplicate',
+        {},
+        'hint.warnMergeBubbleDuplicate',
+      ),
+    );
+  if (c.bubbles.maxOnBoard === 0 && c.bubbles.spawnRules.length > 0) {
+    warn('bubbles.maxOnBoard', 'bubblesOff', 'val.warnBubblesOff', {}, 'hint.warnBubblesOff');
+  }
 
   c.itemActions.forEach((a, ai) => {
     const path = `itemActions[${ai}]`;

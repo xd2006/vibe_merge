@@ -1,5 +1,6 @@
 import { inBoard, indexOf } from '../board';
 import { emitNow, newGenerator, newItem, type Ctx } from '../context';
+import { maybeBubbleOnMerge } from './bubbles';
 import type { Cell, Entity, LockEntity, RejectReason } from '../types';
 
 function canMerge(ctx: Ctx, a: Entity, b: Entity): boolean {
@@ -43,7 +44,9 @@ export function move(ctx: Ctx, from: Cell, to: Cell): RejectReason | undefined {
   const a = s.board.cells[fromIdx] ?? null;
   if (!a) return 'reject.emptyCell';
   if (a.kind === 'lock') return 'reject.locked';
-  if (a.kind === 'item' && a.bubble) return 'reject.bubble';
+  const movable = ctx.rules.bubbles.movable;
+  const aBubble = a.kind === 'item' && !!a.bubble;
+  if (aBubble && !movable) return 'reject.bubble';
   const b = s.board.cells[toIdx] ?? null;
 
   if (!b) {
@@ -53,7 +56,7 @@ export function move(ctx: Ctx, from: Cell, to: Cell): RejectReason | undefined {
   }
 
   if (b.kind === 'lock') {
-    if (!canOpenLock(ctx, a, b) || a.kind !== 'item') return 'reject.locked';
+    if (aBubble || !canOpenLock(ctx, a, b) || a.kind !== 'item') return 'reject.locked';
     // Клетка открывается, результат слияния остаётся в ней как обычный предмет.
     s.board.cells[toIdx] = newItem(ctx, a.chain, a.level + 1);
     s.board.cells[fromIdx] = null;
@@ -67,12 +70,22 @@ export function move(ctx: Ctx, from: Cell, to: Cell): RejectReason | undefined {
       at,
     });
     emitNow(ctx, { type: 'lock_opened', group: b.group, chain: b.chain, level: b.level, at });
+    maybeBubbleOnMerge(ctx, a.chain, a.level + 1, at);
     return undefined;
   }
-  if (b.kind === 'item' && b.bubble) return 'reject.bubble';
+  const bBubble = b.kind === 'item' && !!b.bubble;
+  if (aBubble || bBubble) {
+    // Пузырь не сливается; при ubbles.movable предметы просто меняются местами.
+    if (!movable) return 'reject.bubble';
+    s.board.cells[toIdx] = a;
+    s.board.cells[fromIdx] = b;
+    return undefined;
+  }
 
   if (canMerge(ctx, a, b)) {
     const at = { ...to };
+    // Исходная клетка освобождается до появления пузыря: копия может встать в неё.
+    s.board.cells[fromIdx] = null;
     if (a.kind === 'item') {
       const chain = ctx.rules.chains.get(a.chain)!;
       const into = a.level >= chain.maxLevel ? chain.mergesInto : null;
@@ -88,6 +101,7 @@ export function move(ctx: Ctx, from: Cell, to: Cell): RejectReason | undefined {
         at,
         ...(into ? { intoGenerator: { ...into } } : {}),
       });
+      if (!into) maybeBubbleOnMerge(ctx, a.chain, a.level + 1, at);
     } else if (a.kind === 'generator') {
       // Новый генератор стартует с полным запасом зарядов и без кулдауна.
       s.board.cells[toIdx] = newGenerator(ctx, a.generator, a.level + 1);
@@ -100,7 +114,6 @@ export function move(ctx: Ctx, from: Cell, to: Cell): RejectReason | undefined {
         at,
       });
     }
-    s.board.cells[fromIdx] = null;
     return undefined;
   }
 
