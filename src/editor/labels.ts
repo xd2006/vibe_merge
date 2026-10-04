@@ -14,7 +14,7 @@ export const FIELD_LABELS: Record<string, string> = {
   allowOverMax: 'Награда может поднять выше максимума',
   // chains, generators
   id: 'ID',
-  value: 'Ценность (формула от level)',
+  value: 'Ценность (у цепочки — формула от level; у категории — [от, до])',
   levels: 'Уровни',
   energyCost: 'Стоимость энергии',
   cooldown: 'Кулдаун',
@@ -109,6 +109,12 @@ export const FIELD_LABELS: Record<string, string> = {
   uses: 'Использований до исчезновения',
   minLevel: 'С какого уровня (id уровня)',
   movable: 'Пузырь можно перемещать',
+  // Spice merge (этап S4)
+  difficulty: 'Заказы по сложности',
+  categories: 'Категории',
+  itemsPerOrder: 'Предметов в заказе [от, до]',
+  allocation: 'Слоты категорий по уровням',
+  fromLevel: 'С уровня (id)',
 };
 
 /** Вкладки формы — верхнеуровневые блоки конфига. */

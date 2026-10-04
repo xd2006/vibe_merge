@@ -150,6 +150,56 @@ test('слияние в заблокированную клетку открыв
   expect(await boardCells(page)).toMatchObject({ '1,0': 'spice:2', '2,0': 'spice:1' });
 });
 
+test('заказы по сложности: плашка категории, награда по весам', async ({ page }) => {
+  const difficultyConfig = {
+    ...config,
+    chains: [
+      {
+        id: 'spice',
+        name: 'Специи',
+        levels: [
+          { name: 'Роза', collect: 'storage', value: 4 },
+          { name: 'Анис', collect: 'storage', value: 10 },
+        ],
+      },
+      { id: 'prize', name: 'Энергия', levels: [{ name: 'Искра' }] },
+    ],
+    board: {
+      ...config.board,
+      legend: { '.': null, G: { generator: 'gen', level: 1 } },
+      layout: ['G..', '...', '...'],
+    },
+    orders: {
+      mode: 'difficulty',
+      difficulty: {
+        categories: [
+          {
+            id: 'easy',
+            name: 'Лёгкий',
+            value: [8, 20],
+            rewards: [{ weight: 1, reward: { type: 'item', chain: 'prize', level: 1 } }],
+          },
+        ],
+        allocation: [{ fromLevel: 1, slots: { easy: 2 } }],
+      },
+    },
+  };
+  await page.goto('/');
+  await page.getByTestId('load-file').setInputFiles({
+    name: 'difficulty.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(difficultyConfig)),
+  });
+  await expect(page.getByTestId('editor-status')).toContainText('ошибок нет');
+  await page.getByRole('button', { name: 'Запустить прототип' }).click();
+
+  for (const i of [0, 1]) {
+    await expect(page.getByTestId(`order-${i}`)).toContainText(/Лёгкий · \d+/);
+    await expect(page.getByTestId(`order-${i}`)).toContainText('Искра');
+  }
+  await expect(page.getByTestId('order-2')).toHaveCount(0);
+});
+
 test('кулдаун после цикла, пропуск за хард, сбор двойным тапом', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('load-file').setInputFiles({

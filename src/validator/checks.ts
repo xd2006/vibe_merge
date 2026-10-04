@@ -1,5 +1,5 @@
 import { FORMULA_CONTEXTS, type GameConfig } from '@/config';
-import { compileRules } from '@/core';
+import { allocationAt, categoryFeasible, compileRules, orderRewards, spicePool } from '@/core';
 import { reachableLevels, type ItemLevel } from '@/core/reach';
 import { checkFormula, type FormulaVariable } from '@/expr';
 import { t, type StringKey } from '@/i18n/ru';
@@ -399,6 +399,45 @@ export function semanticIssues(c: GameConfig): Issue[] {
     c.orders.templates.map((tpl) => tpl.weight),
     'orders.templates',
   );
+  const difficulty = c.orders.difficulty;
+  if (c.orders.mode === 'templates') {
+    if (c.orders.slots === undefined)
+      error('orders.slots', 'ordersSlots', 'val.ordersSlots', {}, 'hint.ordersSlots');
+    if (c.orders.templates.length === 0)
+      error('orders.templates', 'noTemplates', 'val.noTemplates', {}, 'hint.noTemplates');
+  } else if (!difficulty) {
+    error('orders.difficulty', 'noDifficulty', 'val.noDifficulty', {}, 'hint.noDifficulty');
+  }
+  if (difficulty) {
+    const categoryIds = difficulty.categories.map((cat) => cat.id);
+    duplicates(categoryIds, (i) => `orders.difficulty.categories[${i}].id`, 'категория');
+    difficulty.categories.forEach((cat, ci) => {
+      const path = `orders.difficulty.categories[${ci}].rewards`;
+      rewards(
+        cat.rewards.map((r) => r.reward),
+        path,
+      );
+      weights(
+        cat.rewards.map((r) => r.weight),
+        path,
+      );
+    });
+    difficulty.allocation.forEach((row, ri) =>
+      Object.keys(row.slots).forEach((id) => {
+        if (!categoryIds.includes(id))
+          error(
+            `orders.difficulty.allocation[${ri}].slots.${id}`,
+            'unknownCategory',
+            'val.unknownCategory',
+            { id },
+            'hint.unknownCategory',
+            { list: list(categoryIds) },
+          );
+      }),
+    );
+    const hasSpices = c.chains.some((ch) => ch.levels.some((l) => l.collect === 'storage'));
+    if (!hasSpices) error('orders.difficulty', 'noSpices', 'val.noSpices', {}, 'hint.noSpices');
+  }
   if (c.orders.fallbackTemplate !== undefined && !templateIds.includes(c.orders.fallbackTemplate)) {
     error(
       'orders.fallbackTemplate',
@@ -620,7 +659,7 @@ export function semanticIssues(c: GameConfig): Issue[] {
             .map((l) => ({ chain: l.content.item, level: l.content.level + 1 }))
         : [];
       const rewardSources: ItemLevel[] = counted.has('reward')
-        ? [...rules.orders.templates.flatMap((tpl) => tpl.rewards), ...level.reward].flatMap((r) =>
+        ? [...orderRewards(rules), ...level.reward].flatMap((r) =>
             r.type === 'item' ? [{ chain: r.chain, level: r.level }] : [],
           )
         : [];
@@ -638,6 +677,23 @@ export function semanticIssues(c: GameConfig): Issue[] {
         },
         level.orderLevelCap,
       );
+      const d = rules.orders.difficulty;
+      if (d) {
+        // Каждая категория со слотами на этом уровне должна собираться из достижимых специй.
+        const pool = spicePool(rules, (chain, l) => reach.get(chain)?.has(l) ?? false);
+        const slots = allocationAt(d, level.id);
+        for (const cat of d.categories) {
+          if ((slots[cat.id] ?? 0) > 0 && !categoryFeasible(pool, cat.value, d.items))
+            warn(
+              `levels[${li}]`,
+              'categoryUnreachable',
+              'val.warnCategoryUnreachable',
+              { level: level.id, category: cat.name, min: cat.value[0], max: cat.value[1] },
+              'hint.warnCategoryUnreachable',
+            );
+        }
+        return;
+      }
       const passes = rules.orders.templates.some(
         (tpl) =>
           level.id >= tpl.boardLevels[0] &&

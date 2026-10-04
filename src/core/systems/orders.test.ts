@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { GameConfigInput } from '@/config';
 import { at, makeEngine, run } from '../test-utils';
 
-type Tpl = GameConfigInput['orders']['templates'][number];
+type Tpl = NonNullable<GameConfigInput['orders']['templates']>[number];
 const tpl = (over: Partial<Tpl> = {}): Tpl => ({
   id: 't',
   weight: 1,

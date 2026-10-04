@@ -50,7 +50,7 @@ describe('parseConfig', () => {
 
   it('требует ровно одно из level и levelRange', () => {
     const input = baseConfig();
-    input.orders.templates[0]!.requirements = [{ chain: 'wood', level: 1, levelRange: [1, 2] }];
+    input.orders.templates![0]!.requirements = [{ chain: 'wood', level: 1, levelRange: [1, 2] }];
     const res = parseConfig(input);
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.issues[0]!.path).toBe('orders.templates[0].requirements[0]');

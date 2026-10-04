@@ -103,13 +103,15 @@ export interface OrderSlot {
   refillAt: number | null;
   /** Подходящего шаблона не нашлось (`skipSlot`): слот ждёт смены условий. */
   pending: boolean;
+  /** Категория сложности слота (режим `difficulty`); `null` — заказы по шаблонам. */
+  category: string | null;
 }
 
 /** Состояние группы замков. Открытые клетки — обычные клетки, у группы отдельного статуса нет. */
 export type LockGroupState = 'sealed' | 'unlockable';
 
 export interface GameState {
-  version: 3;
+  version: 4;
   /** Игровое время с начала партии, мс. Меняется только командой `tick`. */
   nowMs: number;
   nextUid: number;

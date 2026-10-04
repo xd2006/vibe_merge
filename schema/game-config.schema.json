@@ -349,6 +349,10 @@
                       }
                     }
                   ]
+                },
+                "value": {
+                  "type": "number",
+                  "minimum": 0
                 }
               },
               "required": [
@@ -642,6 +646,51 @@
             ],
             "additionalProperties": false
           }
+        },
+        "cells": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cell": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                ],
+                "items": false,
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "requiredLevel": {
+                "default": 0,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "closed": {
+                "default": false,
+                "type": "boolean"
+              },
+              "locked": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "cell"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "required": [
@@ -859,6 +908,14 @@
     "orders": {
       "type": "object",
       "properties": {
+        "mode": {
+          "default": "templates",
+          "type": "string",
+          "enum": [
+            "templates",
+            "difficulty"
+          ]
+        },
         "slots": {
           "type": "integer",
           "minimum": 1,
@@ -925,7 +982,7 @@
           "additionalProperties": false
         },
         "templates": {
-          "minItems": 1,
+          "default": [],
           "type": "array",
           "items": {
             "type": "object",
@@ -1199,12 +1256,285 @@
             ],
             "additionalProperties": false
           }
+        },
+        "difficulty": {
+          "type": "object",
+          "properties": {
+            "categories": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "value": {
+                    "type": "array",
+                    "prefixItems": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    ],
+                    "items": false,
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "rewards": {
+                    "default": [],
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "weight": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "reward": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "energy"
+                                },
+                                "amount": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  ],
+                                  "format": "formula"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "amount"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Энергия"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "hard"
+                                },
+                                "amount": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  ],
+                                  "format": "formula"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "amount"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Хард-валюта"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "resource"
+                                },
+                                "resource": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$",
+                                  "format": "resourceRef"
+                                },
+                                "amount": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  ],
+                                  "format": "formula"
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "resource",
+                                "amount"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Ресурс"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "item"
+                                },
+                                "chain": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$",
+                                  "format": "chainRef"
+                                },
+                                "level": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "count": {
+                                  "default": 1,
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "chain",
+                                "level"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Предмет"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "const": "generator"
+                                },
+                                "generator": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$",
+                                  "format": "generatorRef"
+                                },
+                                "level": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                },
+                                "count": {
+                                  "default": 1,
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "generator",
+                                "level"
+                              ],
+                              "additionalProperties": false,
+                              "title": "Генератор"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "weight",
+                        "reward"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "value"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "itemsPerOrder": {
+              "default": [
+                2,
+                3
+              ],
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "allocation": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fromLevel": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "slots": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                },
+                "required": [
+                  "fromLevel",
+                  "slots"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "categories",
+            "allocation"
+          ],
+          "additionalProperties": false
         }
       },
-      "required": [
-        "slots",
-        "templates"
-      ],
       "additionalProperties": false
     },
     "bubbles": {

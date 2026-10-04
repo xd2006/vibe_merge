@@ -76,7 +76,7 @@ describe('логические ошибки', () => {
     ],
     [
       'дубликат id шаблона',
-      (c) => c.orders.templates.push({ ...c.orders.templates[0]! }),
+      (c) => c.orders.templates!.push({ ...c.orders.templates![0]! }),
       'error:duplicateId@orders.templates[1].id',
     ],
     [
@@ -121,7 +121,7 @@ describe('логические ошибки', () => {
     ],
     [
       'формула награды не разбирается',
-      (c) => (c.orders.templates[0]!.rewards = [{ type: 'energy', amount: 'ceil(totalValue' }]),
+      (c) => (c.orders.templates![0]!.rewards = [{ type: 'energy', amount: 'ceil(totalValue' }]),
       'error:formula@orders.templates[0].rewards[0].amount',
     ],
     [
@@ -191,7 +191,7 @@ describe('предупреждения', () => {
       'ни один шаблон не проходит по достижимости',
       (c) => {
         c.orders.reachability = { maxMergeDepth: 0 };
-        c.orders.templates[0]!.requirements = [{ chain: 'wood', level: 3 }];
+        c.orders.templates![0]!.requirements = [{ chain: 'wood', level: 3 }];
       },
       'warning:noTemplate@levels[0]',
     ],

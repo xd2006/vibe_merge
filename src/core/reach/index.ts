@@ -4,7 +4,7 @@
  * и валидатором при проверке конфига.
  */
 import { cellState } from '../board';
-import type { Rules } from '../rules';
+import { orderRewards, type Rules } from '../rules';
 import type { GameState } from '../types';
 
 export interface ItemLevel {
@@ -64,10 +64,7 @@ export function sourcesFromState(rules: Rules, s: GameState): ReachSources {
     }
   }
   if (counted.has('reward')) {
-    const rewards = [
-      ...rules.orders.templates.flatMap((tpl) => tpl.rewards),
-      ...(rules.levels[s.level.index]?.reward ?? []),
-    ];
+    const rewards = [...orderRewards(rules), ...(rules.levels[s.level.index]?.reward ?? [])];
     for (const r of rewards)
       if (r.type === 'item') sources.push({ chain: r.chain, level: r.level });
   }

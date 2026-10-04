@@ -117,6 +117,8 @@ const ChainLevelSchema = z.strictObject({
   /** Вероятность (0–1) появления копии в пузыре при слиянии в этот уровень. */
   bubbleProbability: z.number().min(0).max(1).optional(),
   collect: CollectSchema.optional(),
+  /** Ценность этого уровня вместо формулы цепочки (цена специи для сложности заказа). */
+  value: z.number().min(0).optional(),
 });
 
 const ChainSchema = z.strictObject({
@@ -241,8 +243,41 @@ const OrderTemplateSchema = z.strictObject({
   rewards: z.array(RewardSchema).default([]),
 });
 
+/**
+ * Заказы по сложности (Spice merge): заказ из 2–3 собираемых на склад предметов (специй),
+ * сумма их ценности попадает в диапазон категории; число слотов каждой категории — по уровню.
+ */
+const DifficultySchema = z.strictObject({
+  categories: z
+    .array(
+      z.strictObject({
+        id: IdSchema,
+        name: z.string().min(1),
+        /** Диапазон суммы ценности предметов заказа `[min, max]`. */
+        value: range(0),
+        /** Награда за заказ — одна из списка по весам. */
+        rewards: z.array(z.strictObject({ weight: Weight, reward: RewardSchema })).default([]),
+      }),
+    )
+    .min(1),
+  /** Сколько предметов в заказе (всего, с повторами). */
+  itemsPerOrder: range(1).default([2, 3]),
+  /** Число слотов каждой категории, начиная с уровня `fromLevel` (поле `id` уровня). */
+  allocation: z
+    .array(
+      z.strictObject({
+        fromLevel: z.int().min(1),
+        slots: z.record(IdSchema, z.int().min(0)),
+      }),
+    )
+    .min(1),
+});
+
 const OrdersSchema = z.strictObject({
-  slots: z.int().min(1),
+  /** `templates` — заказы по шаблонам; `difficulty` — по сложности (блок `difficulty`). */
+  mode: z.enum(['templates', 'difficulty']).default('templates'),
+  /** Число слотов в режиме шаблонов; в режиме сложности слоты задаёт `difficulty.allocation`. */
+  slots: z.int().min(1).optional(),
   refillDelaySec: z.number().min(0).default(0),
   allowFromStorage: z.boolean().default(false),
   fallbackTemplate: TemplateRef.optional(),
@@ -254,7 +289,8 @@ const OrdersSchema = z.strictObject({
       onNoValidTemplate: z.enum(['fallbackTemplate', 'skipSlot', 'error']).default('skipSlot'),
     })
     .prefault({}),
-  templates: z.array(OrderTemplateSchema).min(1),
+  templates: z.array(OrderTemplateSchema).default([]),
+  difficulty: DifficultySchema.optional(),
 });
 
 const LifetimeSchema = z.union([

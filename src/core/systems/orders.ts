@@ -3,7 +3,8 @@ import { activeItemAt, boardLevelId, emitNow, type Ctx } from '../context';
 import { isReachable, reachableNow, type Reachable } from '../reach';
 import { nextInt, pickWeighted, rollRange } from '../rng';
 import { itemValue, type Rules, type TemplateRules } from '../rules';
-import type { GameState, Order, OrderRequirement, RejectReason } from '../types';
+import type { GameState, Order, OrderRequirement, OrderSlot, RejectReason } from '../types';
+import { buildDifficultyOrder, syncSlots } from './difficulty';
 import { onOrderCompleted } from './levels';
 import { grantReward, resolveRewards } from './rewards';
 
@@ -85,6 +86,15 @@ function fillSlot(ctx: Ctx, index: number): void {
   slot.pending = false;
   if (s.orders.stopped) return;
 
+  if (slot.category !== null) {
+    // DECISION: без подходящего набора слот категории ждёт (как `skipSlot`), `onNoValidTemplate`
+    // в режиме сложности не действует.
+    const order = buildDifficultyOrder(ctx, slot.category);
+    if (order) placeOrder(ctx, slot, order);
+    else slot.pending = true;
+    return;
+  }
+
   const candidates = candidateTemplates(rules, s);
   let picked = pickIfAny(ctx, candidates);
   if (!picked && rules.orders.onNoValidTemplate === 'fallbackTemplate' && rules.orders.fallback) {
@@ -100,7 +110,10 @@ function fillSlot(ctx: Ctx, index: number): void {
     }
     return;
   }
-  const order = buildOrder(ctx, picked);
+  placeOrder(ctx, slot, buildOrder(ctx, picked));
+}
+
+function placeOrder(ctx: Ctx, slot: OrderSlot, order: Order): void {
   slot.order = order;
   emitNow(ctx, {
     type: 'order_created',
@@ -123,6 +136,8 @@ export function refillSlot(ctx: Ctx, index: number): void {
 
 /** Повторная попытка для слотов, ожидающих смены условий (`skipSlot`). */
 export function retryPendingSlots(ctx: Ctx): void {
+  // Уровень мог смениться — в режиме сложности число слотов категорий тоже.
+  syncSlots(ctx);
   ctx.s.orders.slots.forEach((slot, i) => {
     if (slot.pending && !slot.order) fillSlot(ctx, i);
   });
@@ -130,6 +145,7 @@ export function retryPendingSlots(ctx: Ctx): void {
 
 /** Заполняет все слоты в начале партии. */
 export function fillAllSlots(ctx: Ctx): void {
+  syncSlots(ctx);
   ctx.s.orders.slots.forEach((_, i) => fillSlot(ctx, i));
 }
 
@@ -203,7 +219,10 @@ export function deliverOrder(ctx: Ctx, slotIndex: number): RejectReason | undefi
   slot.refillAt = s.nowMs + rules.orders.refillMs;
   for (const reward of done.rewards) grantReward(ctx, reward, 'order');
   onOrderCompleted(ctx);
+  // Слот категории, которой на новом уровне меньше, убирается.
+  syncSlots(ctx);
   // Нулевая задержка — новый заказ сразу.
-  if (rules.orders.refillMs === 0) refillSlot(ctx, slotIndex);
+  const index = s.orders.slots.indexOf(slot);
+  if (rules.orders.refillMs === 0 && index >= 0) refillSlot(ctx, index);
   return undefined;
 }

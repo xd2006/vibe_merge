@@ -30,6 +30,8 @@ export interface ChainLevelRules {
   baseCost: number;
   bubbleProbability: number;
   collect: CollectRules;
+  /** Ценность уровня вместо формулы цепочки; `null` — по формуле. */
+  value: number | null;
 }
 
 export interface ChainRules {
@@ -90,6 +92,20 @@ export interface BoardLevelRules {
   reward: RewardRules[];
 }
 
+export interface DifficultyCategoryRules {
+  id: string;
+  name: string;
+  value: Range;
+  rewards: { weight: number; reward: RewardRules }[];
+}
+
+export interface DifficultyRules {
+  categories: DifficultyCategoryRules[];
+  items: Range;
+  /** По возрастанию `fromLevel`. */
+  allocation: { fromLevel: number; slots: Record<string, number> }[];
+}
+
 export interface TemplateRules {
   id: string;
   weight: number;
@@ -125,7 +141,10 @@ export interface Rules {
   lockGroups: string[];
   levels: BoardLevelRules[];
   orders: {
+    mode: 'templates' | 'difficulty';
+    /** Слоты режима шаблонов; в режиме сложности — 0, слоты задаёт `difficulty.allocation`. */
     slots: number;
+    difficulty: DifficultyRules | null;
     refillMs: number;
     allowFromStorage: boolean;
     templates: TemplateRules[];
@@ -194,6 +213,7 @@ export function compileRules(config: GameConfig): Rules {
         baseCost: l.baseCost ?? 0,
         bubbleProbability: l.bubbleProbability ?? 0,
         collect: null,
+        value: l.value ?? null,
       })),
       maxLevel: c.levels.length,
       value: formula(c.value, `chains[${i}].value`, FORMULA_CONTEXTS.chainValue),
@@ -395,6 +415,41 @@ export function compileRules(config: GameConfig): Rules {
     }),
     rewards: tpl.rewards.map((r, ri) => reward(r, `orders.templates[${ti}].rewards[${ri}]`)),
   }));
+  if (orders.mode === 'templates') {
+    if (orders.slots === undefined) throw new ConfigError('orders.slots', t('config.ordersSlots'));
+    if (templates.length === 0) throw new ConfigError('orders.templates', t('config.noTemplates'));
+  }
+  let difficulty: DifficultyRules | null = null;
+  if (orders.mode === 'difficulty') {
+    const d = orders.difficulty;
+    if (!d) throw new ConfigError('orders.difficulty', t('config.noDifficulty'));
+    const categoryIds = new Set(d.categories.map((cat) => cat.id));
+    d.allocation.forEach((row, ri) =>
+      Object.keys(row.slots).forEach((id) => {
+        if (!categoryIds.has(id)) {
+          throw new ConfigError(
+            `orders.difficulty.allocation[${ri}].slots.${id}`,
+            t('config.unknownCategory', { id }),
+          );
+        }
+      }),
+    );
+    difficulty = {
+      categories: d.categories.map((cat, ci) => ({
+        id: cat.id,
+        name: cat.name,
+        value: [cat.value[0], cat.value[1]],
+        rewards: cat.rewards.map((r, ri) => ({
+          weight: r.weight,
+          reward: reward(r.reward, `orders.difficulty.categories[${ci}].rewards[${ri}].reward`),
+        })),
+      })),
+      items: [d.itemsPerOrder[0], d.itemsPerOrder[1]],
+      allocation: d.allocation
+        .map((row) => ({ fromLevel: row.fromLevel, slots: { ...row.slots } }))
+        .sort((a, b) => a.fromLevel - b.fromLevel),
+    };
+  }
   let fallback: TemplateRules | null = null;
   if (orders.fallbackTemplate !== undefined) {
     fallback = templates.find((tpl) => tpl.id === orders.fallbackTemplate) ?? null;
@@ -465,7 +520,9 @@ export function compileRules(config: GameConfig): Rules {
     lockGroups,
     levels,
     orders: {
-      slots: orders.slots,
+      mode: orders.mode,
+      slots: orders.mode === 'templates' ? (orders.slots ?? 0) : 0,
+      difficulty,
       refillMs: Math.round(orders.refillDelaySec * 1000),
       allowFromStorage: orders.allowFromStorage,
       templates,
@@ -503,7 +560,17 @@ export function generatorLevel(rules: Rules, id: string, level: number): Generat
 
 /** Ценность предмета по формуле цепочки. */
 export function itemValue(rules: Rules, chain: string, level: number): number {
-  return rules.chains.get(chain)?.value({ level }) ?? 0;
+  const c = rules.chains.get(chain);
+  if (!c) return 0;
+  return c.levels[level - 1]?.value ?? c.value({ level });
+}
+
+/** Все награды, которые могут дать заказы: шаблонов и категорий сложности. */
+export function orderRewards(rules: Rules): RewardRules[] {
+  return [
+    ...rules.orders.templates.flatMap((tpl) => tpl.rewards),
+    ...(rules.orders.difficulty?.categories.flatMap((c) => c.rewards.map((r) => r.reward)) ?? []),
+  ];
 }
 
 export function chainLevel(rules: Rules, chain: string, level: number): ChainLevelRules | null {

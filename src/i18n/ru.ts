@@ -90,6 +90,10 @@ export const ru = {
   'config.lockOverlap': 'Клетка замка ({x}, {y}) занята содержимым раскладки',
   'config.unknownLockGroup': 'Группа замков «{id}» не найдена',
   'config.unknownTemplate': 'Шаблон заказа «{id}» не найден',
+  'config.ordersSlots': 'В режиме шаблонов нужно число слотов orders.slots',
+  'config.noTemplates': 'В режиме шаблонов нужен хотя бы один шаблон заказа',
+  'config.noDifficulty': 'В режиме сложности нужен блок orders.difficulty',
+  'config.unknownCategory': 'Категория заказов «{id}» не найдена',
   'config.unknownResource': 'Ресурс «{id}» не объявлен в currencies.resources',
   'config.cellDuplicate': 'Клетка ({x}, {y}) уже настроена (board.locks или board.cells)',
   'config.lockedEmpty': 'Клетка ({x}, {y}) заблокирована, но предмета в ней нет',
@@ -103,6 +107,12 @@ export const ru = {
   'val.unknownGenerator': 'Генератор «{id}» не найден',
   'val.unknownLockGroup': 'Группа замков «{id}» не найдена',
   'val.unknownTemplate': 'Шаблон заказа «{id}» не найден',
+  'val.ordersSlots': 'Не задано число слотов заказов',
+  'val.noTemplates': 'Нет ни одного шаблона заказа',
+  'val.noDifficulty': 'Режим заказов «по сложности», но блок difficulty не задан',
+  'val.unknownCategory': 'Категория заказов «{id}» не найдена',
+  'val.noSpices':
+    'Нет предметов для заказов по сложности: ни один уровень цепочки не собирается на склад',
   'val.levelTooHigh': 'Уровень {level} больше максимального ({max}) у «{id}»',
   'val.rangeTooHigh':
     'Диапазон уровней [{from}, {to}] целиком выше максимального уровня ({max}) у «{id}»',
@@ -133,6 +143,8 @@ export const ru = {
     'Правило пузырей при слиянии задано повторно — действует только первое',
   'val.warnBubblesOff': 'bubbles.maxOnBoard = 0: пузыри не появятся, хотя правила заданы',
   'val.warnNoTemplate': 'На уровне {level} ни один шаблон заказов не проходит по достижимости',
+  'val.warnCategoryUnreachable':
+    'На уровне {level} заказ «{category}» ({min}–{max}) не собрать из достижимых специй',
   'val.warnLockNeverOpens': 'Группа замков «{group}» не открывается ни одним уровнем',
   'val.warnLockNoSource':
     'Для предмета в замке «{name}» ({level} ур.) нет источника, из которого его можно получить слиянием',
@@ -160,6 +172,13 @@ export const ru = {
   'hint.unknownGenerator': 'Доступные генераторы: {list}',
   'hint.unknownLockGroup': 'Группы замков задаются в board.locks[].group: {list}',
   'hint.unknownTemplate': 'Доступные шаблоны: {list}',
+  'hint.ordersSlots': 'Задайте orders.slots или переключите orders.mode на "difficulty"',
+  'hint.noTemplates':
+    'Добавьте шаблон в orders.templates или переключите orders.mode на "difficulty"',
+  'hint.noDifficulty':
+    'Добавьте orders.difficulty (категории и распределение) или верните режим "templates"',
+  'hint.unknownCategory': 'Доступные категории: {list}',
+  'hint.noSpices': 'Отметьте специи полем collect: "storage" у уровня цепочки',
   'hint.levelTooHigh': 'Уменьшите уровень или добавьте уровни в цепочку',
   'hint.zeroWeights': 'Задайте хотя бы одному варианту положительный вес',
   'hint.formula':
@@ -183,6 +202,8 @@ export const ru = {
   'hint.warnMergeBubbleNoRule': 'Добавьте в bubbles.spawnRules правило { "source": "merge" }',
   'hint.warnMergeBubbleDuplicate': 'Удалите лишние правила с source: "merge"',
   'hint.warnBubblesOff': 'Увеличьте maxOnBoard или уберите правила пузырей',
+  'hint.warnCategoryUnreachable':
+    'Измените диапазон категории, ценность специй (value у уровня), число предметов itemsPerOrder или maxMergeDepth; иначе слот будет пустым',
   'hint.warnNoTemplate':
     'Добавьте шаблон для этого уровня, увеличьте maxMergeDepth или добавьте источник предметов',
   'hint.warnLockNeverOpens': 'Добавьте группу в levels[].unlocks нужного уровня',
@@ -234,6 +255,7 @@ export const ru = {
   // Заказы
   'orders.title': 'Заказы',
   'orders.deliver': 'Сдать',
+  'orders.category': '{name} · {value}',
   'orders.waiting': 'Новый заказ через {time}',
   'orders.pending': 'Нет подходящих заказов',
   'orders.stopped': 'Генерация заказов остановлена: нет подходящего шаблона',

@@ -35,7 +35,7 @@ export function createEngine(config: GameConfig): Engine {
     });
     const { start, max, regenMs } = rules.energy;
     const base: GameState = {
-      version: 3,
+      version: 4,
       nowMs: 0,
       nextUid,
       nextOrderId: 1,
@@ -58,6 +58,7 @@ export function createEngine(config: GameConfig): Engine {
           order: null,
           refillAt: null,
           pending: false,
+          category: null,
         })),
         stopped: false,
       },

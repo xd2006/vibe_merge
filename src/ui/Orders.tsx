@@ -17,6 +17,12 @@ function RewardChip({ reward, session }: { reward: ResolvedReward; session: Game
   );
 }
 
+/** Оттенок плашки категории: 0 — самая лёгкая, 3 — самая сложная (дальше — как 3). */
+function categoryTone(rules: GameSession['engine']['rules'], id: string): number {
+  const i = rules.orders.difficulty?.categories.findIndex((c) => c.id === id) ?? 0;
+  return Math.min(Math.max(i, 0), 3);
+}
+
 export function OrdersBar({ session }: { session: GameSession }) {
   const rules = session.engine.rules;
   const orders = useSessionValue(session, (s) => s.state.orders);
@@ -47,8 +53,14 @@ export function OrdersBar({ session }: { session: GameSession }) {
           );
         }
         const status = orderStatus(rules, session.state, slot.order);
+        const category = rules.orders.difficulty?.categories.find((c) => c.id === slot.category);
         return (
           <div key={slot.order.id} className="order" data-testid={`order-${i}`}>
+            {category && (
+              <div className={`order-category order-category-${categoryTone(rules, category.id)}`}>
+                {t('orders.category', { name: category.name, value: slot.order.totalValue })}
+              </div>
+            )}
             <ul className="order-reqs">
               {status.requirements.map((r) => (
                 <li

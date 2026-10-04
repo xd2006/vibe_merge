@@ -7,6 +7,7 @@ export {
   generatorLevel,
   isFinalItem,
   itemValue,
+  orderRewards,
   type ChainLevelRules,
   type ChainRules,
   type CollectRules,
@@ -28,6 +29,13 @@ export { subjectKey, subjectOf } from './context';
 export { popCost } from './systems/bubbles';
 export { skipCooldownCost } from './systems/generators';
 export { orderStatus, type RequirementStatus } from './systems/orders';
+export {
+  allocationAt,
+  categoryFeasible,
+  difficultyCombos,
+  spicePool,
+  type PoolItem,
+} from './systems/difficulty';
 export { availableActions, type AvailableActions } from './systems/storage';
 export { reachableNow, type Reachable } from './reach';
 export * from './types';
