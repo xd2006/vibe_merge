@@ -17,6 +17,7 @@ import {
   type ItemActionRules,
   type Rules,
 } from '../rules';
+import { checkOpen } from './cells';
 import { grantReward, resolveRewards } from './rewards';
 import type { Cell, Entity, GameState, ItemAction, RejectReason, Subject } from '../types';
 
@@ -85,7 +86,8 @@ export function itemAction(ctx: Ctx, at: Cell, action: ItemAction): RejectReason
   if (!inBoard(s.board, at)) return 'reject.outOfBoard';
   const e = entityAt(s.board, at);
   if (!e) return 'reject.emptyCell';
-  if (e.kind === 'lock') return 'reject.locked';
+  const closed = checkOpen(ctx, at);
+  if (closed) return closed;
   if (e.kind === 'item' && e.bubble) return 'reject.bubble';
   const subject = subjectOf(e)!;
   const actions = availableActions(rules, s, e);
@@ -119,7 +121,8 @@ export function collect(ctx: Ctx, at: Cell): RejectReason | undefined {
   if (!inBoard(s.board, at)) return 'reject.outOfBoard';
   const e = entityAt(s.board, at);
   if (!e) return 'reject.emptyCell';
-  if (e.kind === 'lock') return 'reject.locked';
+  const closed = checkOpen(ctx, at);
+  if (closed) return closed;
   if (e.kind !== 'item') return 'reject.notCollectable';
   if (e.bubble) return 'reject.bubble';
   const how = availableActions(rules, s, e).collect;
@@ -147,6 +150,8 @@ export function returnFromStorage(ctx: Ctx, key: string, to: Cell): RejectReason
   const stack = s.storage[index];
   if (!stack || stack.count <= 0) return 'reject.notInStorage';
   if (!inBoard(s.board, to)) return 'reject.outOfBoard';
+  const closed = checkOpen(ctx, to);
+  if (closed) return closed;
   if (entityAt(s.board, to)) return 'reject.cellOccupied';
 
   const subject: Subject =

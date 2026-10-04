@@ -77,16 +77,22 @@ export function subjectKey(s: Subject): string {
 export const isFreeItem = (e: Entity | null | undefined): e is ItemEntity =>
   e?.kind === 'item' && !e.bubble;
 
+/** Обычный предмет в открытой клетке с индексом `i` — засчитывается в заказы, достижимость и т. п. */
+export function activeItemAt(s: GameState | Draft<GameState>, i: number): ItemEntity | null {
+  const e = s.board.cells[i];
+  return isFreeItem(e) && !s.board.gates[i] ? e : null;
+}
+
 /** Первая свободная клетка в порядке чтения. */
 export function firstFreeCell(s: Draft<GameState>): Cell | null {
-  const i = s.board.cells.findIndex((c) => c === null);
+  const i = s.board.cells.findIndex((c, idx) => c === null && !s.board.gates[idx]);
   return i < 0 ? null : cellOf(s.board, i);
 }
 
 export function freeCells(s: Draft<GameState>): Cell[] {
   const out: Cell[] = [];
   s.board.cells.forEach((c, i) => {
-    if (c === null) out.push(cellOf(s.board, i));
+    if (c === null && !s.board.gates[i]) out.push(cellOf(s.board, i));
   });
   return out;
 }

@@ -5,6 +5,7 @@ import { pickWeighted } from '../rng';
 import { generatorLevel, type GeneratorLevelRules, type Rules } from '../rules';
 import type { Cell, GameState, GeneratorEntity, RejectReason } from '../types';
 import { maybeBubbleOnGenerate } from './bubbles';
+import { checkOpen } from './cells';
 import { spendEnergy } from './energy';
 
 /** Что выдаст следующий тап: в режиме мешка — из остатка мешка, в режиме весов — по весам. */
@@ -87,6 +88,8 @@ export function tapGenerator(ctx: Ctx, at: Cell): RejectReason | undefined {
   if (!inBoard(s.board, at)) return 'reject.outOfBoard';
   const gen = entityAt(s.board, at);
   if (!gen || gen.kind !== 'generator') return 'reject.notGenerator';
+  const closed = checkOpen(ctx, at);
+  if (closed) return closed;
   const lvl = generatorLevel(rules, gen.generator, gen.level);
   if (gen.cooldownUntil !== null) return 'reject.cooldown';
   if (s.energy.value < lvl.energyCost) return 'reject.noEnergy';
@@ -159,6 +162,8 @@ export function skipCooldown(ctx: Ctx, at: Cell): RejectReason | undefined {
   if (!inBoard(s.board, at)) return 'reject.outOfBoard';
   const gen = entityAt(s.board, at);
   if (!gen || gen.kind !== 'generator') return 'reject.notGenerator';
+  const closed = checkOpen(ctx, at);
+  if (closed) return closed;
   const cost = skipCooldownCost(rules, s, gen);
   if (cost === null) return 'reject.notOnCooldown';
   if (s.hard < cost) return 'reject.noHard';

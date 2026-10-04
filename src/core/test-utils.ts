@@ -1,7 +1,7 @@
 // Общие заготовки для тестов ядра.
 import { GameConfigSchema, type GameConfigInput } from '@/config';
 import { createEngine } from './engine';
-import { entityAt } from './board';
+import { cellState, entityAt, indexOf } from './board';
 import type { Command, GameState } from './types';
 
 /** Минимальный корректный конфиг: доска 3×3, лесопилка в левом верхнем углу. */
@@ -68,11 +68,15 @@ export function run(engine: ReturnType<typeof makeEngine>, state: GameState, com
   return { state, events };
 }
 
-/** Короткая запись содержимого клетки для проверок: `wood:2`, `saw:1`, `.`. */
+/**
+ * Короткая запись содержимого клетки для проверок: `wood:2`, `saw:1`, `.`; заблокированная
+ * клетка — `lock:wood:1`, закрытая по уровню или «песком» — `closed:wood:1` (`closed:.` — пустая).
+ */
 export function at(state: GameState, x: number, y: number): string {
   const e = entityAt(state.board, { x, y });
-  if (!e) return '.';
-  if (e.kind === 'item') return `${e.bubble ? 'bubble:' : ''}${e.chain}:${e.level}`;
-  if (e.kind === 'lock') return `lock:${e.chain}:${e.level}`;
-  return `${e.generator}:${e.level}`;
+  const kind = cellState(state, indexOf(state.board, { x, y })).kind;
+  const prefix = kind === 'locked' || kind === 'group' ? 'lock:' : kind === 'open' ? '' : 'closed:';
+  if (!e) return prefix + '.';
+  if (e.kind === 'item') return `${prefix}${e.bubble ? 'bubble:' : ''}${e.chain}:${e.level}`;
+  return `${prefix}${e.generator}:${e.level}`;
 }

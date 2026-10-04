@@ -201,6 +201,22 @@ const BoardSchema = z.strictObject({
       }),
     )
     .default([]),
+  /**
+   * Состояние отдельных клеток (поле Spice merge). Предмет клетки задаётся раскладкой.
+   * `requiredLevel` — клетка закрыта до этого уровня (первый приоритет); затем `closed` —
+   * «песок», открывается слиянием в соседней заблокированной клетке; `locked` — открывается
+   * слиянием такого же предмета в неё.
+   */
+  cells: z
+    .array(
+      z.strictObject({
+        cell: CellCoord,
+        requiredLevel: z.int().min(0).default(0),
+        closed: z.boolean().default(false),
+        locked: z.boolean().default(false),
+      }),
+    )
+    .default([]),
 });
 
 const BoardLevelSchema = z.strictObject({

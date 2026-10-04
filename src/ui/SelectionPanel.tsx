@@ -1,6 +1,8 @@
 import {
   availableActions,
   cellOf,
+  cellState,
+  indexOf,
   popCost,
   skipCooldownCost,
   type Cell,
@@ -40,17 +42,27 @@ export function SelectionPanel({
   const dispatch = session.dispatch.bind(session);
   const left = (until: number) => formatDuration(until - nowSec * 1000);
 
-  if (e.kind === 'lock') {
-    const unlockLevel = rules.levels.find((l) => l.unlocks.includes(e.group));
-    return (
-      <div className="panel" data-testid="selection">
-        <span className="panel-text">
-          {lockGroups[e.group] === 'unlockable'
-            ? t('item.lockUnlockable', { name: itemName(rules, e.chain, e.level), level: e.level })
+  const cs = cellState({ board, lockGroups }, indexOf(board, cell));
+  if (cs.kind !== 'open') {
+    const name =
+      e.kind === 'item'
+        ? itemName(rules, e.chain, e.level)
+        : generatorName(rules, e.generator, e.level);
+    const unlockLevel =
+      cs.kind === 'group' ? rules.levels.find((l) => l.unlocks.includes(cs.group)) : null;
+    const text =
+      cs.kind === 'locked'
+        ? t('item.lockUnlockable', { name, level: e.level })
+        : cs.kind === 'level'
+          ? t('cell.level', { level: cs.level })
+          : cs.kind === 'closed'
+            ? t('cell.closed')
             : unlockLevel
               ? t('item.lockSealed', { level: unlockLevel.id })
-              : t('item.lockSealedNever')}
-        </span>
+              : t('item.lockSealedNever');
+    return (
+      <div className="panel" data-testid="selection">
+        <span className="panel-text">{text}</span>
       </div>
     );
   }

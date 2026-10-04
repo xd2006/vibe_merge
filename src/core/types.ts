@@ -40,16 +40,30 @@ export interface GeneratorEntity {
   cooldownUntil: number | null;
 }
 
-/** Заблокированная клетка с предметом-замком; открывается слиянием с таким же предметом. */
-export interface LockEntity {
-  uid: number;
-  kind: 'lock';
-  group: string;
-  chain: string;
-  level: number;
+export type Entity = ItemEntity | GeneratorEntity;
+
+/**
+ * Ограничения клетки. Пока хоть одно действует, с клеткой и её содержимым нельзя
+ * взаимодействовать (кроме открытия заблокированной клетки слиянием).
+ */
+export interface Gate {
+  /** Клетка закрыта, пока уровень игрока (`id` уровня) ниже этого. */
+  requiredLevel: number | null;
+  /** Клетка закрыта, пока группа замков не стала `unlockable` (`board.locks` MVP). */
+  group: string | null;
+  /** «Песок»: открывается слиянием в соседней заблокированной клетке. */
+  closed: boolean;
+  /** Заблокирована: открывается слиянием такого же предмета в неё. */
+  locked: boolean;
 }
 
-export type Entity = ItemEntity | GeneratorEntity | LockEntity;
+/** Действующее состояние клетки (с учётом уровня и групп). */
+export type CellState =
+  | { kind: 'open' }
+  | { kind: 'level'; level: number }
+  | { kind: 'group'; group: string }
+  | { kind: 'closed' }
+  | { kind: 'locked' };
 
 /** Что за предмет, без состояния: для событий, хранилища и интерфейса. */
 export type Subject =
@@ -95,7 +109,7 @@ export interface OrderSlot {
 export type LockGroupState = 'sealed' | 'unlockable';
 
 export interface GameState {
-  version: 2;
+  version: 3;
   /** Игровое время с начала партии, мс. Меняется только командой `tick`. */
   nowMs: number;
   nextUid: number;
@@ -106,6 +120,8 @@ export interface GameState {
     height: number;
     /** Клетки построчно: индекс `y * width + x`. */
     cells: (Entity | null)[];
+    /** Ограничения клеток (тот же индекс); `null` — клетка открыта. */
+    gates: (Gate | null)[];
   };
   energy: {
     value: number;
@@ -224,7 +240,10 @@ type EventBody =
       /** `storage` — на склад; `reward` — предмет превратился в награды (`reward_granted`). */
       to: 'storage' | 'reward';
     }
-  | { type: 'lock_opened'; group: string; chain: string; level: number; at: Cell }
+  /** Заблокированная клетка открыта слиянием; `subject` — что было в клетке до слияния. */
+  | { type: 'lock_opened'; group: string | null; subject: Subject; at: Cell }
+  /** «Песок» расчищен в этих клетках (слиянием в соседней заблокированной клетке). */
+  | { type: 'cells_uncovered'; cells: Cell[] }
   | { type: 'locks_unlockable'; groups: string[] }
   | { type: 'bubble_popped'; chain: string; level: number; cost: number; at: Cell }
   | { type: 'bubble_expired'; chain: string; level: number; at: Cell }

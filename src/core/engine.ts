@@ -35,12 +35,17 @@ export function createEngine(config: GameConfig): Engine {
     });
     const { start, max, regenMs } = rules.energy;
     const base: GameState = {
-      version: 2,
+      version: 3,
       nowMs: 0,
       nextUid,
       nextOrderId: 1,
       rng,
-      board: { width: rules.board.width, height: rules.board.height, cells },
+      board: {
+        width: rules.board.width,
+        height: rules.board.height,
+        cells,
+        gates: rules.board.gates.map((g) => (g ? { ...g } : null)),
+      },
       energy: { value: start, nextRegenAt: start < max ? regenMs : null },
       hard: config.currencies.hard.start,
       resources: Object.fromEntries(config.currencies.resources.map((r) => [r.id, r.start])),

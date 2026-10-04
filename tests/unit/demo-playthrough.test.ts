@@ -26,7 +26,8 @@ describe('демо-пресет: бот проходит два уровня', (
     expect(state.level.completedAll).toBe(true);
     expect(count('level_completed')).toBe(2);
     expect(count('order_completed')).toBeGreaterThanOrEqual(13);
-    expect(count('lock_opened')).toBe(3);
+    // Три клетки группы zone2 и заблокированная клетка поля (0, 7).
+    expect(count('lock_opened')).toBe(4);
     expect(events.some((e) => e.type === 'cheat_used')).toBe(false);
     // В процессе сработали пузыри и кулдауны генераторов — механики не простаивают.
     expect(count('generator_cooldown_started')).toBeGreaterThan(0);

@@ -1,6 +1,7 @@
 import { FORMULA_CONTEXTS, type GameConfig, type LegendEntry } from '@/config';
 import { ExprError, compileFormula, type Formula } from '@/expr';
 import { t } from '@/i18n/ru';
+import type { Gate } from './types';
 
 /**
  * Ошибка конфига, из-за которой ядро не может стартовать. Подробные проверки с подсказками —
@@ -73,8 +74,7 @@ export interface GeneratorRules {
 export type InitialCell =
   | null
   | { kind: 'item'; chain: string; level: number }
-  | { kind: 'generator'; generator: string; level: number }
-  | { kind: 'lock'; group: string; chain: string; level: number };
+  | { kind: 'generator'; generator: string; level: number };
 
 export type RewardRules =
   | { type: 'energy' | 'hard'; amount: Formula }
@@ -121,7 +121,7 @@ export interface Rules {
     regenMs: number;
     allowOverMax: boolean;
   };
-  board: { width: number; height: number; initial: InitialCell[] };
+  board: { width: number; height: number; initial: InitialCell[]; gates: (Gate | null)[] };
   lockGroups: string[];
   levels: BoardLevelRules[];
   orders: {
@@ -293,6 +293,8 @@ export function compileRules(config: GameConfig): Rules {
     }
   });
 
+  // Замки MVP (`board.locks`): предмет в клетке + ограничение «группа» и «заблокирована».
+  const gates: (Gate | null)[] = initial.map(() => null);
   const lockGroups: string[] = [];
   locks.forEach((lock, li) => {
     checkItem(lock.content.item, lock.content.level, `board.locks[${li}].content`);
@@ -302,13 +304,22 @@ export function compileRules(config: GameConfig): Rules {
       if (x >= width || y >= height) throw new ConfigError(path, t('config.lockOutside', { x, y }));
       const index = y * width + x;
       if (initial[index] !== null) throw new ConfigError(path, t('config.lockOverlap', { x, y }));
-      initial[index] = {
-        kind: 'lock',
-        group: lock.group,
-        chain: lock.content.item,
-        level: lock.content.level,
-      };
+      initial[index] = { kind: 'item', chain: lock.content.item, level: lock.content.level };
+      gates[index] = { requiredLevel: null, group: lock.group, closed: false, locked: true };
     });
+  });
+
+  // Состояния клеток (поле Spice merge).
+  config.board.cells.forEach((c, ci) => {
+    const [x, y] = c.cell;
+    const path = `board.cells[${ci}].cell`;
+    if (x >= width || y >= height) throw new ConfigError(path, t('config.lockOutside', { x, y }));
+    const index = y * width + x;
+    if (gates[index]) throw new ConfigError(path, t('config.cellDuplicate', { x, y }));
+    if (c.locked && !initial[index]) throw new ConfigError(path, t('config.lockedEmpty', { x, y }));
+    const requiredLevel = c.requiredLevel > 0 ? c.requiredLevel : null;
+    if (requiredLevel === null && !c.closed && !c.locked) return;
+    gates[index] = { requiredLevel, group: null, closed: c.closed, locked: c.locked };
   });
 
   // ---------- Награды, уровни, заказы ----------
@@ -450,7 +461,7 @@ export function compileRules(config: GameConfig): Rules {
       regenMs: secToMs(energy.regen.intervalSec),
       allowOverMax: energy.allowOverMax,
     },
-    board: { width, height, initial },
+    board: { width, height, initial, gates },
     lockGroups,
     levels,
     orders: {

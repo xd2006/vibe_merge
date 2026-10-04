@@ -16,7 +16,10 @@ function hsl(h: number, s: number, l: number): number {
   return (Math.round(f(0) * 255) << 16) | (Math.round(f(8) * 255) << 8) | Math.round(f(4) * 255);
 }
 
-export type PlaceholderVariant = 'item' | 'generator' | 'lockSealed' | 'lockUnlockable';
+export type PlaceholderVariant = 'item' | 'generator';
+
+/** Состояние клетки для отрисовки (см. `CellState` в ядре). */
+export type CellLook = 'open' | 'level' | 'group' | 'closed' | 'locked';
 
 export interface PlaceholderSpec {
   colorKey: string;
@@ -27,6 +30,9 @@ export interface PlaceholderSpec {
   bubble: boolean;
   /** Предмет последнего уровня, который дальше не сливается (значок ★). */
   final: boolean;
+  cell: CellLook;
+  /** Для `cell: 'level'` — уровень, с которого клетка откроется. */
+  cellLevel: number | null;
 }
 
 export interface PlaceholderView {
@@ -67,7 +73,8 @@ export function createPlaceholder(
   const t = spec.maxLevel > 1 ? (spec.level - 1) / (spec.maxLevel - 1) : 1;
   const isGenerator = spec.variant === 'generator';
 
-  if (spec.variant === 'lockSealed') {
+  if (spec.cell === 'group') {
+    // Группа замков ещё не открыта (MVP): содержимое скрыто.
     root.addChild(
       new Graphics().roundRect(-inner / 2, -inner / 2, inner, inner, radius).fill(0x8a8578),
     );
@@ -148,7 +155,14 @@ export function createPlaceholder(
 
   const view: PlaceholderView = { root };
 
-  if (spec.variant === 'lockUnlockable') {
+  if (spec.cell === 'closed' || spec.cell === 'level') {
+    // Закрыто «песком» или по уровню: предмет едва виден, сверху — песок или серая плашка.
+    content.alpha = spec.cell === 'closed' ? 0.18 : 0.35;
+    root.addChild(gateOverlay(size, spec.cell, spec.cellLevel));
+    return view;
+  }
+
+  if (spec.cell === 'locked') {
     content.alpha = 0.45;
     const lock = padlock(size * 0.6, 0x4a463e);
     lock.position.set(-inner / 2 + size * 0.17, -inner / 2 + size * 0.17);
@@ -197,4 +211,42 @@ export function createCellBackground(size: number, dark: boolean): Graphics {
   return new Graphics()
     .roundRect(pad, pad, size - pad * 2, size - pad * 2, size * 0.14)
     .fill(dark ? 0x2a2d34 : 0xe9e4d8);
+}
+
+/**
+ * Покрытие закрытой клетки: «песок» (жёлтая плашка с крапинками) или закрытая по уровню
+ * (серая плашка с номером уровня). Центр — в (0, 0), как у плейсхолдера.
+ */
+export function gateOverlay(
+  size: number,
+  kind: 'closed' | 'level',
+  level: number | null,
+): Container {
+  const pad = Math.max(2, size * 0.06);
+  const inner = size - pad * 2;
+  const box = new Container();
+  const g = new Graphics().roundRect(-inner / 2, -inner / 2, inner, inner, size * 0.18);
+  if (kind === 'closed') {
+    g.fill({ color: 0xd9b77a, alpha: 0.92 });
+    for (const [dx, dy] of [
+      [-0.22, -0.18],
+      [0.2, -0.05],
+      [-0.05, 0.2],
+      [0.24, 0.24],
+      [-0.26, 0.12],
+    ] as const) {
+      g.circle(dx * size, dy * size, size * 0.035).fill(0xb38f52);
+    }
+    box.addChild(g);
+    return box;
+  }
+  g.fill({ color: 0x6b6b70, alpha: 0.7 });
+  box.addChild(g);
+  const text = new Text({
+    text: level === null ? '' : `🔒${level}`,
+    style: { fontFamily: FONT, fontSize: size * 0.22, fontWeight: '700', fill: 0xffffff },
+  });
+  text.anchor.set(0.5);
+  box.addChild(text);
+  return box;
 }

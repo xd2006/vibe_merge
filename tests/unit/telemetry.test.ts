@@ -55,7 +55,7 @@ function play(steps: number) {
       const after = entityAt(state.board, command.to);
       const merged =
         a?.kind === 'item' &&
-        (b?.kind === 'item' || b?.kind === 'lock') &&
+        b?.kind === 'item' &&
         after?.kind === 'item' &&
         after.level === a.level + 1;
       if (merged && a.chain === 'wood' && a.level + 1 === 3) recount.wood3Merged++;

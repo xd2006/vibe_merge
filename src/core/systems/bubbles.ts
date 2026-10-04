@@ -128,6 +128,7 @@ export function popBubble(ctx: Ctx, at: Cell): RejectReason | undefined {
   if (!inBoard(s.board, at)) return 'reject.outOfBoard';
   const e = entityAt(s.board, at);
   if (e?.kind !== 'item' || !e.bubble) return 'reject.notBubble';
+  if (s.board.gates[indexOf(s.board, at)]) return 'reject.locked';
   const cost = popCost(rules, s, e.chain, e.level);
   if (s.hard < cost) return 'reject.noHard';
   s.hard -= cost;

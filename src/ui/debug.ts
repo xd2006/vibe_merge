@@ -1,4 +1,4 @@
-import { cellOf } from '@/core';
+import { cellOf, cellState } from '@/core';
 import type { GameSession } from './session';
 
 /**
@@ -9,19 +9,24 @@ export function exposeDebugHook(session: GameSession): () => void {
   if (!import.meta.env.DEV) return () => {};
   const hook = {
     session,
-    /** Содержимое доски: `{ "x,y": "wood:2" }`. */
+    /**
+     * Содержимое доски: `{ "x,y": "wood:2" }`. Заблокированная клетка — `lock:wood:1`,
+     * закрытая по уровню или «песком» — `closed:wood:1`; пузырь — `bubble:wood:2`.
+     */
     cells(): Record<string, string> {
-      const { board } = session.state;
+      const state = session.state;
       const out: Record<string, string> = {};
-      board.cells.forEach((e, i) => {
+      state.board.cells.forEach((e, i) => {
         if (!e) return;
-        const { x, y } = cellOf(board, i);
+        const { x, y } = cellOf(state.board, i);
+        const kind = cellState(state, i).kind;
+        const prefix =
+          kind === 'locked' || kind === 'group' ? 'lock:' : kind === 'open' ? '' : 'closed:';
         out[`${x},${y}`] =
-          e.kind === 'item'
+          prefix +
+          (e.kind === 'item'
             ? `${e.bubble ? 'bubble:' : ''}${e.chain}:${e.level}`
-            : e.kind === 'lock'
-              ? `lock:${e.chain}:${e.level}`
-              : `${e.generator}:${e.level}`;
+            : `${e.generator}:${e.level}`);
       });
       return out;
     },

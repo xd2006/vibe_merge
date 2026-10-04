@@ -72,14 +72,21 @@ function oracle(rules: Rules, s: GameState, chain: string, level: number): boole
   if (!rules.orders.reach.enabled) return true;
   const depth = rules.orders.reach.maxMergeDepth;
   const fromSource = (src: number) => src <= level && level <= src + depth;
-  for (const e of s.board.cells) {
+  for (let i = 0; i < s.board.cells.length; i++) {
+    const e = s.board.cells[i];
+    const gate = s.board.gates[i];
+    if (gate) {
+      // Заблокированная клетка, открытая для слияния: источник уровня выше содержимого.
+      const groupOpen = !gate.group || s.lockGroups[gate.group] === 'unlockable';
+      const lockable = gate.locked && groupOpen && gate.requiredLevel === null && !gate.closed;
+      if (lockable && e?.kind === 'item' && e.chain === chain && fromSource(e.level + 1))
+        return true;
+      continue;
+    }
     if (e?.kind === 'generator') {
       const lvl = rules.generators.get(e.generator)!.levels[e.level - 1]!;
       if (lvl.produces.some((p) => p.weight > 0 && p.chain === chain && fromSource(p.level)))
         return true;
-    }
-    if (e?.kind === 'lock' && s.lockGroups[e.group] === 'unlockable' && e.chain === chain) {
-      if (fromSource(e.level + 1)) return true;
     }
     if (e?.kind === 'item' && !e.bubble && e.chain === chain && e.level === level) return true;
   }

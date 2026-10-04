@@ -91,6 +91,8 @@ export const ru = {
   'config.unknownLockGroup': 'Группа замков «{id}» не найдена',
   'config.unknownTemplate': 'Шаблон заказа «{id}» не найден',
   'config.unknownResource': 'Ресурс «{id}» не объявлен в currencies.resources',
+  'config.cellDuplicate': 'Клетка ({x}, {y}) уже настроена (board.locks или board.cells)',
+  'config.lockedEmpty': 'Клетка ({x}, {y}) заблокирована, но предмета в ней нет',
 
   // Валидатор: сообщения
   'val.syntax': 'Синтаксическая ошибка JSON: {message}',
@@ -116,6 +118,11 @@ export const ru = {
   'val.unknownPattern': 'Шаблон «{match}» ссылается на несуществующую цепочку или генератор «{id}»',
   'val.artKey': 'Ключ арта «{key}» ссылается на несуществующий предмет',
   'val.unknownResource': 'Ресурс «{id}» не объявлен',
+  'val.cellDuplicate': 'Клетка ({x}, {y}) настроена несколько раз (board.locks и board.cells)',
+  'val.unknownLevel': 'Уровня {level} нет в списке уровней',
+  'val.lockedEmpty': 'Клетка ({x}, {y}) заблокирована, но предмета в ней нет',
+  'val.lockedMaxLevel':
+    'В заблокированной клетке ({x}, {y}) объект максимального уровня — её нельзя будет открыть',
   'val.mixedProduces': 'В одном уровне генератора смешаны weight (веса) и count (мешок)',
   'val.cooldownCharges': 'В режиме мешка (count) кулдаун задаётся циклами — cycles, а не charges',
   'val.cooldownCycles': 'В режиме весов (weight) кулдаун задаётся тапами — charges, а не cycles',
@@ -162,6 +169,11 @@ export const ru = {
   'hint.lockCell': 'Замки ставятся на пустые клетки раскладки («.»), координаты — [x, y] с нуля',
   'hint.emptySkipTime': 'Добавьте значения в cheats.skipTime.minutes или выключите чит',
   'hint.artKey': 'Ключ: «цепочка:уровень» или «generator.id:уровень» существующего предмета',
+  'hint.cellDuplicate': 'Оставьте одну настройку клетки',
+  'hint.unknownLevel':
+    'Укажите id существующего уровня ({list}) или 0, если клетка открыта со старта',
+  'hint.lockedEmpty': 'Поставьте в клетку предмет (раскладка) или снимите locked',
+  'hint.lockedMaxLevel': 'Поставьте предмет ниже максимального уровня или снимите locked',
   'hint.unknownResource': 'Объявите ресурс в currencies.resources. Сейчас: {list}',
   'hint.mixedProduces': 'Используйте во всех строках produces либо weight, либо count',
   'hint.cooldownCharges': 'Замените charges на cycles — число циклов мешка до перезарядки',
@@ -202,6 +214,8 @@ export const ru = {
   'reject.cheatDisabled': 'Чит выключен в конфиге',
   'reject.allLevelsDone': 'Все уровни уже пройдены',
   'reject.notOnCooldown': 'Генератор не перезаряжается',
+  'reject.cellLevel': 'Клетка откроется на следующих уровнях',
+  'reject.cellClosed': 'Расчистите объекты рядом',
   'reject.notCollectable': 'Этот предмет нельзя собрать',
 
   // Прототип: HUD
@@ -245,7 +259,10 @@ export const ru = {
   'item.popNoHard': 'Не хватает валюты: нужно {cost}',
   'item.lockSealed': 'Заблокировано. Откроется на уровне {level}',
   'item.lockSealedNever': 'Заблокировано. Ни один уровень не открывает эту группу',
-  'item.lockUnlockable': 'Перетащите сюда «{name}» ({level} ур.), чтобы открыть клетку',
+  'item.lockUnlockable':
+    'Предмет заблокирован. Перетащите сюда «{name}» ({level} ур.), чтобы открыть клетку',
+  'cell.level': 'Достигните уровня {level}',
+  'cell.closed': 'Расчистите объекты рядом',
   'item.noActions': 'Действий нет',
 
   // Хранилище

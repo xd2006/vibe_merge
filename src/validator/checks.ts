@@ -303,6 +303,71 @@ export function semanticIssues(c: GameConfig): Issue[] {
     });
   });
 
+  // Состояния клеток (поле Spice merge).
+  const levelIds = new Set(c.levels.map((l) => l.id));
+  const entryAt = (x: number, y: number) => {
+    const ch = [...(layout[y] ?? '')][x];
+    return ch === undefined ? null : (legend[ch] ?? null);
+  };
+  c.board.cells.forEach((cell, ci) => {
+    const [x, y] = cell.cell;
+    const path = `board.cells[${ci}]`;
+    if (x >= width || y >= height) {
+      error(
+        `${path}.cell`,
+        'lockCell',
+        'val.lockOutside',
+        { x, y, width, height },
+        'hint.lockCell',
+      );
+      return;
+    }
+    const key = `${x},${y}`;
+    if (usedCells.has(key))
+      error(`${path}.cell`, 'cellDuplicate', 'val.cellDuplicate', { x, y }, 'hint.cellDuplicate');
+    usedCells.add(key);
+    if (cell.requiredLevel > 0 && !levelIds.has(cell.requiredLevel)) {
+      error(
+        `${path}.requiredLevel`,
+        'unknownLevel',
+        'val.unknownLevel',
+        { level: cell.requiredLevel },
+        'hint.unknownLevel',
+        {
+          list: list([...levelIds].map(String)),
+        },
+      );
+    }
+    if (!cell.locked) return;
+    const entry = entryAt(x, y);
+    if (!entry) {
+      error(`${path}.locked`, 'lockedEmpty', 'val.lockedEmpty', { x, y }, 'hint.lockedEmpty');
+    } else if ('item' in entry) {
+      const max = chainMax.get(entry.item);
+      const chainDef = c.chains.find((ch) => ch.id === entry.item);
+      if (max !== undefined && entry.level >= max && !chainDef?.mergesInto) {
+        error(
+          `${path}.locked`,
+          'lockedMaxLevel',
+          'val.lockedMaxLevel',
+          { x, y },
+          'hint.lockedMaxLevel',
+        );
+      }
+    } else {
+      const max = genMax.get(entry.generator);
+      if (max !== undefined && entry.level >= max) {
+        error(
+          `${path}.locked`,
+          'lockedMaxLevel',
+          'val.lockedMaxLevel',
+          { x, y },
+          'hint.lockedMaxLevel',
+        );
+      }
+    }
+  });
+
   // ---------- Уровни и заказы ----------
 
   c.levels.forEach((l, li) => {
@@ -445,16 +510,26 @@ export function semanticIssues(c: GameConfig): Issue[] {
 
   // ---------- Предупреждения ----------
 
-  const initialGenerators: { id: string; level: number }[] = [];
-  const initialItems: ItemLevel[] = [];
-  for (const row of layout) {
-    for (const ch of row) {
+  // Стартовая доска с учётом состояний клеток: с какого уровня клетка доступна и закрыта ли она.
+  type Placed = { requiredLevel: number; closed: boolean; locked: boolean };
+  const cellCfg = new Map(c.board.cells.map((cc) => [`${cc.cell[0]},${cc.cell[1]}`, cc]));
+  const initialGenerators: ({ id: string; level: number } & Placed)[] = [];
+  const initialItems: (ItemLevel & Placed)[] = [];
+  layout.forEach((row, y) =>
+    [...row].forEach((ch, x) => {
       const entry = legend[ch];
-      if (!entry) continue;
-      if ('generator' in entry) initialGenerators.push({ id: entry.generator, level: entry.level });
-      else initialItems.push({ chain: entry.item, level: entry.level });
-    }
-  }
+      if (!entry) return;
+      const cfg = cellCfg.get(`${x},${y}`);
+      const placed = {
+        requiredLevel: cfg?.requiredLevel ?? 0,
+        closed: cfg?.closed ?? false,
+        locked: cfg?.locked ?? false,
+      };
+      if ('generator' in entry)
+        initialGenerators.push({ id: entry.generator, level: entry.level, ...placed });
+      else initialItems.push({ chain: entry.item, level: entry.level, ...placed });
+    }),
+  );
   if (initialGenerators.length === 0)
     warn('board.layout', 'noGenerators', 'val.warnNoGenerators', {}, 'hint.warnNoGenerators');
   if (c.orders.reachability.mode === 'off') {
@@ -511,11 +586,24 @@ export function semanticIssues(c: GameConfig): Issue[] {
   if (!hasErrors(issues)) {
     const rules = compileRules(c);
     const counted = rules.orders.reach.sources;
-    const generatorSources: ItemLevel[] = counted.has('generator')
-      ? initialGenerators.flatMap(({ id, level }) =>
-          rules.generators.get(id)!.levels[level - 1]!.produces.filter((p) => p.weight > 0),
-        )
-      : [];
+    // DECISION: генератор в закрытой или заблокированной клетке считается источником с уровня
+    // `requiredLevel` (оптимистично: клетку можно открыть); предметы — только в открытых клетках.
+    const generatorSourcesAt = (levelId: number): ItemLevel[] =>
+      counted.has('generator')
+        ? initialGenerators
+            .filter((g) => g.requiredLevel <= levelId)
+            .flatMap(({ id, level }) =>
+              rules.generators.get(id)!.levels[level - 1]!.produces.filter((p) => p.weight > 0),
+            )
+        : [];
+    const existingAt = (levelId: number): ItemLevel[] =>
+      initialItems.filter((it) => it.requiredLevel <= levelId && !it.closed && !it.locked);
+    const lockedCellSourcesAt = (levelId: number): ItemLevel[] =>
+      counted.has('lockedCellsAfterUnlock')
+        ? initialItems
+            .filter((it) => it.locked && it.requiredLevel <= levelId)
+            .map((it) => ({ chain: it.chain, level: it.level + 1 }))
+        : [];
     const extra: ItemLevel[] = [];
     if (counted.has('bubble')) {
       for (const timer of rules.bubbles.timers) {
@@ -539,8 +627,14 @@ export function semanticIssues(c: GameConfig): Issue[] {
       const reach = reachableLevels(
         rules,
         {
-          sources: [...generatorSources, ...lockSources, ...extra, ...rewardSources],
-          existing: initialItems,
+          sources: [
+            ...generatorSourcesAt(level.id),
+            ...lockSources,
+            ...lockedCellSourcesAt(level.id),
+            ...extra,
+            ...rewardSources,
+          ],
+          existing: existingAt(level.id),
         },
         level.orderLevelCap,
       );

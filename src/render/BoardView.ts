@@ -2,8 +2,11 @@ import { Application, Container, Graphics, type FederatedPointerEvent } from 'pi
 import {
   cellOf,
   entityAt,
+  cellState,
   inBoard,
+  indexOf,
   isFinalItem,
+  isFreeCell,
   type Cell,
   type Command,
   type Entity,
@@ -14,6 +17,7 @@ import { formatDuration } from '@/i18n/ru';
 import {
   createCellBackground,
   createPlaceholder,
+  gateOverlay,
   type PlaceholderSpec,
   type PlaceholderView,
 } from './placeholder';
@@ -145,7 +149,7 @@ export class BoardView {
 
     this.cellsLayer.removeChildren().forEach((c) => c.destroy());
     for (let i = 0; i < width * height; i++) {
-      const { x, y } = cellOf({ width, height, cells: [] }, i);
+      const { x, y } = cellOf({ width }, i);
       const bg = createCellBackground(this.cellSize, !!this.options.dark);
       bg.position.set(this.origin.x + x * this.cellSize, this.origin.y + y * this.cellSize);
       this.cellsLayer.addChild(bg);
@@ -185,7 +189,7 @@ export class BoardView {
       seen.add(entity.uid);
       const center = this.cellCenter(cellOf(state.board, i));
       if (entity.uid === this.ui.selectedUid) selectedCenter = center;
-      const spec = this.placeholderSpec(entity, state);
+      const spec = this.placeholderSpec(entity, state, i);
       const texture = this.textureFor(entity);
       const look = JSON.stringify(spec) + (texture ? ':art' : '');
       let sprite = this.sprites.get(entity.uid);
@@ -232,8 +236,11 @@ export class BoardView {
     return art.texture({ kind: 'item', chain: e.chain, level: e.level });
   }
 
-  private placeholderSpec(e: Entity, state: GameState): PlaceholderSpec {
+  private placeholderSpec(e: Entity, state: GameState, index: number): PlaceholderSpec {
     const { chains, generators } = this.options.rules;
+    const cs = cellState(state, index);
+    const cell = cs.kind;
+    const cellLevel = cs.kind === 'level' ? cs.level : null;
     if (e.kind === 'generator') {
       const gen = generators.get(e.generator)!;
       return {
@@ -244,6 +251,8 @@ export class BoardView {
         variant: 'generator',
         bubble: false,
         final: false,
+        cell,
+        cellLevel,
       };
     }
     const chain = chains.get(e.chain)!;
@@ -252,14 +261,11 @@ export class BoardView {
       name: chain.levelNames[e.level - 1] ?? chain.name,
       level: e.level,
       maxLevel: chain.maxLevel,
-      variant:
-        e.kind === 'item'
-          ? 'item'
-          : state.lockGroups[e.group] === 'unlockable'
-            ? 'lockUnlockable'
-            : 'lockSealed',
-      bubble: e.kind === 'item' && !!e.bubble,
-      final: e.kind === 'item' && isFinalItem(this.options.rules, e.chain, e.level),
+      variant: 'item',
+      bubble: !!e.bubble,
+      final: isFinalItem(this.options.rules, e.chain, e.level),
+      cell,
+      cellLevel,
     };
   }
 
@@ -299,10 +305,23 @@ export class BoardView {
   private drawHints() {
     this.hintLayer.removeChildren().forEach((c) => c.destroy());
     const state = this.state;
-    if (!state || !this.ui.highlightFree) return;
-    const pad = Math.max(1, this.cellSize * 0.03);
+    if (!state) return;
+    // Пустые закрытые клетки: «песок» или закрытые по уровню.
     state.board.cells.forEach((e, i) => {
       if (e) return;
+      const cs = cellState(state, i);
+      if (cs.kind !== 'closed' && cs.kind !== 'level') return;
+      const overlay = gateOverlay(this.cellSize, cs.kind, cs.kind === 'level' ? cs.level : null);
+      overlay.position.set(
+        this.cellCenter(cellOf(state.board, i)).x,
+        this.cellCenter(cellOf(state.board, i)).y,
+      );
+      this.hintLayer.addChild(overlay);
+    });
+    if (!this.ui.highlightFree) return;
+    const pad = Math.max(1, this.cellSize * 0.03);
+    state.board.cells.forEach((e, i) => {
+      if (e || !isFreeCell(state.board, i)) return;
       const { x, y } = cellOf(state.board, i);
       const g = new Graphics()
         .roundRect(pad, pad, this.cellSize - pad * 2, this.cellSize - pad * 2, this.cellSize * 0.14)
@@ -337,8 +356,10 @@ export class BoardView {
   }
 
   /** Перетаскивать можно предметы и генераторы; замки — нет, пузыри — только при ubbles.movable. */
-  private draggable(e: Entity | null): boolean {
-    if (!e || e.kind === 'lock') return false;
+  private draggable(e: Entity | null, cell: Cell): boolean {
+    if (!e || !this.state) return false;
+    // Из закрытых и заблокированных клеток предметы не тащат.
+    if (cellState(this.state, indexOf(this.state.board, cell)).kind !== 'open') return false;
     return e.kind === 'generator' || !e.bubble || this.options.rules.bubbles.movable;
   }
 
@@ -348,7 +369,7 @@ export class BoardView {
     if (!cell) return;
     const entity = entityAt(this.state.board, cell);
     this.press = {
-      uid: this.draggable(entity) ? entity!.uid : null,
+      uid: this.draggable(entity, cell) ? entity!.uid : null,
       cell,
       start: { x: e.global.x, y: e.global.y },
       dragging: false,

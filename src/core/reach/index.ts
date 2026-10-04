@@ -3,6 +3,7 @@
  * не может получить на текущем уровне доски. Используется ядром при генерации заказов
  * и валидатором при проверке конфига.
  */
+import { cellState } from '../board';
 import type { Rules } from '../rules';
 import type { GameState } from '../types';
 
@@ -33,19 +34,21 @@ export function sourcesFromState(rules: Rules, s: GameState): ReachSources {
     lvl?.produces.forEach((p) => p.weight > 0 && sources.push({ chain: p.chain, level: p.level }));
   };
 
-  for (const e of s.board.cells) {
-    if (!e) continue;
-    if (e.kind === 'generator' && counted.has('generator')) generatorOutput(e.generator, e.level);
-    // После открытия в клетке остаётся предмет уровнем выше содержимого замка.
-    if (
-      e.kind === 'lock' &&
-      counted.has('lockedCellsAfterUnlock') &&
-      s.lockGroups[e.group] === 'unlockable'
-    ) {
-      sources.push({ chain: e.chain, level: e.level + 1 });
+  s.board.cells.forEach((e, i) => {
+    if (!e) return;
+    const state = cellState(s, i);
+    if (state.kind === 'locked') {
+      // После открытия в клетке остаётся предмет уровнем выше содержимого замка.
+      if (e.kind === 'item' && counted.has('lockedCellsAfterUnlock')) {
+        sources.push({ chain: e.chain, level: e.level + 1 });
+      }
+      return;
     }
+    // Закрытые по уровню и «песок» пока недоступны — не источники и не имеющиеся предметы.
+    if (state.kind !== 'open') return;
+    if (e.kind === 'generator' && counted.has('generator')) generatorOutput(e.generator, e.level);
     if (e.kind === 'item' && !e.bubble) existing.push({ chain: e.chain, level: e.level });
-  }
+  });
   for (const st of s.storage) {
     if (st.kind === 'item') existing.push({ chain: st.chain, level: st.level });
     // Генератор из хранилища можно вернуть на доску, только если возврат разрешён.

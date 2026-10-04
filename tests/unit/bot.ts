@@ -1,13 +1,21 @@
 // Простой жадный бот для интеграционных тестов: сдаёт готовые заказы, открывает замки,
 // сливает нужное, чистит доску и генерирует. Не оптимален, но честно играет по правилам.
-import { cellOf, orderStatus, type Cell, type Command, type GameState, type Rules } from '@/core';
+import {
+  cellOf,
+  cellState,
+  orderStatus,
+  type Cell,
+  type Command,
+  type GameState,
+  type Rules,
+} from '@/core';
 
 type Item = { cell: Cell; chain: string; level: number };
 
 function freeItems(s: GameState): Item[] {
   const out: Item[] = [];
   s.board.cells.forEach((e, i) => {
-    if (e?.kind === 'item' && !e.bubble)
+    if (e?.kind === 'item' && !e.bubble && cellState(s, i).kind === 'open')
       out.push({ cell: cellOf(s.board, i), chain: e.chain, level: e.level });
   });
   return out;
@@ -19,9 +27,9 @@ function wanted(s: GameState): Map<string, Set<number>> {
   const add = (chain: string, level: number) =>
     out.set(chain, (out.get(chain) ?? new Set()).add(level));
   for (const slot of s.orders.slots) slot.order?.requirements.forEach((r) => add(r.chain, r.level));
-  for (const e of s.board.cells) {
-    if (e?.kind === 'lock' && s.lockGroups[e.group] === 'unlockable') add(e.chain, e.level);
-  }
+  s.board.cells.forEach((e, i) => {
+    if (e?.kind === 'item' && cellState(s, i).kind === 'locked') add(e.chain, e.level);
+  });
   return out;
 }
 
@@ -36,7 +44,7 @@ export function botDecide(rules: Rules, s: GameState): Command {
   // 2. Открыть замок подходящим предметом.
   for (let i = 0; i < s.board.cells.length; i++) {
     const lock = s.board.cells[i];
-    if (lock?.kind !== 'lock' || s.lockGroups[lock.group] !== 'unlockable') continue;
+    if (lock?.kind !== 'item' || cellState(s, i).kind !== 'locked') continue;
     const key = items.find((it) => it.chain === lock.chain && it.level === lock.level);
     if (key) return { type: 'move', from: key.cell, to: cellOf(s.board, i) };
   }
@@ -59,7 +67,9 @@ export function botDecide(rules: Rules, s: GameState): Command {
 
   // 5. Генерировать то, что нужно (или что угодно, если нужного генератора нет).
   const generators = s.board.cells.flatMap((e, i) =>
-    e?.kind === 'generator' && e.cooldownUntil === null ? [{ e, cell: cellOf(s.board, i) }] : [],
+    e?.kind === 'generator' && e.cooldownUntil === null && cellState(s, i).kind === 'open'
+      ? [{ e, cell: cellOf(s.board, i) }]
+      : [],
   );
   const useful = generators.find(({ e }) =>
     rules.generators.get(e.generator)!.levels[e.level - 1]!.produces.some((p) => want.has(p.chain)),

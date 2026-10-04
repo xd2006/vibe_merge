@@ -118,8 +118,15 @@
       "ww.ss..",
       "W......",
       ".......",
-      "......S",
+      "ws....S",
       "......."
+    ],
+    "cells": [
+      { "cell": [0, 7], "locked": true },
+      { "cell": [1, 7], "closed": true },
+      { "cell": [0, 8], "closed": true },
+      { "cell": [1, 8], "closed": true, "requiredLevel": 2 },
+      { "cell": [2, 8], "requiredLevel": 2 }
     ],
     "locks": [
       {

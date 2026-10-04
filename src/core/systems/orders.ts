@@ -1,5 +1,5 @@
 import { current, isDraft, type Draft } from 'immer';
-import { boardLevelId, emitNow, isFreeItem, type Ctx } from '../context';
+import { activeItemAt, boardLevelId, emitNow, type Ctx } from '../context';
 import { isReachable, reachableNow, type Reachable } from '../reach';
 import { nextInt, pickWeighted, rollRange } from '../rng';
 import { itemValue, type Rules, type TemplateRules } from '../rules';
@@ -149,9 +149,11 @@ export function orderStatus(
   order: Order,
 ): { requirements: RequirementStatus[]; ready: boolean } {
   const requirements = order.requirements.map((r) => {
-    const onBoard = s.board.cells.filter(
-      (e) => isFreeItem(e) && e.chain === r.chain && e.level === r.level,
-    ).length;
+    // Предметы в пузырях и закрытых клетках в заказы не засчитываются.
+    const onBoard = s.board.cells.filter((_, i) => {
+      const e = activeItemAt(s, i);
+      return !!e && e.chain === r.chain && e.level === r.level;
+    }).length;
     const inStorage =
       s.storage.find((st) => st.kind === 'item' && st.chain === r.chain && st.level === r.level)
         ?.count ?? 0;
@@ -173,8 +175,8 @@ export function deliverOrder(ctx: Ctx, slotIndex: number): RejectReason | undefi
   for (const r of order.requirements) {
     let left = r.count;
     for (let i = 0; i < s.board.cells.length && left > 0; i++) {
-      const e = s.board.cells[i];
-      if (isFreeItem(e) && e.chain === r.chain && e.level === r.level) {
+      const e = activeItemAt(s, i);
+      if (e && e.chain === r.chain && e.level === r.level) {
         s.board.cells[i] = null;
         left--;
       }

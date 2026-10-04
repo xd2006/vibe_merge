@@ -110,6 +110,46 @@ test('пузырь — копия результата слияния, его м
   expect(cells['0,0']).toBeUndefined();
 });
 
+test('слияние в заблокированную клетку открывает её и расчищает «песок»', async ({ page }) => {
+  const cellsConfig = {
+    ...config,
+    chains: [{ id: 'spice', name: 'Специи', levels: [{ name: 'Роза' }, { name: 'Анис' }] }],
+    board: {
+      ...config.board,
+      legend: { '.': null, G: { generator: 'gen', level: 1 }, r: { item: 'spice', level: 1 } },
+      layout: ['rrr', '...', '..G'],
+      cells: [
+        { cell: [1, 0], locked: true },
+        { cell: [2, 0], closed: true },
+        { cell: [1, 1], requiredLevel: 2 },
+      ],
+    },
+    levels: [
+      { id: 1, ordersRequired: 10 },
+      { id: 2, ordersRequired: 10 },
+    ],
+  };
+  await page.goto('/');
+  await page.getByTestId('load-file').setInputFiles({
+    name: 'cells.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(cellsConfig)),
+  });
+  await expect(page.getByTestId('editor-status')).toContainText('ошибок нет');
+  await page.getByRole('button', { name: 'Запустить прототип' }).click();
+
+  expect(await boardCells(page)).toMatchObject({ '1,0': 'lock:spice:1', '2,0': 'closed:spice:1' });
+  const sand = await cellCenter(page, 2, 0);
+  await page.mouse.click(sand.x, sand.y);
+  await expect(page.getByTestId('selection')).toContainText('Расчистите объекты рядом');
+  const level = await cellCenter(page, 1, 1);
+  await page.mouse.click(level.x, level.y);
+  await expect(page.getByTestId('selection')).toHaveCount(0);
+
+  await drag(page, [0, 0], [1, 0]);
+  expect(await boardCells(page)).toMatchObject({ '1,0': 'spice:2', '2,0': 'spice:1' });
+});
+
 test('кулдаун после цикла, пропуск за хард, сбор двойным тапом', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('load-file').setInputFiles({

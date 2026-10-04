@@ -23,7 +23,7 @@ export {
   stableStringify,
   type ReplayResult,
 } from './replay';
-export { cellOf, entityAt, indexOf, inBoard } from './board';
+export { cellOf, cellState, entityAt, indexOf, inBoard, isFreeCell, isOpenCell } from './board';
 export { subjectKey, subjectOf } from './context';
 export { popCost } from './systems/bubbles';
 export { skipCooldownCost } from './systems/generators';
