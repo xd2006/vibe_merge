@@ -16,8 +16,14 @@ export interface Metrics {
   counters: CounterValue[];
   ordersCompleted: number;
   bubblesPopped: number;
-  /** Потраченная хард-валюта (лопание пузырей). */
+  /** Потраченная хард-валюта: лопание пузырей и пропуск кулдаунов. */
   hardSpent: number;
+  /** Пропусков кулдауна генераторов (в том числе бесплатных). */
+  cooldownSkips: number;
+  /** Собрано предметов двойным тапом (на склад и в награды). */
+  itemsCollected: number;
+  /** Получено ресурсов по id (`currencies.resources`). */
+  resourcesGained: Record<string, number>;
   levelsCompleted: number;
   cheatsUsed: number;
 }
@@ -33,9 +39,12 @@ interface Produced {
 function produced(e: GameEvent): Produced[] {
   switch (e.type) {
     case 'merge':
-      return e.kind === 'item'
+      // Слияние в генератор (`mergesInto`) предмета цепочки не создаёт.
+      return e.kind === 'item' && !e.intoGenerator
         ? [{ chain: e.chain, level: e.toLevel, count: 1, source: 'merge' }]
         : [];
+    case 'item_collected':
+      return [{ chain: e.chain, level: e.level, count: 1, source: 'collect' }];
     case 'item_spawned':
       if (e.source === 'generator')
         return [{ chain: e.chain, level: e.level, count: 1, source: 'generator' }];
@@ -74,9 +83,14 @@ export function computeMetrics(
     ordersCompleted: 0,
     bubblesPopped: 0,
     hardSpent: 0,
+    cooldownSkips: 0,
+    itemsCollected: 0,
     levelsCompleted: 0,
     cheatsUsed: 0,
   };
+  const resourcesGained: Record<string, number> = Object.fromEntries(
+    config.currencies.resources.map((r) => [r.id, 0]),
+  );
 
   for (const e of events) {
     if (e.type === 'cheat_used') m.cheatsUsed++;
@@ -95,6 +109,19 @@ export function computeMetrics(
         break;
       case 'level_completed':
         m.levelsCompleted++;
+        break;
+      case 'generator_cooldown_skipped':
+        m.cooldownSkips++;
+        m.hardSpent += e.cost;
+        break;
+      case 'item_collected':
+        m.itemsCollected++;
+        break;
+      case 'reward_granted':
+        if (e.reward.type === 'resource') {
+          resourcesGained[e.reward.resource] =
+            (resourcesGained[e.reward.resource] ?? 0) + e.reward.amount;
+        }
         break;
     }
     for (const p of produced(e)) {
@@ -116,6 +143,7 @@ export function computeMetrics(
       byGenerator: energySpent.byGenerator ? byGenerator : null,
     },
     counters: counters.map((c, i) => ({ id: c.id, name: c.name, value: values[i]! })),
+    resourcesGained,
     ...m,
   };
 }

@@ -7,7 +7,7 @@ export const FORMULA_CONTEXTS = {
   /** `orders.templates[].rewards[].amount`, `levels[].reward[].amount`. */
   reward: ['totalValue', 'boardLevel', 'ordersDone'],
   /** `bubbles.popCost.formula`. */
-  popCost: ['itemValue', 'level', 'boardLevel', 'ordersDone'],
+  popCost: ['itemValue', 'level', 'boardLevel', 'ordersDone', 'baseCost'],
   /** `itemActions[].sell.amount`. */
   sell: ['itemValue', 'level', 'boardLevel', 'ordersDone'],
 } as const satisfies Record<string, readonly FormulaVariable[]>;

@@ -6,7 +6,7 @@ test('вкладка «Арт»: предметы, режим, копирова�
   await page.goto('/');
   await page.getByRole('button', { name: 'Арт', exact: true }).click();
   const panel = page.getByTestId('art-panel');
-  await expect(panel.locator('.art-row')).toHaveCount(12);
+  await expect(panel.locator('.art-row')).toHaveCount(13);
 
   const row = page.getByTestId('art-wood:2');
   await expect(row).toContainText('Доска');

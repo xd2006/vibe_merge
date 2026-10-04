@@ -1,6 +1,14 @@
-import { availableActions, cellOf, popCost, type Cell, type Entity, type GameState } from '@/core';
+import {
+  availableActions,
+  cellOf,
+  popCost,
+  skipCooldownCost,
+  type Cell,
+  type Entity,
+  type GameState,
+} from '@/core';
 import { formatDuration, t } from '@/i18n/ru';
-import { generatorName, itemName } from './names';
+import { generatorName, itemName, rewardText } from './names';
 import type { GameSession } from './session';
 import { useSessionValue } from './useSession';
 
@@ -76,23 +84,62 @@ export function SelectionPanel({
     e.kind === 'item'
       ? itemName(rules, e.chain, e.level)
       : generatorName(rules, e.generator, e.level);
-  let info: string | null = null;
+  const info: string[] = [];
+  let skipCost: number | null = null;
   if (e.kind === 'generator') {
     const lvl = rules.generators.get(e.generator)!.levels[e.level - 1]!;
-    if (e.cooldownUntil !== null) info = t('item.cooldown', { time: left(e.cooldownUntil) });
-    else if (e.charges !== null && lvl.cooldown) {
-      info = t('item.charges', { charges: e.charges, max: lvl.cooldown.charges });
+    if (e.cooldownUntil !== null) {
+      info.push(t('item.cooldown', { time: left(e.cooldownUntil) }));
+      skipCost = skipCooldownCost(rules, state, e);
+    } else if (e.charges !== null && lvl.cooldown?.charges) {
+      info.push(t('item.charges', { charges: e.charges, max: lvl.cooldown.charges }));
     }
+    if (e.bag && e.cooldownUntil === null) {
+      const left = e.bag.reduce((a, b) => a + b, 0);
+      const total = lvl.produces.reduce((a, p) => a + p.weight, 0);
+      info.push(t('item.bag', { left, total }));
+      if (e.cyclesLeft !== null && lvl.cooldown?.cycles) {
+        info.push(t('item.cycles', { left: e.cyclesLeft, max: lvl.cooldown.cycles }));
+      }
+    }
+    if (e.usesLeft !== null) info.push(t('item.usesLeft', { left: e.usesLeft }));
   }
-  const none = !actions.pickUp && !actions.delete && actions.sell === null;
+  const collect = actions.collect;
+  const none =
+    !actions.pickUp && !actions.delete && actions.sell === null && !collect && skipCost === null;
 
   return (
     <div className="panel" data-testid="selection">
       <span className="panel-text">
         <strong>{title}</strong> · {t('item.level', { level: e.level })}
-        {info && <> · {info}</>}
+        {info.map((x) => (
+          <span key={x}> · {x}</span>
+        ))}
       </span>
       <span className="panel-actions">
+        {skipCost !== null && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={hard < skipCost}
+            onClick={() => dispatch({ type: 'skipCooldown', at: cell })}
+          >
+            {skipCost === 0 ? t('item.skipFree') : t('item.skip', { cost: `${skipCost} 💎` })}
+          </button>
+        )}
+        {collect && (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => dispatch({ type: 'collect', at: cell })}
+          >
+            {collect === 'storage'
+              ? t('item.collect')
+              : t('item.collectReward', {
+                  reward: collect.map((r) => rewardText(session, r)).join(', '),
+                })}
+          </button>
+        )}
         {actions.pickUp && (
           <button
             type="button"

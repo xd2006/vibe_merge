@@ -64,6 +64,10 @@ export const ru = {
   'schema.levelOrRange': 'Укажите ровно одно из полей: level или levelRange',
   'schema.matchPattern': 'Шаблон: «цепочка.уровень», «цепочка.*», «generator.id» или «*»',
   'schema.artKey': 'Ключ арта: «цепочка:уровень» или «generator.id:уровень»',
+  'schema.weightOrCount':
+    'Укажите ровно одно из полей: weight (вес) или count (количество в мешке)',
+  'schema.chargesOrCycles':
+    'Укажите ровно одно из полей: charges (тапов до кулдауна) или cycles (циклов мешка до кулдауна)',
 
   // Формулы
   'expr.unexpectedChar': 'Недопустимый символ «{char}»',
@@ -86,6 +90,7 @@ export const ru = {
   'config.lockOverlap': 'Клетка замка ({x}, {y}) занята содержимым раскладки',
   'config.unknownLockGroup': 'Группа замков «{id}» не найдена',
   'config.unknownTemplate': 'Шаблон заказа «{id}» не найден',
+  'config.unknownResource': 'Ресурс «{id}» не объявлен в currencies.resources',
 
   // Валидатор: сообщения
   'val.syntax': 'Синтаксическая ошибка JSON: {message}',
@@ -110,6 +115,11 @@ export const ru = {
   'val.emptySkipTime': 'Чит «сдвиг времени» включён, но список минут пуст',
   'val.unknownPattern': 'Шаблон «{match}» ссылается на несуществующую цепочку или генератор «{id}»',
   'val.artKey': 'Ключ арта «{key}» ссылается на несуществующий предмет',
+  'val.unknownResource': 'Ресурс «{id}» не объявлен',
+  'val.mixedProduces': 'В одном уровне генератора смешаны weight (веса) и count (мешок)',
+  'val.cooldownCharges': 'В режиме мешка (count) кулдаун задаётся циклами — cycles, а не charges',
+  'val.cooldownCycles': 'В режиме весов (weight) кулдаун задаётся тапами — charges, а не cycles',
+  'val.warnCollectNoStorage': 'Предмет собирается на склад, но хранилище выключено',
   'val.warnNoTemplate': 'На уровне {level} ни один шаблон заказов не проходит по достижимости',
   'val.warnLockNeverOpens': 'Группа замков «{group}» не открывается ни одним уровнем',
   'val.warnLockNoSource':
@@ -147,6 +157,12 @@ export const ru = {
   'hint.lockCell': 'Замки ставятся на пустые клетки раскладки («.»), координаты — [x, y] с нуля',
   'hint.emptySkipTime': 'Добавьте значения в cheats.skipTime.minutes или выключите чит',
   'hint.artKey': 'Ключ: «цепочка:уровень» или «generator.id:уровень» существующего предмета',
+  'hint.unknownResource': 'Объявите ресурс в currencies.resources. Сейчас: {list}',
+  'hint.mixedProduces': 'Используйте во всех строках produces либо weight, либо count',
+  'hint.cooldownCharges': 'Замените charges на cycles — число циклов мешка до перезарядки',
+  'hint.cooldownCycles': 'Замените cycles на charges — число тапов до перезарядки',
+  'hint.warnCollectNoStorage':
+    'Собранные предметы всё равно попадут на склад; включите storage.enabled, чтобы склад был виден',
   'hint.warnNoTemplate':
     'Добавьте шаблон для этого уровня, увеличьте maxMergeDepth или добавьте источник предметов',
   'hint.warnLockNeverOpens': 'Добавьте группу в levels[].unlocks нужного уровня',
@@ -177,6 +193,8 @@ export const ru = {
   'reject.orderNotReady': 'Не хватает предметов для заказа',
   'reject.cheatDisabled': 'Чит выключен в конфиге',
   'reject.allLevelsDone': 'Все уровни уже пройдены',
+  'reject.notOnCooldown': 'Генератор не перезаряжается',
+  'reject.notCollectable': 'Этот предмет нельзя собрать',
 
   // Прототип: HUD
   'hud.energy': 'Энергия',
@@ -186,6 +204,7 @@ export const ru = {
   'hud.level': 'Уровень {level}',
   'hud.levelProgress': 'заказы {done} / {required}',
   'hud.allLevelsDone': 'все уровни пройдены',
+  'hud.rewardQueue': 'ждут места: {count}',
   'board.cooldown': '{time}',
   'board.levelBadge': '{level}',
   'error.configInvalid': 'Конфиг содержит ошибки',
@@ -204,6 +223,13 @@ export const ru = {
   'item.delete': 'Удалить',
   'item.sell': 'Продать +{amount}',
   'item.charges': 'Заряды: {charges} / {max}',
+  'item.bag': 'В цикле: {left} / {total}',
+  'item.cycles': 'Циклов до перезарядки: {left} / {max}',
+  'item.usesLeft': 'Осталось использований: {left}',
+  'item.skip': 'Ускорить за {cost}',
+  'item.skipFree': 'Ускорить бесплатно',
+  'item.collect': 'Собрать на склад',
+  'item.collectReward': 'Забрать: {reward}',
   'item.cooldown': 'Перезарядка: {time}',
   'item.bubble': 'В пузыре',
   'item.bubbleExpires': 'исчезнет через {time}',

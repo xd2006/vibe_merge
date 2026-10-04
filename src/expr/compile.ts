@@ -7,6 +7,7 @@ export const FORMULA_VARIABLES = [
   'totalValue',
   'boardLevel',
   'ordersDone',
+  'baseCost',
 ] as const;
 export type FormulaVariable = (typeof FORMULA_VARIABLES)[number];
 

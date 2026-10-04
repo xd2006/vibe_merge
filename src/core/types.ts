@@ -28,8 +28,14 @@ export interface GeneratorEntity {
   kind: 'generator';
   generator: string;
   level: number;
-  /** Сколько предметов осталось до кулдауна; `null`, если у уровня нет кулдауна. */
+  /** Режим весов: сколько тапов осталось до кулдауна; `null`, если кулдауна нет. */
   charges: number | null;
+  /** Режим мешка: сколько предметов каждого вида (как в `produces`) осталось в текущем цикле. */
+  bag: number[] | null;
+  /** Режим мешка: сколько циклов осталось до кулдауна; `null`, если кулдауна нет. */
+  cyclesLeft: number | null;
+  /** Сколько тапов (весы) или циклов (мешок) осталось до исчезновения; `null` — бесконечно. */
+  usesLeft: number | null;
   /** Время окончания кулдауна (игровое время, мс); `null`, если генератор не на кулдауне. */
   cooldownUntil: number | null;
 }
@@ -65,7 +71,9 @@ export interface OrderRequirement {
 export type ResolvedReward =
   | { type: 'energy'; amount: number }
   | { type: 'hard'; amount: number }
-  | { type: 'item'; chain: string; level: number; count: number };
+  | { type: 'resource'; resource: string; amount: number }
+  | { type: 'item'; chain: string; level: number; count: number }
+  | { type: 'generator'; generator: string; level: number; count: number };
 
 export interface Order {
   id: number;
@@ -87,7 +95,7 @@ export interface OrderSlot {
 export type LockGroupState = 'sealed' | 'unlockable';
 
 export interface GameState {
-  version: 1;
+  version: 2;
   /** Игровое время с начала партии, мс. Меняется только командой `tick`. */
   nowMs: number;
   nextUid: number;
@@ -105,7 +113,14 @@ export interface GameState {
     nextRegenAt: number | null;
   };
   hard: number;
+  /** Дополнительные ресурсы по id (`currencies.resources`). */
+  resources: Record<string, number>;
   storage: StorageStack[];
+  /**
+   * Генераторы-награды, которым не хватило места на доске: ставятся в первую свободную
+   * клетку, как только она освободится (по порядку получения).
+   */
+  rewardQueue: Subject[];
   level: {
     /** Индекс текущего уровня в `levels`. */
     index: number;
@@ -137,13 +152,19 @@ export type Command =
   /** Перенос предмета. На такой же предмет — слияние, на другой — обмен местами. */
   | { type: 'move'; from: Cell; to: Cell }
   | { type: 'tapGenerator'; at: Cell }
+  /** Пропуск кулдауна генератора за хард-валюту. */
+  | { type: 'skipCooldown'; at: Cell }
+  /** Сбор предмета двойным тапом: на склад или в награду. */
+  | { type: 'collect'; at: Cell }
   | { type: 'popBubble'; at: Cell }
   | { type: 'itemAction'; at: Cell; action: ItemAction }
   | { type: 'returnFromStorage'; key: string; to: Cell }
   | { type: 'deliverOrder'; slot: number }
   | CheatCommand;
 
-export type SpawnSource = 'generator' | 'reward' | 'bubbleTimer';
+export type RewardSource = 'order' | 'level' | 'collect';
+
+export type SpawnSource = 'generator' | 'reward' | 'bubbleTimer' | 'collect';
 
 type EventBody =
   | { type: 'energy_spent'; generator: string; level: number; amount: number }
@@ -158,7 +179,16 @@ type EventBody =
       at?: Cell;
       inBubble?: true;
     }
-  | { type: 'merge'; kind: 'item'; chain: string; fromLevel: number; toLevel: number; at: Cell }
+  | {
+      type: 'merge';
+      kind: 'item';
+      chain: string;
+      fromLevel: number;
+      toLevel: number;
+      at: Cell;
+      /** Два предмета последнего уровня слились в генератор (`chains[].mergesInto`). */
+      intoGenerator?: { generator: string; level: number };
+    }
   | {
       type: 'merge';
       kind: 'generator';
@@ -175,6 +205,25 @@ type EventBody =
       untilMs: number;
     }
   | { type: 'generator_cooldown_ended'; generator: string; level: number; at: Cell }
+  | {
+      type: 'generator_cooldown_skipped';
+      generator: string;
+      level: number;
+      at: Cell;
+      cost: number;
+      /** Сколько оставалось до конца кулдауна, мс. */
+      remainingMs: number;
+    }
+  | { type: 'generator_depleted'; generator: string; level: number; at: Cell }
+  | { type: 'generator_placed'; generator: string; level: number; at: Cell }
+  | {
+      type: 'item_collected';
+      chain: string;
+      level: number;
+      at: Cell;
+      /** `storage` — на склад; `reward` — предмет превратился в награды (`reward_granted`). */
+      to: 'storage' | 'reward';
+    }
   | { type: 'lock_opened'; group: string; chain: string; level: number; at: Cell }
   | { type: 'locks_unlockable'; groups: string[] }
   | { type: 'bubble_popped'; chain: string; level: number; cost: number; at: Cell }
@@ -193,7 +242,7 @@ type EventBody =
       totalValue: number;
     }
   | { type: 'orders_stopped' }
-  | { type: 'reward_granted'; reward: ResolvedReward; source: 'order' | 'level' }
+  | { type: 'reward_granted'; reward: ResolvedReward; source: RewardSource }
   | { type: 'level_completed'; level: number; last: boolean }
   | { type: 'cheat_used'; name: CheatCommand['cheat']; amount?: number; minutes?: number };
 

@@ -61,8 +61,9 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
         ),
       ],
       templateRef: ids(asObj(config.orders).templates),
+      resourceRef: ids(asObj(config.currencies).resources),
     }),
-    [config.chains, config.generators, config.board, config.orders],
+    [config.chains, config.generators, config.board, config.orders, config.currencies],
   );
 
   const issueCount = (block: string) =>

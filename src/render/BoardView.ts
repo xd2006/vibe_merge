@@ -3,6 +3,7 @@ import {
   cellOf,
   entityAt,
   inBoard,
+  isFinalItem,
   type Cell,
   type Command,
   type Entity,
@@ -24,6 +25,8 @@ export interface BoardViewOptions {
   onCommand: (command: Command) => void;
   /** Тап по клетке (без перетаскивания), в том числе по пустой. */
   onTap: (cell: Cell, entity: Entity | null) => void;
+  /** Второй тап по той же клетке вскоре после первого (сбор предмета). */
+  onDoubleTap?: (cell: Cell, entity: Entity | null) => void;
   dark?: boolean;
   /** Арт предметов; без него — плейсхолдеры. */
   art?: ArtLibrary;
@@ -47,6 +50,8 @@ interface Sprite {
 
 /** Порог в пикселях, после которого нажатие считается перетаскиванием, а не тапом. */
 const DRAG_THRESHOLD = 8;
+/** Два тапа по одной клетке быстрее этого — двойной тап. */
+const DOUBLE_TAP_MS = 350;
 
 /**
  * Доска на PixiJS: рисует состояние ядра и превращает жесты в команды.
@@ -70,6 +75,7 @@ export class BoardView {
     dragging: boolean;
   } | null = null;
   private destroyed = false;
+  private lastTap: { cell: Cell; at: number } | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
   private constructor(
@@ -237,6 +243,7 @@ export class BoardView {
         maxLevel: gen.maxLevel,
         variant: 'generator',
         bubble: false,
+        final: false,
       };
     }
     const chain = chains.get(e.chain)!;
@@ -252,6 +259,7 @@ export class BoardView {
             ? 'lockUnlockable'
             : 'lockSealed',
       bubble: e.kind === 'item' && !!e.bubble,
+      final: e.kind === 'item' && isFinalItem(this.options.rules, e.chain, e.level),
     };
   }
 
@@ -371,7 +379,18 @@ export class BoardView {
       sprite.view.root.scale.set(1);
     }
     if (!press.dragging) {
-      this.options.onTap(press.cell, entityAt(this.state.board, press.cell));
+      const entity = entityAt(this.state.board, press.cell);
+      const now = performance.now();
+      const last = this.lastTap;
+      const double =
+        last !== null &&
+        now - last.at < DOUBLE_TAP_MS &&
+        last.cell.x === press.cell.x &&
+        last.cell.y === press.cell.y;
+      // Третий тап подряд снова считается первым.
+      this.lastTap = double ? null : { cell: press.cell, at: now };
+      this.options.onTap(press.cell, entity);
+      if (double) this.options.onDoubleTap?.(press.cell, entityAt(this.state.board, press.cell));
       return;
     }
     const target = sprite ? this.cellAt(sprite.view.root.position) : null;

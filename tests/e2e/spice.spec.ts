@@ -1,0 +1,100 @@
+import { expect, test, type Page } from '@playwright/test';
+
+/** Генератор-мешок с кулдауном после одного цикла, специя собирается на склад, приз — в кристаллы. */
+const config = {
+  meta: { name: 'Spice S1 e2e', seed: 3 },
+  currencies: {
+    hard: { name: 'Сапфиры', start: 20 },
+    resources: [{ id: 'crystal', name: 'Кристаллы' }],
+  },
+  energy: { max: 10, start: 10, regen: { amount: 1, intervalSec: 60 } },
+  chains: [
+    {
+      id: 'spice',
+      name: 'Специи',
+      levels: [
+        { name: 'Роза', collect: 'storage' },
+        { name: 'Кристалл', collect: [{ type: 'resource', resource: 'crystal', amount: 3 }] },
+      ],
+    },
+  ],
+  generators: [
+    {
+      id: 'gen',
+      name: 'Генератор',
+      levels: [
+        {
+          energyCost: 1,
+          cooldown: { cycles: 1, seconds: 600, skipCost: 10 },
+          produces: [{ chain: 'spice', level: 1, count: 1 }],
+        },
+      ],
+    },
+  ],
+  board: {
+    width: 3,
+    height: 3,
+    legend: { '.': null, G: { generator: 'gen', level: 1 }, K: { item: 'spice', level: 2 } },
+    layout: ['G..', '...', '..K'],
+  },
+  levels: [{ id: 1, ordersRequired: 10 }],
+  orders: {
+    slots: 1,
+    templates: [
+      {
+        id: 't',
+        weight: 1,
+        boardLevels: [1, 9],
+        maxRequirements: 1,
+        requirements: [{ chain: 'spice', level: 1 }],
+      },
+    ],
+  },
+};
+
+async function cellCenter(page: Page, x: number, y: number) {
+  const board = page.getByTestId('board');
+  await expect(board).toHaveAttribute('data-cell-size', /^[1-9]\d*$/);
+  const box = (await board.boundingBox())!;
+  const d = await board.evaluate((el) => ({ ...(el as HTMLElement).dataset }));
+  return {
+    x: box.x + Number(d.originX) + (x + 0.5) * Number(d.cellSize),
+    y: box.y + Number(d.originY) + (y + 0.5) * Number(d.cellSize),
+  };
+}
+
+type DebugHook = { cells(): Record<string, string> };
+const boardCells = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __vibeMerge: DebugHook }).__vibeMerge.cells());
+
+test('кулдаун после цикла, пропуск за хард, сбор двойным тапом', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('load-file').setInputFiles({
+    name: 'spice.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(config)),
+  });
+  await expect(page.getByTestId('editor-status')).toContainText('ошибок нет');
+  await page.getByRole('button', { name: 'Запустить прототип' }).click();
+
+  // Один тап — мешок пуст, цикл пройден, кулдаун.
+  const gen = await cellCenter(page, 0, 0);
+  await page.mouse.click(gen.x, gen.y);
+  await expect(page.getByTestId('selection')).toContainText('Перезарядка');
+  await page.getByRole('button', { name: 'Ускорить за 10 💎' }).click();
+  await expect(page.getByTestId('hard-value')).toHaveText('10');
+  await expect(page.getByTestId('selection')).not.toContainText('Перезарядка');
+
+  // Роза появилась в (1, 0); двойной тап — на склад.
+  expect((await boardCells(page))['1,0']).toBe('spice:1');
+  const rose = await cellCenter(page, 1, 0);
+  await page.mouse.dblclick(rose.x, rose.y);
+  await expect(page.getByTestId('open-storage')).toHaveText('Склад · 1');
+  expect((await boardCells(page))['1,0']).toBeUndefined();
+
+  // Призовой предмет — кнопкой в панели — даёт кристаллы.
+  const prize = await cellCenter(page, 2, 2);
+  await page.mouse.click(prize.x, prize.y);
+  await page.getByRole('button', { name: 'Забрать: Кристаллы 3' }).click();
+  await expect(page.getByTestId('resource-crystal')).toContainText('3');
+});

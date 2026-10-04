@@ -7,7 +7,12 @@ describe('parseConfig', () => {
   it('демо-пресет проходит схему', () => {
     const res = parseConfig(demo);
     if (!res.ok) throw new Error(JSON.stringify(res.issues, null, 2));
-    expect(res.config.generators[0]!.levels[0]!.cooldown).toEqual({ charges: 12, seconds: 120 });
+    expect(res.config.generators[0]!.levels[0]!.cooldown).toEqual({
+      charges: 12,
+      seconds: 120,
+      skipCost: 20,
+      freeSkipSec: 15,
+    });
   });
 
   it('подставляет значения по умолчанию', () => {

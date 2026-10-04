@@ -9,6 +9,7 @@ export interface EditorFormContext {
   generatorRef: string[];
   lockGroupRef: string[];
   templateRef: string[];
+  resourceRef: string[];
 }
 
 /** Какие переменные доступны формуле — по пути поля (id виджета RJSF содержит путь). */
@@ -79,4 +80,5 @@ export const widgets: RegistryWidgetsType = {
   generatorRef: refWidget('generatorRef'),
   lockGroupRef: refWidget('lockGroupRef'),
   templateRef: refWidget('templateRef'),
+  resourceRef: refWidget('resourceRef'),
 };

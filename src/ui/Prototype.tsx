@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GameConfig } from '@/config';
-import type { Cell, Entity } from '@/core';
+import { availableActions, type Cell, type Entity } from '@/core';
 import { t } from '@/i18n/ru';
 import { ArtLibrary, BoardView, type BoardUi } from '@/render';
 import { exposeDebugHook } from './debug';
 import { FpsMeter } from './FpsMeter';
-import { EnergyBar, HardBalance, LevelProgress, RejectionToast } from './Hud';
+import { EnergyBar, HardBalance, LevelProgress, RejectionToast, ResourcesBar } from './Hud';
 import { MetricsSheet } from './MetricsSheet';
 import { subjectName } from './names';
 import { OrdersBar } from './Orders';
@@ -73,6 +73,14 @@ export function Prototype({ config, onExit }: { config: GameConfig; onExit?: () 
       setSelectedUid(entity.uid);
     };
 
+    // Двойной тап собирает предмет (специю — на склад, призовой — в награду). Для остальных
+    // предметов ничего не происходит, поэтому отказ «нельзя собрать» не показываем.
+    const onDoubleTap = (cell: Cell, entity: Entity | null) => {
+      if (placingRef.current || entity?.kind !== 'item' || entity.bubble) return;
+      if (!availableActions(session.engine.rules, session.state, entity).collect) return;
+      session.dispatch({ type: 'collect', at: cell });
+    };
+
     // Сначала арт (если есть), затем доска: без арта предметы рисуются плейсхолдерами.
     void ArtLibrary.load(config)
       .then((art) =>
@@ -80,6 +88,7 @@ export function Prototype({ config, onExit }: { config: GameConfig; onExit?: () 
           rules: session.engine.rules,
           onCommand: (c) => session.dispatch(c),
           onTap,
+          onDoubleTap,
           dark: window.matchMedia('(prefers-color-scheme: dark)').matches,
           art,
         }),
@@ -137,6 +146,7 @@ export function Prototype({ config, onExit }: { config: GameConfig; onExit?: () 
         <EnergyBar session={session} />
         <HardBalance session={session} />
         <LevelProgress session={session} />
+        <ResourcesBar session={session} />
       </header>
       <OrdersBar session={session} />
       <div className="board" ref={boardHost} data-testid="board" />

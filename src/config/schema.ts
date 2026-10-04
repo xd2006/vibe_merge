@@ -19,6 +19,7 @@ const ChainRef = ref('chainRef');
 const GeneratorRef = ref('generatorRef');
 const LockGroupRef = ref('lockGroupRef');
 const TemplateRef = ref('templateRef');
+const ResourceRef = ref('resourceRef');
 
 const Level = z.int().min(1);
 
@@ -62,6 +63,12 @@ const MetaSchema = z.strictObject({
 
 const CurrenciesSchema = z.strictObject({
   hard: z.strictObject({ name: z.string().min(1), start: z.int().min(0).default(0) }),
+  /** Дополнительные ресурсы (кристаллы, билеты и т. п.) — в прототипе просто счётчики. */
+  resources: z
+    .array(
+      z.strictObject({ id: IdSchema, name: z.string().min(1), start: z.int().min(0).default(0) }),
+    )
+    .default([]),
 });
 
 const EnergySchema = z.strictObject({
@@ -71,21 +78,98 @@ const EnergySchema = z.strictObject({
   allowOverMax: z.boolean().default(true),
 });
 
+const RewardSchema = z.discriminatedUnion('type', [
+  z.strictObject({ type: z.literal('energy'), amount: FormulaSchema }).meta({ title: 'Энергия' }),
+  z.strictObject({ type: z.literal('hard'), amount: FormulaSchema }).meta({ title: 'Хард-валюта' }),
+  z
+    .strictObject({ type: z.literal('resource'), resource: ResourceRef, amount: FormulaSchema })
+    .meta({ title: 'Ресурс' }),
+  z
+    .strictObject({
+      type: z.literal('item'),
+      chain: ChainRef,
+      level: Level,
+      count: z.int().min(1).default(1),
+    })
+    .meta({ title: 'Предмет' }),
+  z
+    .strictObject({
+      type: z.literal('generator'),
+      generator: GeneratorRef,
+      level: Level,
+      count: z.int().min(1).default(1),
+    })
+    .meta({ title: 'Генератор' }),
+]);
+
+/**
+ * Сбор предмета двойным тапом: `"storage"` — на склад (специи), список наград —
+ * предмет превращается в награду (призовые цепочки). Без поля предмет не собирается.
+ */
+const CollectSchema = z.union([z.literal('storage'), z.array(RewardSchema).min(1)]);
+
+const ChainLevelSchema = z.strictObject({
+  name: z.string().min(1),
+  /** Можно ли удалить с поля; не задано — решают правила `itemActions`. */
+  deletable: z.boolean().optional(),
+  /** Цена объекта в хард-валюте — переменная `baseCost` в формуле цены лопания пузыря. */
+  baseCost: z.int().min(0).optional(),
+  /** Вероятность (0–1) появления копии в пузыре при слиянии в этот уровень. */
+  bubbleProbability: z.number().min(0).max(1).optional(),
+  collect: CollectSchema.optional(),
+});
+
 const ChainSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
   /** Ценность предмета; переменная `level`. */
   value: FormulaSchema.default('2 ^ level'),
-  levels: z.array(z.strictObject({ name: z.string().min(1) })).min(1),
+  levels: z.array(ChainLevelSchema).min(1),
+  /** Два предмета последнего уровня сливаются в этот генератор (например, в «конвертер»). */
+  mergesInto: z.strictObject({ generator: GeneratorRef, level: Level }).optional(),
 });
+
+/**
+ * Что выдаёт генератор. С `weight` — один предмет за тап по весам. С `count` — «мешок»:
+ * за цикл выдаётся ровно `count` предметов каждого вида в случайном порядке, по одному за тап.
+ */
+const ProduceSchema = z
+  .strictObject({
+    chain: ChainRef,
+    level: Level,
+    weight: Weight.optional(),
+    count: z.int().min(0).optional(),
+  })
+  .refine((p) => (p.weight === undefined) !== (p.count === undefined), {
+    error: () => t('schema.weightOrCount'),
+  });
 
 const GeneratorLevelSchema = z.strictObject({
   /** Название уровня генератора для интерфейса и арта; по умолчанию имя генератора. */
   name: z.string().min(1).optional(),
   energyCost: z.int().min(0),
-  /** Сколько предметов выдаётся до кулдауна и сколько длится кулдаун. Без поля кулдауна нет. */
-  cooldown: z.strictObject({ charges: z.int().min(1), seconds: z.number().positive() }).optional(),
-  produces: z.array(z.strictObject({ chain: ChainRef, level: Level, weight: Weight })).min(1),
+  /**
+   * Кулдаун: после `charges` тапов (режим весов) или `cycles` циклов (режим мешка) генератор
+   * перезаряжается `seconds` секунд. Пропуск — за `skipCost` хард-валюты, цена падает
+   * с оставшимся временем, за `freeSkipSec` до конца — бесплатно. Без поля кулдауна нет.
+   */
+  cooldown: z
+    .strictObject({
+      charges: z.int().min(1).optional(),
+      cycles: z.int().min(1).optional(),
+      seconds: z.number().positive(),
+      skipCost: z.int().min(0).optional(),
+      freeSkipSec: z.number().min(0).default(0),
+    })
+    .refine((c) => (c.charges === undefined) !== (c.cycles === undefined), {
+      error: () => t('schema.chargesOrCycles'),
+    })
+    .optional(),
+  /** Генератор исчезает после стольких тапов (режим весов) или циклов (режим мешка). */
+  uses: z.int().min(1).optional(),
+  /** Можно ли удалить с поля; не задано — решают правила `itemActions`. */
+  deletable: z.boolean().optional(),
+  produces: z.array(ProduceSchema).min(1),
 });
 
 const GeneratorSchema = z.strictObject({
@@ -118,19 +202,6 @@ const BoardSchema = z.strictObject({
     )
     .default([]),
 });
-
-const RewardSchema = z.discriminatedUnion('type', [
-  z.strictObject({ type: z.literal('energy'), amount: FormulaSchema }).meta({ title: 'Энергия' }),
-  z.strictObject({ type: z.literal('hard'), amount: FormulaSchema }).meta({ title: 'Хард-валюта' }),
-  z
-    .strictObject({
-      type: z.literal('item'),
-      chain: ChainRef,
-      level: Level,
-      count: z.int().min(1).default(1),
-    })
-    .meta({ title: 'Предмет' }),
-]);
 
 const BoardLevelSchema = z.strictObject({
   id: z.int().min(1),
@@ -241,7 +312,14 @@ const CheatsSchema = z.strictObject({
     .prefault({}),
 });
 
-const CounterSource = z.enum(['merge', 'generator', 'reward', 'bubblePop', 'orderDelivered']);
+const CounterSource = z.enum([
+  'merge',
+  'generator',
+  'reward',
+  'bubblePop',
+  'orderDelivered',
+  'collect',
+]);
 
 const TelemetrySchema = z.strictObject({
   counters: z
@@ -313,3 +391,4 @@ export type Generator = GameConfig['generators'][number];
 export type GeneratorLevel = Generator['levels'][number];
 export type LegendEntry = GameConfig['board']['legend'][string];
 export type Reward = z.output<typeof RewardSchema>;
+export type ChainLevel = Chain['levels'][number];

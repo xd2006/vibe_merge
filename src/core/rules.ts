@@ -18,18 +18,48 @@ export class ConfigError extends Error {
 
 export type Range = [number, number];
 
+/** Сбор предмета: на склад или превращение в награды; `null` — не собирается. */
+export type CollectRules = null | 'storage' | RewardRules[];
+
+/** Свойства одного уровня цепочки. */
+export interface ChainLevelRules {
+  name: string;
+  /** `undefined` — решают правила `itemActions`. */
+  deletable: boolean | undefined;
+  baseCost: number;
+  bubbleProbability: number;
+  collect: CollectRules;
+}
+
 export interface ChainRules {
   id: string;
   name: string;
   levelNames: string[];
+  levels: ChainLevelRules[];
   maxLevel: number;
   value: Formula;
+  /** Во что сливаются два предмета последнего уровня. */
+  mergesInto: { generator: string; level: number } | null;
 }
 
 export interface GeneratorLevelRules {
   name: string;
   energyCost: number;
-  cooldown: { charges: number; ms: number } | null;
+  /** `weights` — предмет за тап по весам; `bag` — мешок из точного количества за цикл. */
+  mode: 'weights' | 'bag';
+  cooldown: {
+    /** Тапов до кулдауна (режим весов). */
+    charges: number | null;
+    /** Циклов мешка до кулдауна (режим мешка). */
+    cycles: number | null;
+    ms: number;
+    skipCost: number;
+    freeSkipMs: number;
+  } | null;
+  /** Тапов (весы) или циклов (мешок) до исчезновения генератора; `null` — бесконечно. */
+  uses: number | null;
+  deletable: boolean | undefined;
+  /** В режиме мешка `weight` — количество предметов этого вида в мешке. */
   produces: { chain: string; level: number; weight: number }[];
 }
 
@@ -48,7 +78,9 @@ export type InitialCell =
 
 export type RewardRules =
   | { type: 'energy' | 'hard'; amount: Formula }
-  | { type: 'item'; chain: string; level: number; count: number };
+  | { type: 'resource'; resource: string; amount: Formula }
+  | { type: 'item'; chain: string; level: number; count: number }
+  | { type: 'generator'; generator: string; level: number; count: number };
 
 export interface BoardLevelRules {
   id: number;
@@ -148,8 +180,17 @@ export function compileRules(config: GameConfig): Rules {
       id: c.id,
       name: c.name,
       levelNames: c.levels.map((l) => l.name),
+      // Сбор с наградами компилируется ниже, когда известны все цепочки и генераторы.
+      levels: c.levels.map((l) => ({
+        name: l.name,
+        deletable: l.deletable,
+        baseCost: l.baseCost ?? 0,
+        bubbleProbability: l.bubbleProbability ?? 0,
+        collect: null,
+      })),
       maxLevel: c.levels.length,
       value: formula(c.value, `chains[${i}].value`, FORMULA_CONTEXTS.chainValue),
+      mergesInto: c.mergesInto ? { ...c.mergesInto } : null,
     });
   });
 
@@ -174,13 +215,27 @@ export function compileRules(config: GameConfig): Rules {
         l.produces.forEach((p, pi) =>
           checkItem(p.chain, p.level, `generators[${gi}].levels[${li}].produces[${pi}]`),
         );
+        const mode = l.produces.some((p) => p.count !== undefined) ? 'bag' : 'weights';
         return {
           name: l.name ?? g.name,
           energyCost: l.energyCost,
+          mode,
           cooldown: l.cooldown
-            ? { charges: l.cooldown.charges, ms: secToMs(l.cooldown.seconds) }
+            ? {
+                charges: l.cooldown.charges ?? null,
+                cycles: l.cooldown.cycles ?? null,
+                ms: secToMs(l.cooldown.seconds),
+                skipCost: l.cooldown.skipCost ?? 0,
+                freeSkipMs: Math.round(l.cooldown.freeSkipSec * 1000),
+              }
             : null,
-          produces: l.produces.map((p) => ({ ...p })),
+          uses: l.uses ?? null,
+          deletable: l.deletable,
+          produces: l.produces.map((p) => ({
+            chain: p.chain,
+            level: p.level,
+            weight: (mode === 'bag' ? p.count : p.weight) ?? 0,
+          })),
         };
       }),
     });
@@ -251,13 +306,39 @@ export function compileRules(config: GameConfig): Rules {
 
   // ---------- Награды, уровни, заказы ----------
 
+  const resourceIds = new Set(config.currencies.resources.map((r) => r.id));
   const reward = (r: GameConfig['levels'][number]['reward'][number], path: string): RewardRules => {
     if (r.type === 'item') {
       checkItem(r.chain, r.level, path);
       return { type: 'item', chain: r.chain, level: r.level, count: r.count };
     }
-    return { type: r.type, amount: formula(r.amount, `${path}.amount`, FORMULA_CONTEXTS.reward) };
+    if (r.type === 'generator') {
+      checkGenerator(r.generator, r.level, path);
+      return { type: 'generator', generator: r.generator, level: r.level, count: r.count };
+    }
+    const amount = formula(r.amount, `${path}.amount`, FORMULA_CONTEXTS.reward);
+    if (r.type === 'resource') {
+      if (!resourceIds.has(r.resource)) {
+        throw new ConfigError(`${path}.resource`, t('config.unknownResource', { id: r.resource }));
+      }
+      return { type: 'resource', resource: r.resource, amount };
+    }
+    return { type: r.type, amount };
   };
+
+  // Сбор предметов и переход цепочки в генератор — теперь, когда известны генераторы и ресурсы.
+  config.chains.forEach((c, ci) => {
+    const rules = chains.get(c.id)!;
+    c.levels.forEach((l, li) => {
+      if (l.collect === undefined) return;
+      rules.levels[li]!.collect =
+        l.collect === 'storage'
+          ? 'storage'
+          : l.collect.map((r, ri) => reward(r, `chains[${ci}].levels[${li}].collect[${ri}]`));
+    });
+    if (c.mergesInto)
+      checkGenerator(c.mergesInto.generator, c.mergesInto.level, `chains[${ci}].mergesInto`);
+  });
 
   const levels: BoardLevelRules[] = config.levels.map((l, li) => {
     l.unlocks.forEach((group, gi) => {
@@ -397,4 +478,14 @@ export function generatorLevel(rules: Rules, id: string, level: number): Generat
 /** Ценность предмета по формуле цепочки. */
 export function itemValue(rules: Rules, chain: string, level: number): number {
   return rules.chains.get(chain)?.value({ level }) ?? 0;
+}
+
+export function chainLevel(rules: Rules, chain: string, level: number): ChainLevelRules | null {
+  return rules.chains.get(chain)?.levels[level - 1] ?? null;
+}
+
+/** Предмет последнего уровня, который не сливается дальше (для значка «максимальный уровень»). */
+export function isFinalItem(rules: Rules, chain: string, level: number): boolean {
+  const c = rules.chains.get(chain);
+  return !!c && level >= c.maxLevel && !c.mergesInto;
 }

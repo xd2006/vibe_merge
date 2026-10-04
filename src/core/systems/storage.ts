@@ -10,7 +10,14 @@ import {
   toAmount,
   type Ctx,
 } from '../context';
-import { itemValue, type ItemActionRules, type Rules } from '../rules';
+import {
+  chainLevel,
+  itemValue,
+  type CollectRules,
+  type ItemActionRules,
+  type Rules,
+} from '../rules';
+import { grantReward, resolveRewards } from './rewards';
 import type { Cell, Entity, GameState, ItemAction, RejectReason, Subject } from '../types';
 
 /** Совпадает ли предмет с шаблоном `цепочка.уровень`, `цепочка.*`, `generator.id` или `*`. */
@@ -32,19 +39,34 @@ export interface AvailableActions {
   delete: boolean;
   /** Сколько хард-валюты даст продажа; `null` — продажа недоступна. */
   sell: number | null;
+  /** Сбор двойным тапом: на склад или в награды; `null` — не собирается. */
+  collect: CollectRules;
+}
+
+/** Флаг `deletable` у уровня цепочки или генератора; `undefined` — не задан. */
+function deletableFlag(rules: Rules, subject: Subject): boolean | undefined {
+  if (subject.kind === 'item') return chainLevel(rules, subject.chain, subject.level)?.deletable;
+  return rules.generators.get(subject.generator)?.levels[subject.level - 1]?.deletable;
 }
 
 /** Какие действия доступны для сущности на доске (для интерфейса и проверки команд). */
 export function availableActions(rules: Rules, s: GameState, e: Entity): AvailableActions {
-  const none = { pickUp: false, delete: false, sell: null };
+  const none = { pickUp: false, delete: false, sell: null, collect: null };
   const subject = subjectOf(e);
   if (!subject || (e.kind === 'item' && e.bubble)) return none;
   const rule = actionRuleFor(rules, subject);
-  if (!rule) return none;
+  const collect =
+    subject.kind === 'item'
+      ? (chainLevel(rules, subject.chain, subject.level)?.collect ?? null)
+      : null;
+  // Флаг объекта важнее правил itemActions.
+  const del = deletableFlag(rules, subject) ?? rule?.delete ?? false;
+  if (!rule) return { ...none, delete: del, collect };
   const value = subject.kind === 'item' ? itemValue(rules, subject.chain, subject.level) : 0;
   return {
+    collect,
     pickUp: rule.pickUp && rules.storage.enabled,
-    delete: rule.delete,
+    delete: del,
     sell: rule.sell
       ? toAmount(
           rule.sell({
@@ -85,6 +107,36 @@ export function itemAction(ctx: Ctx, at: Cell, action: ItemAction): RejectReason
     emitNow(ctx, { type: 'item_sold', subject, at: cell, amount: actions.sell });
   }
   s.board.cells[indexOf(s.board, at)] = null;
+  return undefined;
+}
+
+/**
+ * Сбор предмета двойным тапом: специя уходит на склад (без награды), призовой предмет
+ * превращается в награды. Остальные предметы не собираются.
+ */
+export function collect(ctx: Ctx, at: Cell): RejectReason | undefined {
+  const { s, rules } = ctx;
+  if (!inBoard(s.board, at)) return 'reject.outOfBoard';
+  const e = entityAt(s.board, at);
+  if (!e) return 'reject.emptyCell';
+  if (e.kind === 'lock') return 'reject.locked';
+  if (e.kind !== 'item') return 'reject.notCollectable';
+  if (e.bubble) return 'reject.bubble';
+  const how = availableActions(rules, s, e).collect;
+  if (!how) return 'reject.notCollectable';
+
+  const cell = { ...at };
+  const { chain, level } = e;
+  s.board.cells[indexOf(s.board, at)] = null;
+  if (how === 'storage') {
+    // DECISION: собранная специя попадает на склад даже при выключенном хранилище
+    // (`storage.enabled` управляет только действием «Забрать»).
+    addToStorage(ctx, { kind: 'item', chain, level });
+    emitNow(ctx, { type: 'item_collected', chain, level, at: cell, to: 'storage' });
+  } else {
+    emitNow(ctx, { type: 'item_collected', chain, level, at: cell, to: 'reward' });
+    for (const reward of resolveRewards(ctx, how, 0)) grantReward(ctx, reward, 'collect');
+  }
   return undefined;
 }
 

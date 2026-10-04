@@ -5,7 +5,10 @@
     "seed": 20260928,
     "artStyle": "cozy cartoon, soft shading, centered object"
   },
-  "currencies": { "hard": { "name": "Гемы", "start": 5 } },
+  "currencies": {
+    "hard": { "name": "Гемы", "start": 5 },
+    "resources": [{ "id": "crystal", "name": "Кристаллы" }]
+  },
   "energy": {
     "max": 100,
     "start": 100,
@@ -18,11 +21,15 @@
       "name": "Дерево",
       "value": "2 ^ level",
       "levels": [
-        { "name": "Ветка" },
-        { "name": "Доска" },
-        { "name": "Брус" },
-        { "name": "Сруб" },
-        { "name": "Изба" }
+        { "name": "Ветка", "baseCost": 1 },
+        { "name": "Доска", "baseCost": 2 },
+        { "name": "Брус", "baseCost": 3, "bubbleProbability": 0.1 },
+        { "name": "Сруб", "baseCost": 5 },
+        {
+          "name": "Изба",
+          "deletable": false,
+          "collect": [{ "type": "resource", "resource": "crystal", "amount": 1 }]
+        }
       ]
     },
     {
@@ -31,10 +38,11 @@
       "value": "3 * 2 ^ (level - 1)",
       "levels": [
         { "name": "Камешек" },
-        { "name": "Булыжник" },
+        { "name": "Булыжник", "collect": "storage" },
         { "name": "Блок" },
         { "name": "Колонна" }
-      ]
+      ],
+      "mergesInto": { "generator": "quarry", "level": 1 }
     }
   ],
   "generators": [
@@ -44,7 +52,7 @@
       "levels": [
         {
           "energyCost": 1,
-          "cooldown": { "charges": 12, "seconds": 120 },
+          "cooldown": { "charges": 12, "seconds": 120, "skipCost": 20, "freeSkipSec": 15 },
           "produces": [
             { "chain": "wood", "level": 1, "weight": 80 },
             { "chain": "wood", "level": 2, "weight": 20 }
@@ -67,9 +75,25 @@
       "levels": [
         {
           "energyCost": 2,
+          "cooldown": { "cycles": 3, "seconds": 90, "skipCost": 10 },
           "produces": [
-            { "chain": "stone", "level": 1, "weight": 90 },
-            { "chain": "stone", "level": 2, "weight": 10 }
+            { "chain": "stone", "level": 1, "count": 3 },
+            { "chain": "stone", "level": 2, "count": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chest",
+      "name": "Сундук",
+      "levels": [
+        {
+          "energyCost": 0,
+          "uses": 1,
+          "deletable": false,
+          "produces": [
+            { "chain": "wood", "level": 2, "count": 2 },
+            { "chain": "stone", "level": 1, "count": 2 }
           ]
         }
       ]
@@ -110,7 +134,15 @@
     ]
   },
   "levels": [
-    { "id": 1, "ordersRequired": 5, "unlocks": [], "reward": [{ "type": "hard", "amount": 10 }] },
+    {
+      "id": 1,
+      "ordersRequired": 5,
+      "unlocks": [],
+      "reward": [
+        { "type": "hard", "amount": 10 },
+        { "type": "generator", "generator": "chest", "level": 1 }
+      ]
+    },
     {
       "id": 2,
       "ordersRequired": 8,
@@ -167,7 +199,7 @@
         "content": [{ "chain": "wood", "levelRange": [2, 3], "weight": 1 }]
       }
     ],
-    "popCost": { "currency": "hard", "formula": "ceil(itemValue / 2)" }
+    "popCost": { "currency": "hard", "formula": "max(baseCost, ceil(itemValue / 2))" }
   },
   "storage": { "enabled": true, "returnToBoard": true },
   "itemActions": [
@@ -211,6 +243,12 @@
         "name": "Камень сдан в заказы",
         "match": { "chain": "stone", "levelRange": [1, 4] },
         "sources": ["orderDelivered"]
+      },
+      {
+        "id": "stone_collected",
+        "name": "Булыжник собран",
+        "match": { "chain": "stone", "level": 2 },
+        "sources": ["collect"]
       }
     ],
     "energySpent": { "total": true, "byGenerator": true }

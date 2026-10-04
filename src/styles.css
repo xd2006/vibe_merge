@@ -441,3 +441,11 @@ body {
 .fps-low {
   color: #ff8a80;
 }
+
+.hud-resources {
+  grid-column: 1 / -1;
+}
+
+.hud-resources > * + * {
+  margin-left: 12px;
+}

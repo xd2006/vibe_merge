@@ -35,8 +35,11 @@ function play(steps: number) {
       if (gen?.kind === 'generator') {
         const cost = engine.rules.generators.get(gen.generator)!.levels[gen.level - 1]!.energyCost;
         recount.energy += cost;
-        recount.energyByGenerator[gen.generator] =
-          (recount.energyByGenerator[gen.generator] ?? 0) + cost;
+        // Генератор без стоимости энергию не тратит и в метрике не появляется.
+        if (cost > 0) {
+          recount.energyByGenerator[gen.generator] =
+            (recount.energyByGenerator[gen.generator] ?? 0) + cost;
+        }
         // Новый предмет — та клетка, что была пуста и стала занята.
         before.board.cells.forEach((c, idx) => {
           const now = state.board.cells[idx];

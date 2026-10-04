@@ -99,12 +99,14 @@ describe('действия над предметами', () => {
       pickUp: false,
       delete: false,
       sell: null,
+      collect: null,
     });
     expect(engine.apply(s, action(1, 1, 'delete')).rejected).toBe('reject.notAllowed');
     expect(availableActions(engine.rules, s, s.board.cells[1]!)).toEqual({
       pickUp: true,
       delete: true,
       sell: 2,
+      collect: null,
     });
   });
 

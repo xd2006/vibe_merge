@@ -25,6 +25,8 @@ export interface PlaceholderSpec {
   maxLevel: number;
   variant: PlaceholderVariant;
   bubble: boolean;
+  /** Предмет последнего уровня, который дальше не сливается (значок ★). */
+  final: boolean;
 }
 
 export interface PlaceholderView {
@@ -128,6 +130,21 @@ export function createPlaceholder(
   badgeText.anchor.set(0.5);
   badgeText.position.set(bx, bx);
   content.addChild(badge, badgeText);
+
+  if (spec.final && spec.variant === 'item') {
+    const star = new Text({
+      text: '★',
+      style: {
+        fontFamily: FONT,
+        fontSize: size * 0.22,
+        fill: 0xe8a317,
+        stroke: { color: 0x1d1d1f, width: 2 },
+      },
+    });
+    star.anchor.set(0.5);
+    star.position.set(-inner / 2 + size * 0.14, -inner / 2 + size * 0.14);
+    content.addChild(star);
+  }
 
   const view: PlaceholderView = { root };
 

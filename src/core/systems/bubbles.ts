@@ -1,7 +1,7 @@
 import { cellOf, entityAt, inBoard, indexOf } from '../board';
 import { boardLevelId, emitNow, freeCells, newItem, place, toAmount, type Ctx } from '../context';
 import { nextFloat, nextInt, pickWeighted } from '../rng';
-import { itemValue, type LifetimeRules, type Rules } from '../rules';
+import { chainLevel, itemValue, type LifetimeRules, type Rules } from '../rules';
 import type { Cell, GameState, ItemEntity, RejectReason } from '../types';
 
 function expiresAt(ctx: Ctx, lifetime: LifetimeRules): number | null {
@@ -81,6 +81,7 @@ export function popCost(rules: Rules, s: GameState, chain: string, level: number
       level,
       boardLevel: boardLevelId(rules, s),
       ordersDone: s.level.totalOrdersDone,
+      baseCost: chainLevel(rules, chain, level)?.baseCost ?? 0,
     }),
   );
 }

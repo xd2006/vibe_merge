@@ -5,10 +5,11 @@ import type { Cell, Entity, LockEntity, RejectReason } from '../types';
 function canMerge(ctx: Ctx, a: Entity, b: Entity): boolean {
   if (a.kind === 'item' && b.kind === 'item') {
     if (a.bubble || b.bubble) return false;
+    const chain = ctx.rules.chains.get(a.chain)!;
     return (
       a.chain === b.chain &&
       a.level === b.level &&
-      a.level < ctx.rules.chains.get(a.chain)!.maxLevel
+      (a.level < chain.maxLevel || chain.mergesInto !== null)
     );
   }
   if (a.kind === 'generator' && b.kind === 'generator') {
@@ -73,7 +74,11 @@ export function move(ctx: Ctx, from: Cell, to: Cell): RejectReason | undefined {
   if (canMerge(ctx, a, b)) {
     const at = { ...to };
     if (a.kind === 'item') {
-      s.board.cells[toIdx] = newItem(ctx, a.chain, a.level + 1);
+      const chain = ctx.rules.chains.get(a.chain)!;
+      const into = a.level >= chain.maxLevel ? chain.mergesInto : null;
+      s.board.cells[toIdx] = into
+        ? newGenerator(ctx, into.generator, into.level)
+        : newItem(ctx, a.chain, a.level + 1);
       emitNow(ctx, {
         type: 'merge',
         kind: 'item',
@@ -81,6 +86,7 @@ export function move(ctx: Ctx, from: Cell, to: Cell): RejectReason | undefined {
         fromLevel: a.level,
         toLevel: a.level + 1,
         at,
+        ...(into ? { intoGenerator: { ...into } } : {}),
       });
     } else if (a.kind === 'generator') {
       // Новый генератор стартует с полным запасом зарядов и без кулдауна.

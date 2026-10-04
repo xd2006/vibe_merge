@@ -39,8 +39,25 @@ export function HardBalance({ session }: { session: GameSession }) {
   );
 }
 
+/** Дополнительные ресурсы (кристаллы, билеты…); не показывается, если ресурсов нет в конфиге. */
+export function ResourcesBar({ session }: { session: GameSession }) {
+  const resources = useSessionValue(session, (s) => s.state.resources);
+  const declared = session.config.currencies.resources;
+  if (declared.length === 0) return null;
+  return (
+    <div className="hud-item hud-resources" data-testid="resources">
+      {declared.map((r) => (
+        <span key={r.id} className="hud-sub" data-testid={`resource-${r.id}`}>
+          {r.name} <strong>{resources[r.id] ?? 0}</strong>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function LevelProgress({ session }: { session: GameSession }) {
   const level = useSessionValue(session, (s) => s.state.level);
+  const queued = useSessionValue(session, (s) => s.state.rewardQueue.length);
   const rules = session.engine.rules;
   const current = rules.levels[level.index]!;
   return (
@@ -50,6 +67,7 @@ export function LevelProgress({ session }: { session: GameSession }) {
         {level.completedAll
           ? t('hud.allLevelsDone')
           : t('hud.levelProgress', { done: level.ordersDone, required: current.ordersRequired })}
+        {queued > 0 && ` · ${t('hud.rewardQueue', { count: queued })}`}
       </span>
     </div>
   );

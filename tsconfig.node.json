@@ -3,7 +3,8 @@
   "compilerOptions": {
     // DOM нужен e2e-тестам: колбэки page.evaluate выполняются в браузере.
     "lib": ["ES2023", "DOM"],
-    "types": ["node"]
+    "types": ["node"],
+    "allowImportingTsExtensions": true
   },
   "include": [
     "vite.config.ts",

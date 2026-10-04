@@ -30,16 +30,36 @@ export function newItem(ctx: Ctx, chain: string, level: number): ItemEntity {
   return { uid: ctx.s.nextUid++, kind: 'item', chain, level };
 }
 
+/** Полный мешок уровня генератора (количество каждого вида, как в `produces`). */
+export function fullBag(rules: Rules, generator: string, level: number): number[] {
+  return generatorLevel(rules, generator, level).produces.map((p) => p.weight);
+}
+
+/** Состояние нового генератора: полный запас зарядов и циклов, без кулдауна. */
+export function freshGenerator(
+  rules: Rules,
+  generator: string,
+  level: number,
+): Omit<GeneratorEntity, 'uid' | 'kind' | 'generator' | 'level'> {
+  const lvl = generatorLevel(rules, generator, level);
+  const bag = lvl.mode === 'bag';
+  return {
+    charges: !bag && lvl.cooldown ? lvl.cooldown.charges : null,
+    bag: bag ? fullBag(rules, generator, level) : null,
+    cyclesLeft: bag && lvl.cooldown ? lvl.cooldown.cycles : null,
+    usesLeft: lvl.uses,
+    cooldownUntil: null,
+  };
+}
+
 /** Генератор с полным запасом зарядов и без кулдауна. */
 export function newGenerator(ctx: Ctx, generator: string, level: number): GeneratorEntity {
-  const cooldown = generatorLevel(ctx.rules, generator, level).cooldown;
   return {
     uid: ctx.s.nextUid++,
     kind: 'generator',
     generator,
     level,
-    charges: cooldown ? cooldown.charges : null,
-    cooldownUntil: null,
+    ...freshGenerator(ctx.rules, generator, level),
   };
 }
 

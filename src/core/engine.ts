@@ -1,14 +1,15 @@
 import { produce } from 'immer';
 import type { GameConfig } from '@/config';
-import type { Ctx } from './context';
+import { freshGenerator, type Ctx } from './context';
 import { RNG_STREAMS, seedRng, type RngState, type RngStream } from './rng';
-import { compileRules, generatorLevel, type Rules } from './rules';
+import { compileRules, type Rules } from './rules';
 import { popBubble } from './systems/bubbles';
 import { cheat } from './systems/cheats';
-import { tapGenerator } from './systems/generators';
+import { skipCooldown, tapGenerator } from './systems/generators';
 import { move, unlockGroups } from './systems/moves';
 import { deliverOrder, fillAllSlots, retryPendingSlots } from './systems/orders';
-import { itemAction, returnFromStorage } from './systems/storage';
+import { placeQueuedRewards } from './systems/rewards';
+import { collect, itemAction, returnFromStorage } from './systems/storage';
 import { advanceTime } from './systems/time';
 import type { ApplyResult, Command, Entity, GameEvent, GameState, RejectReason } from './types';
 
@@ -30,17 +31,11 @@ export function createEngine(config: GameConfig): Engine {
     const cells = rules.board.initial.map((c): Entity | null => {
       if (!c) return null;
       if (c.kind !== 'generator') return { uid: nextUid++, ...c };
-      const cooldown = generatorLevel(rules, c.generator, c.level).cooldown;
-      return {
-        uid: nextUid++,
-        ...c,
-        charges: cooldown ? cooldown.charges : null,
-        cooldownUntil: null,
-      };
+      return { uid: nextUid++, ...c, ...freshGenerator(rules, c.generator, c.level) };
     });
     const { start, max, regenMs } = rules.energy;
     const base: GameState = {
-      version: 1,
+      version: 2,
       nowMs: 0,
       nextUid,
       nextOrderId: 1,
@@ -48,7 +43,9 @@ export function createEngine(config: GameConfig): Engine {
       board: { width: rules.board.width, height: rules.board.height, cells },
       energy: { value: start, nextRegenAt: start < max ? regenMs : null },
       hard: config.currencies.hard.start,
+      resources: Object.fromEntries(config.currencies.resources.map((r) => [r.id, r.start])),
       storage: [],
+      rewardQueue: [],
       level: { index: 0, ordersDone: 0, totalOrdersDone: 0, completedAll: false },
       lockGroups: Object.fromEntries(rules.lockGroups.map((g) => [g, 'sealed' as const])),
       orders: {
@@ -78,6 +75,10 @@ export function createEngine(config: GameConfig): Engine {
         return move(ctx, command.from, command.to);
       case 'tapGenerator':
         return tapGenerator(ctx, command.at);
+      case 'skipCooldown':
+        return skipCooldown(ctx, command.at);
+      case 'collect':
+        return collect(ctx, command.at);
       case 'popBubble':
         return popBubble(ctx, command.at);
       case 'itemAction':
@@ -99,8 +100,12 @@ export function createEngine(config: GameConfig): Engine {
     const next = produce(state, (s) => {
       const ctx: Ctx = { rules, s, emit };
       rejected = handle(ctx, command);
-      // Команда могла изменить условия достижимости — ожидающие слоты заказов пробуют снова.
-      if (!rejected) retryPendingSlots(ctx);
+      if (!rejected) {
+        // Освободилось место — ставим ожидающие награды-генераторы.
+        placeQueuedRewards(ctx);
+        // Команда могла изменить условия достижимости — ожидающие слоты заказов пробуют снова.
+        retryPendingSlots(ctx);
+      }
     });
     // При отказе возвращается исходное состояние, даже если обработчик успел что-то изменить в черновике.
     if (rejected) return { state, events: [], rejected };

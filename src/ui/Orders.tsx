@@ -1,29 +1,18 @@
-import { orderStatus, type ResolvedReward, type Rules } from '@/core';
+import { orderStatus, type ResolvedReward } from '@/core';
 import { formatDuration, t } from '@/i18n/ru';
-import { itemName } from './names';
+import { itemName, rewardText } from './names';
 import type { GameSession } from './session';
 import { useSessionValue } from './useSession';
 
-function RewardChip({
-  reward,
-  rules,
-  currency,
-}: {
-  reward: ResolvedReward;
-  rules: Rules;
-  currency: string;
-}) {
-  if (reward.type === 'energy') return <span className="chip">⚡ {reward.amount}</span>;
-  if (reward.type === 'hard') {
-    return (
-      <span className="chip" title={currency}>
-        💎 {reward.amount}
-      </span>
-    );
-  }
+function RewardChip({ reward, session }: { reward: ResolvedReward; session: GameSession }) {
+  const gift = reward.type === 'item' || reward.type === 'generator';
   return (
-    <span className="chip">
-      🎁 {itemName(rules, reward.chain, reward.level)} ×{reward.count}
+    <span
+      className="chip"
+      title={reward.type === 'hard' ? session.config.currencies.hard.name : undefined}
+    >
+      {gift ? '🎁 ' : ''}
+      {rewardText(session, reward)}
     </span>
   );
 }
@@ -78,12 +67,7 @@ export function OrdersBar({ session }: { session: GameSession }) {
             </ul>
             <div className="order-rewards">
               {slot.order.rewards.map((rw, ri) => (
-                <RewardChip
-                  key={ri}
-                  reward={rw}
-                  rules={rules}
-                  currency={session.config.currencies.hard.name}
-                />
+                <RewardChip key={ri} reward={rw} session={session} />
               ))}
             </div>
             <button

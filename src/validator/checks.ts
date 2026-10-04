@@ -117,11 +117,28 @@ export function semanticIssues(c: GameConfig): Issue[] {
       error(path, 'zeroWeights', 'val.zeroWeights', {}, 'hint.zeroWeights');
     }
   };
+  const resourceIds = c.currencies.resources.map((r) => r.id);
   type Reward = GameConfig['levels'][number]['reward'][number];
   const rewards = (rs: Reward[], path: string) =>
     rs.forEach((r, i) => {
-      if (r.type === 'item') itemRef(r.chain, r.level, `${path}[${i}]`);
-      else formula(r.amount, `${path}[${i}].amount`, FORMULA_CONTEXTS.reward);
+      const p = `${path}[${i}]`;
+      if (r.type === 'item') itemRef(r.chain, r.level, p);
+      else if (r.type === 'generator') generatorRef(r.generator, r.level, p);
+      else {
+        if (r.type === 'resource' && !resourceIds.includes(r.resource)) {
+          error(
+            `${p}.resource`,
+            'unknownResource',
+            'val.unknownResource',
+            { id: r.resource },
+            'hint.unknownResource',
+            {
+              list: list(resourceIds),
+            },
+          );
+        }
+        formula(r.amount, `${p}.amount`, FORMULA_CONTEXTS.reward);
+      }
     });
 
   // ---------- Дубликаты id ----------
@@ -166,15 +183,56 @@ export function semanticIssues(c: GameConfig): Issue[] {
 
   // ---------- Цепочки и генераторы ----------
 
-  c.chains.forEach((ch, i) => formula(ch.value, `chains[${i}].value`, FORMULA_CONTEXTS.chainValue));
+  duplicates(resourceIds, (i) => `currencies.resources[${i}].id`, 'ресурс');
+  c.chains.forEach((ch, i) => {
+    formula(ch.value, `chains[${i}].value`, FORMULA_CONTEXTS.chainValue);
+    ch.levels.forEach((l, li) => {
+      if (Array.isArray(l.collect)) rewards(l.collect, `chains[${i}].levels[${li}].collect`);
+      if (l.collect === 'storage' && !c.storage.enabled) {
+        warn(
+          `chains[${i}].levels[${li}].collect`,
+          'collectNoStorage',
+          'val.warnCollectNoStorage',
+          {},
+          'hint.warnCollectNoStorage',
+        );
+      }
+    });
+    if (ch.mergesInto)
+      generatorRef(ch.mergesInto.generator, ch.mergesInto.level, `chains[${i}].mergesInto`);
+  });
   c.generators.forEach((g, gi) =>
     g.levels.forEach((l, li) => {
       const path = `generators[${gi}].levels[${li}]`;
       l.produces.forEach((p, pi) => itemRef(p.chain, p.level, `${path}.produces[${pi}]`));
+      const bag = l.produces.some((p) => p.count !== undefined);
+      if (bag && l.produces.some((p) => p.weight !== undefined)) {
+        error(`${path}.produces`, 'mixedProduces', 'val.mixedProduces', {}, 'hint.mixedProduces');
+      }
       weights(
-        l.produces.map((p) => p.weight),
+        l.produces.map((p) => (bag ? p.count : p.weight) ?? 0),
         `${path}.produces`,
       );
+      if (l.cooldown) {
+        if (bag && l.cooldown.charges !== undefined) {
+          error(
+            `${path}.cooldown.charges`,
+            'cooldownMode',
+            'val.cooldownCharges',
+            {},
+            'hint.cooldownCharges',
+          );
+        }
+        if (!bag && l.cooldown.cycles !== undefined) {
+          error(
+            `${path}.cooldown.cycles`,
+            'cooldownMode',
+            'val.cooldownCycles',
+            {},
+            'hint.cooldownCycles',
+          );
+        }
+      }
       if (l.energyCost > c.energy.max) {
         warn(
           `${path}.energyCost`,
@@ -408,7 +466,7 @@ export function semanticIssues(c: GameConfig): Issue[] {
       c.generators
         .find((g) => g.id === id)
         ?.levels[gl - 1]?.produces.some(
-          (p) => p.weight > 0 && p.chain === item && p.level <= level,
+          (p) => (p.weight ?? p.count ?? 0) > 0 && p.chain === item && p.level <= level,
         ),
     );
     if (!hasSource) {

@@ -126,6 +126,32 @@ export function exportCsv(config: GameConfig, sessions: readonly SessionRecord[]
       all.hardSpent,
       clean.hardSpent,
     ]);
+    rows.push([
+      ...base,
+      'metric',
+      'cooldown_skips',
+      'Пропусков кулдауна',
+      all.cooldownSkips,
+      clean.cooldownSkips,
+    ]);
+    rows.push([
+      ...base,
+      'metric',
+      'items_collected',
+      'Собрано предметов',
+      all.itemsCollected,
+      clean.itemsCollected,
+    ]);
+    for (const r of config.currencies.resources) {
+      rows.push([
+        ...base,
+        'resource',
+        r.id,
+        r.name,
+        all.resourcesGained[r.id] ?? 0,
+        clean.resourcesGained[r.id] ?? 0,
+      ]);
+    }
   }
   return BOM + rows.map((r) => r.map(cell).join(SEP)).join('\r\n') + '\r\n';
 }

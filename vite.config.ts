@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
-import { artDevServer } from './scripts/art/devPlugin';
+import { artDevServer } from './scripts/art/devPlugin.ts';
 
 export default defineConfig({
   plugins: [react(), artDevServer()],
