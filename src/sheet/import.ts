@@ -97,6 +97,10 @@ const SPICE_NAMES: Record<string, string> = {
   spice_tapioka: 'Тапиока',
   spice_gold: 'Золото',
 };
+/** Колонка C листа Objects может содержать русское имя специи («роза»), а не её id; номера уровней («роза ч1») специей не считаются. */
+const SPICE_ID_BY_NAME = new Map(
+  Object.entries(SPICE_NAMES).map(([id, name]) => [name.toLowerCase(), id]),
+);
 const RESOURCE_NAMES: Record<string, string> = {
   crystal: 'Кристаллы',
   ticket: 'Билеты',
@@ -164,6 +168,9 @@ export function importSheet(book: SheetBook, options: ImportOptions = {}): Impor
     return n;
   };
 
+  const spiceIdByName = (value: string | null): string | null =>
+    (value !== null && SPICE_ID_BY_NAME.get(value.trim().toLowerCase())) || value;
+
   interface ObjectRow {
     extra: string | null;
     baseCost: number | null;
@@ -179,7 +186,7 @@ export function importSheet(book: SheetBook, options: ImportOptions = {}): Impor
     const key = nid(id);
     objectOrder.push(key);
     objects.set(key, {
-      extra: str(r[2] ?? null),
+      extra: spiceIdByName(str(r[2] ?? null)),
       baseCost: num(r[4] ?? null),
       deletable: bool(r[5] ?? null),
       bubble: num(r[6] ?? null),

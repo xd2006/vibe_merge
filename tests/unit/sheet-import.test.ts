@@ -139,6 +139,21 @@ function book(): SheetBook {
 const messages = (r: ReturnType<typeof importSheet>, level: string) =>
   r.report.filter((e) => e.level === level).map((e) => e.message);
 
+describe('имена специй в колонке C листа Objects', () => {
+  it('«Роза» (в любом регистре) — специя, «роза ч1» — нет', () => {
+    const b = book();
+    b.Objects = b.Objects!.map((row) => {
+      if (row[0] === 'chain_А_02') return [...row.slice(0, 2), ' роза ', ...row.slice(3)];
+      if (row[0] === 'chain_А_03') return [...row.slice(0, 2), 'анис ч1', ...row.slice(3)];
+      return row;
+    });
+    const r = importSheet(b);
+    const levels = r.config.chains[0]!.levels;
+    expect(levels[1]).toMatchObject({ name: 'Роза', collect: 'storage', value: 4 });
+    expect(levels[2]!.collect).toBeUndefined();
+  });
+});
+
 describe('импорт таблицы', () => {
   const result = importSheet(book());
   const c = result.config;
