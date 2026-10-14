@@ -23,11 +23,32 @@ export interface ReachSources {
 /** Достижимые уровни по цепочкам. */
 export type Reachable = Map<string, Set<number>>;
 
+/**
+ * Источники из заблокированных клеток: после открытия в клетке остаётся предмет уровнем выше
+ * содержимого замка. `locks` — содержимое замков. Замок открывается слиянием, поэтому он
+ * считается источником, только если ту же цепочку можно получить иначе (`base`: генератор,
+ * пузырь, награда или имеющийся предмет) на уровне не выше содержимого и в пределах глубины слияния.
+ * DECISION: открытие одного замка не делает достижимыми другие (каскад не учитывается).
+ */
+export function openableLockSources(
+  rules: Rules,
+  base: ReachSources,
+  locks: readonly ItemLevel[],
+): ItemLevel[] {
+  const depth = rules.orders.reach.maxMergeDepth;
+  const feeds = (lock: ItemLevel) => (x: ItemLevel) =>
+    x.chain === lock.chain && x.level <= lock.level && lock.level - x.level <= depth;
+  return locks
+    .filter((l) => base.sources.some(feeds(l)) || base.existing.some(feeds(l)))
+    .map((l) => ({ chain: l.chain, level: l.level + 1 }));
+}
+
 /** Источники для текущего состояния партии с учётом `orders.reachability.countSources`. */
 export function sourcesFromState(rules: Rules, s: GameState): ReachSources {
   const counted = rules.orders.reach.sources;
   const sources: ItemLevel[] = [];
   const existing: ItemLevel[] = [];
+  const locks: ItemLevel[] = [];
 
   const generatorOutput = (generator: string, level: number) => {
     const lvl = rules.generators.get(generator)?.levels[level - 1];
@@ -38,9 +59,8 @@ export function sourcesFromState(rules: Rules, s: GameState): ReachSources {
     if (!e) return;
     const state = cellState(s, i);
     if (state.kind === 'locked') {
-      // После открытия в клетке остаётся предмет уровнем выше содержимого замка.
       if (e.kind === 'item' && counted.has('lockedCellsAfterUnlock')) {
-        sources.push({ chain: e.chain, level: e.level + 1 });
+        locks.push({ chain: e.chain, level: e.level });
       }
       return;
     }
@@ -68,6 +88,7 @@ export function sourcesFromState(rules: Rules, s: GameState): ReachSources {
     for (const r of rewards)
       if (r.type === 'item') sources.push({ chain: r.chain, level: r.level });
   }
+  sources.push(...openableLockSources(rules, { sources, existing }, locks));
   return { sources, existing };
 }
 

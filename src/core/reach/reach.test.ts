@@ -3,7 +3,7 @@ import { GameConfigSchema, type GameConfigInput } from '@/config';
 import { createEngine, type Command, type GameState, type Rules } from '..';
 import { nextFloat, nextInt, seedRng, type RngState } from '../rng';
 import { makeEngine } from '../test-utils';
-import { reachableLevels, reachableNow } from '.';
+import { openableLockSources, reachableLevels, reachableNow } from '.';
 
 const levels = (r: Map<string, Set<number>>, chain: string) => [...(r.get(chain) ?? [])].sort();
 
@@ -55,8 +55,22 @@ describe('reachableLevels', () => {
     // Лесопилка: ветка (1) → 1–2; брус-8 на доске; замок ещё запечатан.
     expect(levels(reachableNow(e.rules, s0), 'wood')).toEqual([1, 2, 8]);
     const s1 = e.apply(s0, { type: 'cheat', cheat: 'skipLevel' }).state;
-    // Замок открыт для слияния: после открытия в клетке будет уровень 5 → 5–6.
-    expect(levels(reachableNow(e.rules, s1), 'wood')).toEqual([1, 2, 5, 6, 8]);
+    // Замок открыт для слияния, но до его содержимого (4) слиянием не дойти: источник не считается.
+    expect(levels(reachableNow(e.rules, s1), 'wood')).toEqual([1, 2, 8]);
+  });
+
+  it('замок — источник, только если цепочку можно получить иначе на уровне не выше его содержимого', () => {
+    const base = { sources: [{ chain: 'wood', level: 2 }], existing: [] };
+    const lock = (level: number) => [{ chain: 'wood', level }];
+    // Глубина слияния 3: из уровня 2 доходим до 5 — замок с содержимым 4 открываем, внутри станет 5.
+    const rules = makeEngine((c) => {
+      c.chains[0]!.levels = [1, 2, 3, 4, 5, 6].map((n) => ({ name: `w${n}` }));
+      c.orders.reachability = { maxMergeDepth: 3 };
+    }).rules;
+    expect(openableLockSources(rules, base, lock(4))).toEqual([{ chain: 'wood', level: 5 }]);
+    // Содержимое выше достижимого (6 > 2 + 3) или другой цепочки — не источник.
+    expect(openableLockSources(rules, base, lock(6))).toEqual([]);
+    expect(openableLockSources(rules, { sources: [], existing: [] }, lock(4))).toEqual([]);
   });
 });
 

@@ -16,7 +16,7 @@
 | `npm run test:e2e`                    | Смоук в браузере (Playwright, Chromium)                                                                                                                  |
 | `npm run build:web`                   | Статическая сборка в `dist/`                                                                                                                             |
 | `npm run format`                      | Форматирование Prettier                                                                                                                                  |
-| `npm run import:sheet [файл.xlsx]`    | Импорт таблицы Spice merge (.xlsx) в `presets/spice.json` с отчётом; то же — кнопка «Импорт из таблицы» в редакторе                                      |
+| `npm run import:sheet [файл.xlsx]`    | Импорт таблицы Spice merge (.xlsx) в `presets/spice-core.json` с отчётом; то же — кнопка «Импорт из таблицы» в редакторе                                      |
 | `npm run schema`                      | JSON Schema конфига в `schema/game-config.schema.json`                                                                                                   |
 | `npm run build:android [конфиг]`      | Проверка конфига → веб-билд + `bundled-config.json` и его арт → `cap sync` → Gradle; APK в `dist/android/` (то же в CI: `.github/workflows/android.yml`) |
 

@@ -1,5 +1,5 @@
 // Импорт таблицы Spice merge (.xlsx, выгрузка Google Таблиц) в конфиг прототипа.
-// npm run import:sheet [файл.xlsx] [--out presets/spice.json] [--report отчёт.md]
+// npm run import:sheet [файл.xlsx] [--out presets/spice-core.json] [--report отчёт.md]
 import { readFileSync, writeFileSync } from 'node:fs';
 import { t } from '../src/i18n/ru';
 import { readXlsx } from '../src/platform/xlsx';
@@ -7,8 +7,8 @@ import { importSheet, type ReportLevel } from '../src/sheet';
 import { validateConfig } from '../src/validator';
 import { parseArgs } from './art/lib/config';
 
-const DEFAULT_INPUT = 'ext_configs/Core Merge Config.xlsx';
-const DEFAULT_OUT = 'presets/spice.json';
+const DEFAULT_INPUT = 'ext_configs/Core Merge Config last.xlsx';
+const DEFAULT_OUT = 'presets/spice-core.json';
 const LEVELS: ReportLevel[] = ['imported', 'default', 'unsupported', 'warning'];
 
 const { positional, flags } = parseArgs(process.argv.slice(2));

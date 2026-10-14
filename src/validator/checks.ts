@@ -1,6 +1,6 @@
 import { FORMULA_CONTEXTS, type GameConfig } from '@/config';
 import { allocationAt, categoryFeasible, compileRules, orderRewards, spicePool } from '@/core';
-import { reachableLevels, type ItemLevel } from '@/core/reach';
+import { openableLockSources, reachableLevels, type ItemLevel } from '@/core/reach';
 import { checkFormula, type FormulaVariable } from '@/expr';
 import { t, type StringKey } from '@/i18n/ru';
 import { hasErrors, type Issue } from './issues';
@@ -661,11 +661,11 @@ export function semanticIssues(c: GameConfig): Issue[] {
         : [];
     const existingAt = (levelId: number): ItemLevel[] =>
       initialItems.filter((it) => it.requiredLevel <= levelId && !it.closed && !it.locked);
-    const lockedCellSourcesAt = (levelId: number): ItemLevel[] =>
+    const lockedCellContentAt = (levelId: number): ItemLevel[] =>
       counted.has('lockedCellsAfterUnlock')
         ? initialItems
             .filter((it) => it.locked && it.requiredLevel <= levelId)
-            .map((it) => ({ chain: it.chain, level: it.level + 1 }))
+            .map((it) => ({ chain: it.chain, level: it.level }))
         : [];
     const extra: ItemLevel[] = [];
     if (counted.has('bubble')) {
@@ -675,32 +675,46 @@ export function semanticIssues(c: GameConfig): Issue[] {
       }
     }
     const openGroups = new Set<string>();
+    // Генераторы наград за пройденные уровни выдаются на поле и становятся источниками (как в ядре).
+    const rewardGenerators: ItemLevel[] = [];
     rules.levels.forEach((level, li) => {
       level.unlocks.forEach((g) => openGroups.add(g));
-      const lockSources: ItemLevel[] = counted.has('lockedCellsAfterUnlock')
+      const lockContent: ItemLevel[] = counted.has('lockedCellsAfterUnlock')
         ? locks
             .filter((l) => openGroups.has(l.group))
-            .map((l) => ({ chain: l.content.item, level: l.content.level + 1 }))
+            .map((l) => ({ chain: l.content.item, level: l.content.level }))
         : [];
       const rewardSources: ItemLevel[] = counted.has('reward')
         ? [...orderRewards(rules), ...level.reward].flatMap((r) =>
             r.type === 'item' ? [{ chain: r.chain, level: r.level }] : [],
           )
         : [];
+      // Замок — источник, только если цепочку можно получить иначе (как в ядре).
+      const base = {
+        sources: [...generatorSourcesAt(level.id), ...rewardGenerators, ...extra, ...rewardSources],
+        existing: existingAt(level.id),
+      };
       const reach = reachableLevels(
         rules,
         {
           sources: [
-            ...generatorSourcesAt(level.id),
-            ...lockSources,
-            ...lockedCellSourcesAt(level.id),
-            ...extra,
-            ...rewardSources,
+            ...base.sources,
+            ...openableLockSources(rules, base, [...lockContent, ...lockedCellContentAt(level.id)]),
           ],
-          existing: existingAt(level.id),
+          existing: base.existing,
         },
         level.orderLevelCap,
       );
+      if (counted.has('generator')) {
+        for (const r of level.reward) {
+          if (r.type !== 'generator') continue;
+          rules.generators
+            .get(r.generator)
+            ?.levels[r.level - 1]?.produces.forEach(
+              (p) => p.weight > 0 && rewardGenerators.push({ chain: p.chain, level: p.level }),
+            );
+        }
+      }
       // Бонусный тир должен собираться хотя бы к последнему уровню.
       const b = rules.orders.bonus;
       if (b && li === rules.levels.length - 1) {
