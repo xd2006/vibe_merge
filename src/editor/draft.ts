@@ -17,9 +17,21 @@ export const toText = (value: unknown) => JSON.stringify(value, null, 2) + '\n';
 
 const presetTexts = PRESETS.map((p) => ({ id: p.id, text: toText(p.config) }));
 
-/** Пресет, текст которого совпадает с текстом конфига; `''` — своя правка или загруженный файл. */
-export const presetIdOf = (text: string): string =>
-  presetTexts.find((p) => p.text === text)?.id ?? '';
+/** Файл, из которого получен текст конфига (загрузка или импорт таблицы). */
+export interface FileSource {
+  name: string;
+  text: string;
+}
+
+/** Значение пункта списка пресетов для конфига, полученного из файла. */
+export const FILE_OPTION = '__file__';
+
+/**
+ * Что показать в списке пресетов: id пресета с таким же текстом, пункт файла, пока текст
+ * не правили после загрузки, иначе `''` («Пресет…»).
+ */
+export const presetSelectValue = (text: string, file: FileSource | null): string =>
+  presetTexts.find((p) => p.text === text)?.id ?? (file?.text === text ? FILE_OPTION : '');
 
 /** Последний черновик конфига (как текст — даже невалидный) или пресет по умолчанию (Core Merge Config). */
 export function loadDraft(): string {

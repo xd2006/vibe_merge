@@ -8,7 +8,14 @@ import { validateText } from '@/validator';
 import { ArtPanel } from './ArtPanel';
 import { BlockForm, issuesToErrorSchema, pathSegments } from './BlockForm';
 import { BoardEditor } from './BoardEditor';
-import { PRESETS, presetIdOf, toText, useDraft } from './draft';
+import {
+  FILE_OPTION,
+  PRESETS,
+  presetSelectValue,
+  toText,
+  useDraft,
+  type FileSource,
+} from './draft';
 import { blockSchema, blocks } from './editorSchema';
 import { ImportReport } from './ImportReport';
 import { IssuesPanel } from './IssuesPanel';
@@ -48,6 +55,7 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
   const sheetInput = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [report, setReport] = useState<readonly ReportEntry[] | null>(null);
+  const [source, setSource] = useState<FileSource | null>(null);
   const config = asObj(value);
   const issues = validation.issues;
   const errors = issues.filter((i) => i.level === 'error').length;
@@ -91,6 +99,7 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
       const next = toText(result.config);
       if (next !== text && !window.confirm(t('editor.replaceConfirm'))) return;
       setText(next);
+      setSource({ name: file.name, text: next });
       setReport(result.report);
     } catch (e) {
       window.alert(
@@ -126,10 +135,15 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
         <h1>{t('editor.title')}</h1>
         <select
           aria-label={t('editor.preset')}
-          value={presetIdOf(text)}
+          value={presetSelectValue(text, source)}
           onChange={(e) => loadPreset(e.target.value)}
         >
           <option value="">{t('editor.preset')}</option>
+          {source && (
+            <option value={FILE_OPTION} disabled>
+              {source.name}
+            </option>
+          )}
           {PRESETS.map((p) => (
             <option key={p.id} value={p.id}>
               {p.title}
@@ -147,7 +161,12 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
           data-testid="load-file"
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) void readFileText(file).then(setText);
+            if (file) {
+              void readFileText(file).then((next) => {
+                setText(next);
+                setSource({ name: file.name, text: next });
+              });
+            }
             e.target.value = '';
           }}
         />
