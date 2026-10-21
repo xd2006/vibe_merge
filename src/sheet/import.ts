@@ -64,7 +64,7 @@ const KNOWN_SHEETS = [
   'Objects',
   'Interactables',
   'Chains',
-  'Spice Chain Order',
+  'Spice Objects',
   'Orders Allocation',
   'Orders Difficulty',
   'Orders Rewards',
@@ -130,6 +130,8 @@ interface Group {
 }
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+/** Цепочка предметов-апгрейдов генератора. */
+const upgradeChainId = (generatorId: string) => `upgrade_${generatorId}`;
 const groupOf = (objectId: string) => objectId.replace(/_\d+$/, '');
 
 export function importSheet(book: SheetBook, options: ImportOptions = {}): ImportResult {
@@ -255,7 +257,7 @@ export function importSheet(book: SheetBook, options: ImportOptions = {}): Impor
 
   const spices = new Map<string, number>();
   let energyRewards = false;
-  for (const r of records(sheet(book, 'Spice Chain Order'))) {
+  for (const r of records(sheet(book, 'Spice Objects'))) {
     const id = str(r.spice ?? null);
     if (!id) continue;
     spices.set(id, num(r['#merge_price'] ?? null) ?? 0);
@@ -347,6 +349,50 @@ export function importSheet(book: SheetBook, options: ImportOptions = {}): Impor
   }
   add('default', t('import.energyCost'));
   const genById = new Map(genGroups.map((g) => [g.tableId, g]));
+
+  // ---------- Апгрейды генераторов (колонка level листа Interactables) ----------
+
+  // DECISION: `level` у уровня N ≥ 2 — уровень игрока, на котором он получает предмет-апгрейд;
+  // слияние предмета с генератором уровня N-1 даёт уровень N. Без `level` генератор доступен сразу.
+  interface UpgradeStep {
+    generator: string;
+    /** Уровень генератора, который улучшается (N-1). */
+    from: number;
+    playerLevel: number;
+    label: string;
+  }
+  const upgradeSteps: UpgradeStep[] = [];
+  const upgradeChains: ChainInput[] = [];
+  for (const g of generators) {
+    const group = genGroups.find((x) => x.id === g.id)!;
+    const steps: { from: number; playerLevel: number; label: string }[] = [];
+    group.objects.forEach((objectId, li) => {
+      const playerLevel = num(inter.get(objectId)?.row.level ?? null);
+      if (li === 0 || !playerLevel || playerLevel <= 0) return;
+      steps.push({ from: li, playerLevel, label: objectId });
+    });
+    if (steps.length === 0) continue;
+    // Апгрейды одного генератора — уровни одной цепочки, чтобы их можно было отличить в арте и метриках.
+    upgradeChains.push({
+      id: upgradeChainId(g.id),
+      name: t('import.upgradeChainName', { name: g.name }),
+      levels: steps.map((s) => ({
+        name: t('import.upgradeItemName', { name: g.levels[s.from]!.name ?? g.name }),
+      })),
+    });
+    steps.forEach((s, i) => {
+      g.levels[s.from - 1]!.upgrade = { item: upgradeChainId(g.id), level: i + 1 };
+      upgradeSteps.push({ generator: g.id, ...s });
+    });
+  }
+  if (upgradeSteps.length) {
+    add(
+      'imported',
+      t('import.upgrades', {
+        list: upgradeSteps.map((u) => `${u.label} — уровень ${u.playerLevel}`).join(', '),
+      }),
+    );
+  }
 
   // ---------- Цепочки ----------
 
@@ -468,31 +514,63 @@ export function importSheet(book: SheetBook, options: ImportOptions = {}): Impor
 
   const startLevel = num(settings.get('access_level') ?? null) ?? 1;
   add('imported', t('import.startLevel', { level: startLevel }));
-  // Очередь генераторов за уровни: OR_01 → BL_01 → GL_01 → OR_02 → … (Р17).
+  // Очередь генераторов за уровни: OR_01 → BL_01 → GL_01 → OR_02 → … (Р17). Запасной вариант
+  // для таблиц без колонки level: с ней апгрейды выдаются на указанных в таблице уровнях.
   const mains = genGroups.filter((g) => g.objects.length > 1);
   const queue: { generator: string; level: number; label: string }[] = [];
   const maxGenLevel = Math.max(0, ...mains.map((g) => g.objects.length));
-  for (let l = 1; l <= maxGenLevel; l++) {
-    for (const g of mains) {
-      if (l <= g.objects.length)
-        queue.push({ generator: g.id, level: l, label: g.objects[l - 1]! });
+  if (upgradeSteps.length === 0) {
+    for (let l = 1; l <= maxGenLevel; l++) {
+      for (const g of mains) {
+        if (l <= g.objects.length)
+          queue.push({ generator: g.id, level: l, label: g.objects[l - 1]! });
+      }
+    }
+    if (queue.length) {
+      add('default', t('import.generatorQueue', { list: queue.map((q) => q.label).join(' → ') }));
     }
   }
-  if (queue.length) {
-    add('default', t('import.generatorQueue', { list: queue.map((q) => q.label).join(' → ') }));
+  /**
+   * Награды-апгрейды по уровню конфига. Награда выдаётся при завершении уровня, а игрок должен
+   * получить предмет, достигнув уровня `level` из таблицы, — поэтому она лежит на уровне `level - 1`.
+   * DECISION: апгрейд, который надо выдать до первого уровня конфига, выдать нечем — он пропускается.
+   */
+  const upgradeRewards = new Map<number, Reward[]>();
+  for (const u of upgradeSteps) {
+    const grantAt = u.playerLevel - 1;
+    if (grantAt < startLevel) {
+      add(
+        'warning',
+        t('import.upgradeTooEarly', { id: u.label, level: u.playerLevel, start: startLevel }),
+      );
+      continue;
+    }
+    const chain = upgradeChainId(u.generator);
+    const level = upgradeSteps.filter(
+      (x) => x.generator === u.generator && x.from <= u.from,
+    ).length;
+    upgradeRewards.set(grantAt, [
+      ...(upgradeRewards.get(grantAt) ?? []),
+      { type: 'item', chain, level, count: 1 },
+    ]);
   }
 
   const allocationRows = records(sheet(book, 'Orders Allocation'));
   const maxAllocation = Math.max(0, ...allocationRows.map((r) => num(r.player_level ?? null) ?? 0));
+  // Уровень, на котором достигается последний апгрейд, тоже должен существовать в конфиге.
+  const maxUpgradeLevel = Math.max(0, ...upgradeSteps.map((u) => u.playerLevel));
   const lastLevel =
-    opt.lastLevel ?? Math.max(startLevel + queue.length, maxRequired, maxAllocation, startLevel);
+    opt.lastLevel ??
+    Math.max(startLevel + queue.length, maxRequired, maxAllocation, maxUpgradeLevel, startLevel);
   const levels: GameConfigInput['levels'] = [];
   for (let id = startLevel; id <= lastLevel; id++) {
     const q = queue[id - startLevel];
     levels.push({
       id,
       ordersRequired: opt.ordersPerLevel,
-      reward: q ? [{ type: 'generator', generator: q.generator, level: q.level }] : [],
+      reward: q
+        ? [{ type: 'generator', generator: q.generator, level: q.level }]
+        : (upgradeRewards.get(id) ?? []),
     });
   }
   add('default', t('import.ordersPerLevel', { count: opt.ordersPerLevel }));
@@ -644,7 +722,7 @@ export function importSheet(book: SheetBook, options: ImportOptions = {}): Impor
         intervalSec: num(settings.get('energy_refill_time') ?? null) ?? 120,
       },
     },
-    chains,
+    chains: [...chains, ...upgradeChains],
     generators,
     board: {
       width,

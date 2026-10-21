@@ -103,6 +103,7 @@ export const FIELD_LABELS: Record<string, string> = {
   bubbleProbability: 'Вероятность пузыря при слиянии (0–1)',
   collect: 'Сбор двойным тапом',
   mergesInto: 'Последний уровень сливается в генератор',
+  upgrade: 'Апгрейд (предмет для слияния с генератором)',
   cycles: 'Циклов мешка до кулдауна',
   skipCost: 'Цена пропуска кулдауна',
   freeSkipSec: 'Бесплатный пропуск за, с',

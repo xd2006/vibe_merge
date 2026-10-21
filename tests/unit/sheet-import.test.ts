@@ -72,7 +72,7 @@ function book(): SheetBook {
       ['chain_E', 'chain_E_01', 1],
       [null, 'chain_E_02', 2],
     ],
-    'Spice Chain Order': [
+    'Spice Objects': [
       ['spice', 'energy_reward', '#merge_price'],
       ['spice_rose', 1, 4],
       ['spice_anise', 4, 10],
@@ -151,6 +151,97 @@ describe('имена специй в колонке C листа Objects', () =>
     const levels = r.config.chains[0]!.levels;
     expect(levels[1]).toMatchObject({ name: 'Роза', collect: 'storage', value: 4 });
     expect(levels[2]!.collect).toBeUndefined();
+  });
+});
+
+describe('колонка level листа Interactables (апгрейды генераторов)', () => {
+  /** Книга, где колонка level вставлена второй, а у generator_OR_02 указан уровень игрока `level`. */
+  const withLevel = (level: number | null) => {
+    const b = book();
+    b.Interactables = b.Interactables!.map((row, i) => {
+      const cell = i === 0 ? 'level' : row[1] === 'generator_OR_02' ? level : null;
+      return [row[0] ?? null, cell, ...row.slice(1)];
+    });
+    return b;
+  };
+  const rewardOf = (c: ReturnType<typeof importSheet>['config'], id: number) =>
+    c.levels.find((l) => l.id === id)?.reward;
+
+  it('без level апгрейдов нет, действует очередь Р17', () => {
+    const c = importSheet(book()).config;
+    expect(c.chains.some((ch) => ch.id.startsWith('upgrade_'))).toBe(false);
+    expect(c.generators[0]!.levels.every((l) => l.upgrade === undefined)).toBe(true);
+    expect(rewardOf(c, 2)).toEqual([{ type: 'generator', generator: 'generator_or', level: 1 }]);
+  });
+
+  it('пустой level — уровень доступен сразу: колонка присутствует, но апгрейдов нет', () => {
+    const r = importSheet(withLevel(null));
+    expect(r.config.chains.some((ch) => ch.id.startsWith('upgrade_'))).toBe(false);
+    expect(rewardOf(r.config, 2)).toEqual([
+      { type: 'generator', generator: 'generator_or', level: 1 },
+    ]);
+  });
+
+  it('level у уровня N: апгрейд у уровня N-1, предмет выдаётся при достижении уровня level', () => {
+    const r = importSheet(withLevel(4));
+    const c = r.config;
+    expect(c.chains.find((ch) => ch.id === 'upgrade_generator_or')?.levels).toHaveLength(1);
+    expect(c.generators[0]!.levels[0]!.upgrade).toEqual({ item: 'upgrade_generator_or', level: 1 });
+    expect(c.generators[0]!.levels[1]!.upgrade).toBeUndefined();
+    // Награда выдаётся при завершении уровня 3 — игрок получает предмет, достигнув уровня 4.
+    expect(rewardOf(c, 3)).toEqual([
+      { type: 'item', chain: 'upgrade_generator_or', level: 1, count: 1 },
+    ]);
+    expect(rewardOf(c, 4)).toEqual([]);
+    // Очередь Р17 для таблицы с апгрейдами не применяется.
+    expect(c.levels.some((l) => (l.reward ?? []).some((x) => x.type === 'generator'))).toBe(false);
+    expect(messages(r, 'imported').join()).toContain('generator_OR_02');
+  });
+
+  it('апгрейд, который выдать нечем (level не больше старта), пропускается с предупреждением', () => {
+    // access_level = 2: награда за уровень 1 невозможна.
+    const r = importSheet(withLevel(2));
+    expect(r.config.generators[0]!.levels[0]!.upgrade).toBeDefined();
+    expect(r.config.levels.every((l) => (l.reward ?? []).length === 0)).toBe(true);
+    expect(messages(r, 'warning').join()).toContain('generator_OR_02');
+  });
+
+  it('последний уровень конфига не меньше уровня игрока из level', () => {
+    const c = importSheet(withLevel(9)).config;
+    expect(c.levels.at(-1)!.id).toBeGreaterThanOrEqual(9);
+    expect(rewardOf(c, 8)).toHaveLength(1);
+  });
+
+  it('конфиг с апгрейдами проходит валидатор без ошибок и запускается', () => {
+    const c = importSheet(withLevel(4)).config;
+    expect(validateConfig(c).issues.filter((i) => i.level === 'error')).toEqual([]);
+    expect(() => createEngine(GameConfigSchema.parse(c)).initialState()).not.toThrow();
+  });
+
+  it('игра: предмет-награда сливается с генератором и повышает его уровень', () => {
+    const e = createEngine(GameConfigSchema.parse(importSheet(withLevel(4)).config));
+    let s = e.initialState();
+    // Старт с уровня 2; завершаем уровни 2 и 3 — на выходе из 3-го выдаётся предмет.
+    for (let i = 0; i < 2; i++) s = e.apply(s, { type: 'cheat', cheat: 'skipLevel' }).state;
+    expect(s.level.index + 2).toBe(4);
+    const w = s.board.width;
+    const item = s.board.cells.findIndex(
+      (x) => x?.kind === 'item' && x.chain === 'upgrade_generator_or',
+    );
+    const gen = s.board.cells.findIndex(
+      (x) => x?.kind === 'generator' && x.generator === 'generator_or',
+    );
+    expect(item).toBeGreaterThanOrEqual(0);
+    expect(gen).toBeGreaterThanOrEqual(0);
+    const cell = (i: number) => ({ x: i % w, y: Math.floor(i / w) });
+    const r = e.apply(s, { type: 'move', from: cell(item), to: cell(gen) });
+    expect(r.rejected).toBeUndefined();
+    expect(r.state.board.cells[gen]).toMatchObject({
+      kind: 'generator',
+      generator: 'generator_or',
+      level: 2,
+    });
+    expect(r.state.board.cells[item]).toBeNull();
   });
 });
 

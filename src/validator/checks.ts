@@ -205,6 +205,19 @@ export function semanticIssues(c: GameConfig): Issue[] {
     g.levels.forEach((l, li) => {
       const path = `generators[${gi}].levels[${li}]`;
       l.produces.forEach((p, pi) => itemRef(p.chain, p.level, `${path}.produces[${pi}]`));
+      if (l.upgrade) {
+        itemRef(l.upgrade.item, l.upgrade.level, `${path}.upgrade`, 'item');
+        // На последнем уровне улучшать некуда — апгрейд никогда не сработает.
+        if (li === g.levels.length - 1) {
+          warn(
+            `${path}.upgrade`,
+            'upgradeLastLevel',
+            'val.warnUpgradeLastLevel',
+            { generator: g.name },
+            'hint.warnUpgradeLastLevel',
+          );
+        }
+      }
       const bag = l.produces.some((p) => p.count !== undefined);
       if (bag && l.produces.some((p) => p.weight !== undefined)) {
         error(`${path}.produces`, 'mixedProduces', 'val.mixedProduces', {}, 'hint.mixedProduces');

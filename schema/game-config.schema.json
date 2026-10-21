@@ -460,6 +460,26 @@
                 "deletable": {
                   "type": "boolean"
                 },
+                "upgrade": {
+                  "type": "object",
+                  "properties": {
+                    "item": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$",
+                      "format": "chainRef"
+                    },
+                    "level": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "item",
+                    "level"
+                  ],
+                  "additionalProperties": false
+                },
                 "produces": {
                   "minItems": 1,
                   "type": "array",

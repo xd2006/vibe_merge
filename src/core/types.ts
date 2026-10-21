@@ -226,6 +226,8 @@ type EventBody =
       fromLevel: number;
       toLevel: number;
       at: Cell;
+      /** Генератор улучшен предметом-апгрейдом (`generators[].levels[].upgrade`), а не вторым генератором. */
+      upgradeItem?: { chain: string; level: number };
     }
   | {
       type: 'generator_cooldown_started';

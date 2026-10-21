@@ -171,6 +171,11 @@ const GeneratorLevelSchema = z.strictObject({
   uses: z.int().min(1).optional(),
   /** Можно ли удалить с поля; не задано — решают правила `itemActions`. */
   deletable: z.boolean().optional(),
+  /**
+   * Апгрейд: предмет, который при слиянии с генератором этого уровня даёт генератор следующего
+   * уровня (предмет расходуется). Без поля генератор сливается только с таким же генератором.
+   */
+  upgrade: z.strictObject({ item: ChainRef, level: Level }).optional(),
   produces: z.array(ProduceSchema).min(1),
 });
 

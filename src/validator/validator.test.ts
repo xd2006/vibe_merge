@@ -96,6 +96,16 @@ describe('логические ошибки', () => {
       'error:levelTooHigh@generators[0].levels[0].produces[0].level',
     ],
     [
+      'апгрейд ссылается на несуществующий уровень цепочки',
+      (c) => (c.generators[0]!.levels[0]!.upgrade = { item: 'wood', level: 9 }),
+      'error:levelTooHigh@generators[0].levels[0].upgrade.level',
+    ],
+    [
+      'апгрейд ссылается на неизвестную цепочку',
+      (c) => (c.generators[0]!.levels[0]!.upgrade = { item: 'nope', level: 1 }),
+      'error:unknownChain@generators[0].levels[0].upgrade.item',
+    ],
+    [
       'несуществующий генератор в легенде',
       (c) => (c.board.legend.S = { generator: 'mill', level: 1 }),
       'error:unknownGenerator@board.legend.S.generator',
@@ -228,6 +238,14 @@ describe('предупреждения', () => {
       'стоимость генерации выше максимума энергии',
       (c) => (c.generators[0]!.levels[0]!.energyCost = 50),
       'warning:energyCost@generators[0].levels[0].energyCost',
+    ],
+    [
+      'апгрейд у последнего уровня генератора',
+      (c) => {
+        const last = c.generators[0]!.levels.length - 1;
+        c.generators[0]!.levels[last]!.upgrade = { item: 'wood', level: 1 };
+      },
+      'warning:upgradeLastLevel@generators[0].levels[1].upgrade',
     ],
     [
       'на доске нет генераторов',

@@ -48,7 +48,7 @@ async function workbook(): Promise<Buffer> {
     ['chain_A', 'chain_A_01', 1],
     [null, 'chain_A_02', 2],
   ]);
-  add('Spice Chain Order', [
+  add('Spice Objects', [
     ['spice', 'energy_reward', '#merge_price'],
     ['spice_rose', 1, 4],
   ]);

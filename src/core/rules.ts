@@ -62,6 +62,8 @@ export interface GeneratorLevelRules {
   /** Тапов (весы) или циклов (мешок) до исчезновения генератора; `null` — бесконечно. */
   uses: number | null;
   deletable: boolean | undefined;
+  /** Предмет-апгрейд: сливается с генератором этого уровня и даёт следующий уровень. */
+  upgrade: { chain: string; level: number } | null;
   /** В режиме мешка `weight` — количество предметов этого вида в мешке. */
   produces: { chain: string; level: number; weight: number }[];
 }
@@ -252,6 +254,8 @@ export function compileRules(config: GameConfig): Rules {
         l.produces.forEach((p, pi) =>
           checkItem(p.chain, p.level, `generators[${gi}].levels[${li}].produces[${pi}]`),
         );
+        if (l.upgrade)
+          checkItem(l.upgrade.item, l.upgrade.level, `generators[${gi}].levels[${li}].upgrade`);
         const mode = l.produces.some((p) => p.count !== undefined) ? 'bag' : 'weights';
         return {
           name: l.name ?? g.name,
@@ -268,6 +272,7 @@ export function compileRules(config: GameConfig): Rules {
             : null,
           uses: l.uses ?? null,
           deletable: l.deletable,
+          upgrade: l.upgrade ? { chain: l.upgrade.item, level: l.upgrade.level } : null,
           produces: l.produces.map((p) => ({
             chain: p.chain,
             level: p.level,

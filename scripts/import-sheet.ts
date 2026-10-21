@@ -7,7 +7,7 @@ import { importSheet, type ReportLevel } from '../src/sheet';
 import { validateConfig } from '../src/validator';
 import { parseArgs } from './art/lib/config';
 
-const DEFAULT_INPUT = 'ext_configs/Core Merge Config last.xlsx';
+const DEFAULT_INPUT = 'ext_configs/Core Merge Config_3.xlsx';
 const DEFAULT_OUT = 'presets/spice-core.json';
 const LEVELS: ReportLevel[] = ['imported', 'default', 'unsupported', 'warning'];
 

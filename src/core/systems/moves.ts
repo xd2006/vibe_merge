@@ -5,7 +5,22 @@ import type { Cell, CellState, Entity, RejectReason } from '../types';
 import { maybeBubbleOnMerge } from './bubbles';
 import { closedReason, openLockedCell, refreshGates } from './cells';
 
+/** Предмет-апгрейд генератора: слияние предмета с генератором его уровня даёт следующий уровень. */
+function upgradePair(
+  ctx: Ctx,
+  a: Entity,
+  b: Entity,
+): { generator: Draft<Entity> & { kind: 'generator' } } | null {
+  const [item, gen] = a.kind === 'item' ? [a, b] : [b, a];
+  if (item.kind !== 'item' || gen.kind !== 'generator' || item.bubble) return null;
+  const rules = ctx.rules.generators.get(gen.generator)!;
+  if (gen.level >= rules.maxLevel) return null;
+  const up = rules.levels[gen.level - 1]!.upgrade;
+  return up && up.chain === item.chain && up.level === item.level ? { generator: gen } : null;
+}
+
 function canMerge(ctx: Ctx, a: Entity, b: Entity): boolean {
+  if (upgradePair(ctx, a, b)) return true;
   if (a.kind === 'item' && b.kind === 'item') {
     if (a.bubble || b.bubble) return false;
     const chain = ctx.rules.chains.get(a.chain)!;
@@ -33,6 +48,25 @@ export function canOpenLock(ctx: Ctx, a: Entity, b: Entity, target: CellState): 
 /** Слияние `a` (из `fromIdx`) с предметом в `toIdx`; результат — в `toIdx`. */
 function merge(ctx: Ctx, a: Draft<Entity>, fromIdx: number, toIdx: number, at: Cell): void {
   const { s } = ctx;
+  const b = s.board.cells[toIdx]!;
+  const upgrade = upgradePair(ctx, a, b);
+  if (upgrade) {
+    // Предмет-апгрейд расходуется, генератор повышается на уровень (с полным запасом зарядов).
+    const gen = upgrade.generator;
+    const item = a.kind === 'item' ? a : (b as Draft<Entity> & { kind: 'item' });
+    s.board.cells[fromIdx] = null;
+    s.board.cells[toIdx] = newGenerator(ctx, gen.generator, gen.level + 1);
+    emitNow(ctx, {
+      type: 'merge',
+      kind: 'generator',
+      generator: gen.generator,
+      fromLevel: gen.level,
+      toLevel: gen.level + 1,
+      at,
+      upgradeItem: { chain: item.chain, level: item.level },
+    });
+    return;
+  }
   // Исходная клетка освобождается до появления пузыря: копия может встать в неё.
   s.board.cells[fromIdx] = null;
   if (a.kind === 'item') {

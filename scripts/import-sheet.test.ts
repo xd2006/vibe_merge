@@ -6,7 +6,7 @@ import { readXlsx } from '../src/platform/xlsx';
 import { importSheet } from '../src/sheet';
 import { validateConfig } from '../src/validator';
 
-const XLSX = 'ext_configs/Core Merge Config last.xlsx';
+const XLSX = 'ext_configs/Core Merge Config_3.xlsx';
 
 describe('выгрузка Core Merge Config', () => {
   it.skipIf(!existsSync(XLSX))(

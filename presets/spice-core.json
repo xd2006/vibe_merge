@@ -10,16 +10,16 @@
     },
     "resources": [
       {
-        "id": "ep_9",
-        "name": "энергия 9"
+        "id": "ep_7",
+        "name": "энергия 7"
       },
       {
-        "id": "p_c_a_9",
-        "name": "кристаллы 9"
+        "id": "p_c_a_7",
+        "name": "кристаллы 7"
       },
       {
-        "id": "e_9",
-        "name": "билеты 9"
+        "id": "e_7",
+        "name": "билеты 7"
       },
       {
         "id": "box1",
@@ -80,7 +80,7 @@
         },
         {
           "name": "Роза",
-          "deletable": true,
+          "deletable": false,
           "baseCost": 2,
           "collect": "storage",
           "value": 4
@@ -142,7 +142,7 @@
         },
         {
           "name": "Бадьян",
-          "deletable": true,
+          "deletable": false,
           "baseCost": 6,
           "bubbleProbability": 1,
           "collect": "storage",
@@ -222,7 +222,7 @@
         },
         {
           "name": "Женьшень",
-          "deletable": true,
+          "deletable": false,
           "baseCost": 13,
           "bubbleProbability": 1,
           "collect": "storage",
@@ -569,7 +569,7 @@
           "collect": [
             {
               "type": "resource",
-              "resource": "ep_9",
+              "resource": "ep_7",
               "amount": 1
             }
           ]
@@ -581,7 +581,7 @@
           "collect": [
             {
               "type": "resource",
-              "resource": "ep_9",
+              "resource": "ep_7",
               "amount": 2
             }
           ]
@@ -593,32 +593,8 @@
           "collect": [
             {
               "type": "resource",
-              "resource": "ep_9",
+              "resource": "ep_7",
               "amount": 4
-            }
-          ]
-        },
-        {
-          "name": "N8",
-          "deletable": true,
-          "baseCost": 0,
-          "collect": [
-            {
-              "type": "resource",
-              "resource": "ep_9",
-              "amount": 8
-            }
-          ]
-        },
-        {
-          "name": "N9",
-          "deletable": true,
-          "baseCost": 0,
-          "collect": [
-            {
-              "type": "resource",
-              "resource": "ep_9",
-              "amount": 16
             }
           ]
         }
@@ -655,7 +631,7 @@
           "collect": [
             {
               "type": "resource",
-              "resource": "p_c_a_9",
+              "resource": "p_c_a_7",
               "amount": 1
             }
           ]
@@ -667,7 +643,7 @@
           "collect": [
             {
               "type": "resource",
-              "resource": "p_c_a_9",
+              "resource": "p_c_a_7",
               "amount": 2
             }
           ]
@@ -679,32 +655,8 @@
           "collect": [
             {
               "type": "resource",
-              "resource": "p_c_a_9",
+              "resource": "p_c_a_7",
               "amount": 4
-            }
-          ]
-        },
-        {
-          "name": "O8",
-          "deletable": true,
-          "baseCost": 0,
-          "collect": [
-            {
-              "type": "resource",
-              "resource": "p_c_a_9",
-              "amount": 8
-            }
-          ]
-        },
-        {
-          "name": "O9",
-          "deletable": true,
-          "baseCost": 0,
-          "collect": [
-            {
-              "type": "resource",
-              "resource": "p_c_a_9",
-              "amount": 16
             }
           ]
         }
@@ -741,7 +693,7 @@
           "collect": [
             {
               "type": "resource",
-              "resource": "e_9",
+              "resource": "e_7",
               "amount": 1
             }
           ]
@@ -753,43 +705,127 @@
           "collect": [
             {
               "type": "resource",
-              "resource": "e_9",
+              "resource": "e_7",
               "amount": 2
             }
           ]
         },
         {
           "name": "T7",
-          "deletable": false,
+          "deletable": true,
+          "baseCost": 0,
           "collect": [
             {
               "type": "resource",
-              "resource": "e_9",
+              "resource": "e_7",
               "amount": 4
             }
           ]
+        }
+      ]
+    },
+    {
+      "id": "upgrade_generator_or",
+      "name": "Апгрейд: Генератор обычных специй ур1",
+      "levels": [
+        {
+          "name": "Апгрейд до OR2"
         },
         {
-          "name": "T8",
-          "deletable": false,
-          "collect": [
-            {
-              "type": "resource",
-              "resource": "e_9",
-              "amount": 8
-            }
-          ]
+          "name": "Апгрейд до OR3"
         },
         {
-          "name": "T9",
-          "deletable": false,
-          "collect": [
-            {
-              "type": "resource",
-              "resource": "e_9",
-              "amount": 16
-            }
-          ]
+          "name": "Апгрейд до OR4"
+        },
+        {
+          "name": "Апгрейд до OR5"
+        },
+        {
+          "name": "Апгрейд до OR6"
+        }
+      ]
+    },
+    {
+      "id": "upgrade_generator_rd",
+      "name": "Апгрейд: Генератор розовых специй ур1",
+      "levels": [
+        {
+          "name": "Апгрейд до RD2"
+        },
+        {
+          "name": "Апгрейд до RD3"
+        },
+        {
+          "name": "Апгрейд до RD4"
+        },
+        {
+          "name": "Апгрейд до RD5"
+        },
+        {
+          "name": "Апгрейд до RD6"
+        }
+      ]
+    },
+    {
+      "id": "upgrade_generator_bl",
+      "name": "Апгрейд: Генератор синих специй ур1",
+      "levels": [
+        {
+          "name": "Апгрейд до BL2"
+        },
+        {
+          "name": "Апгрейд до BL3"
+        },
+        {
+          "name": "Апгрейд до BL4"
+        },
+        {
+          "name": "Апгрейд до BL5"
+        },
+        {
+          "name": "Апгрейд до BL6"
+        }
+      ]
+    },
+    {
+      "id": "upgrade_generator_gl_m",
+      "name": "Апгрейд: Генератор золотых специй ур1",
+      "levels": [
+        {
+          "name": "Апгрейд до GL_M2"
+        },
+        {
+          "name": "Апгрейд до GL_M3"
+        },
+        {
+          "name": "Апгрейд до GL_M4"
+        },
+        {
+          "name": "Апгрейд до GL_M5"
+        },
+        {
+          "name": "Апгрейд до GL_M6"
+        }
+      ]
+    },
+    {
+      "id": "upgrade_generator_gl_h",
+      "name": "Апгрейд: Генератор золотых специй 2 ур1",
+      "levels": [
+        {
+          "name": "Апгрейд до GL_H2"
+        },
+        {
+          "name": "Апгрейд до GL_H3"
+        },
+        {
+          "name": "Апгрейд до GL_H4"
+        },
+        {
+          "name": "Апгрейд до GL_H5"
+        },
+        {
+          "name": "Апгрейд до GL_H6"
         }
       ]
     }
@@ -803,7 +839,7 @@
           "name": "OR1",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 40,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -813,15 +849,24 @@
             {
               "chain": "chain_a",
               "level": 1,
+              "count": 3
+            },
+            {
+              "chain": "chain_b",
+              "level": 1,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_or",
+            "level": 1
+          }
         },
         {
           "name": "OR2",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -853,13 +898,17 @@
               "level": 3,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_or",
+            "level": 2
+          }
         },
         {
           "name": "OR3",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -891,13 +940,17 @@
               "level": 3,
               "count": 2
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_or",
+            "level": 3
+          }
         },
         {
           "name": "OR4",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -929,13 +982,17 @@
               "level": 3,
               "count": 4
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_or",
+            "level": 4
+          }
         },
         {
           "name": "OR5",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -967,13 +1024,17 @@
               "level": 3,
               "count": 3
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_or",
+            "level": 5
+          }
         },
         {
           "name": "OR6",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -1017,7 +1078,7 @@
           "name": "RD1",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 40,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -1027,15 +1088,24 @@
             {
               "chain": "chain_c",
               "level": 1,
+              "count": 3
+            },
+            {
+              "chain": "chain_d",
+              "level": 1,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_rd",
+            "level": 1
+          }
         },
         {
           "name": "RD2",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -1072,13 +1142,17 @@
               "level": 3,
               "count": 2
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_rd",
+            "level": 2
+          }
         },
         {
           "name": "RD3",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 16,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -1120,13 +1194,17 @@
               "level": 3,
               "count": 2
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_rd",
+            "level": 3
+          }
         },
         {
           "name": "RD4",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 16,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 30
@@ -1168,7 +1246,11 @@
               "level": 3,
               "count": 5
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_rd",
+            "level": 4
+          }
         },
         {
           "name": "RD5",
@@ -1226,7 +1308,11 @@
               "level": 5,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_rd",
+            "level": 5
+          }
         },
         {
           "name": "RD6",
@@ -1296,7 +1382,7 @@
           "name": "BL1",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 40,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1306,15 +1392,34 @@
             {
               "chain": "chain_e",
               "level": 1,
+              "count": 3
+            },
+            {
+              "chain": "chain_e",
+              "level": 2,
+              "count": 2
+            },
+            {
+              "chain": "chain_f",
+              "level": 1,
+              "count": 1
+            },
+            {
+              "chain": "chain_f",
+              "level": 2,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_bl",
+            "level": 1
+          }
         },
         {
           "name": "BL2",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1361,13 +1466,17 @@
               "level": 5,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_bl",
+            "level": 2
+          }
         },
         {
           "name": "BL3",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 16,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1414,7 +1523,11 @@
               "level": 5,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_bl",
+            "level": 3
+          }
         },
         {
           "name": "BL4",
@@ -1467,7 +1580,11 @@
               "level": 5,
               "count": 3
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_bl",
+            "level": 4
+          }
         },
         {
           "name": "BL5",
@@ -1525,7 +1642,11 @@
               "level": 5,
               "count": 2
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_bl",
+            "level": 5
+          }
         },
         {
           "name": "BL6",
@@ -1605,7 +1726,7 @@
           "name": "GL_M1",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 40,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1615,15 +1736,24 @@
             {
               "chain": "chain_g",
               "level": 1,
+              "count": 2
+            },
+            {
+              "chain": "chain_i",
+              "level": 1,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_m",
+            "level": 1
+          }
         },
         {
           "name": "GL_M2",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1660,13 +1790,17 @@
               "level": 3,
               "count": 2
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_m",
+            "level": 2
+          }
         },
         {
           "name": "GL_M3",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1708,7 +1842,11 @@
               "level": 4,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_m",
+            "level": 3
+          }
         },
         {
           "name": "GL_M4",
@@ -1756,7 +1894,11 @@
               "level": 4,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_m",
+            "level": 4
+          }
         },
         {
           "name": "GL_M5",
@@ -1809,7 +1951,11 @@
               "level": 4,
               "count": 2
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_m",
+            "level": 5
+          }
         },
         {
           "name": "GL_M6",
@@ -1879,7 +2025,7 @@
           "name": "GL_H1",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 40,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1889,15 +2035,24 @@
             {
               "chain": "chain_j",
               "level": 1,
+              "count": 3
+            },
+            {
+              "chain": "chain_m",
+              "level": 1,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_h",
+            "level": 1
+          }
         },
         {
           "name": "GL_H2",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1919,13 +2074,17 @@
               "level": 1,
               "count": 3
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_h",
+            "level": 2
+          }
         },
         {
           "name": "GL_H3",
           "energyCost": 1,
           "cooldown": {
-            "cycles": 15,
+            "cycles": 18,
             "seconds": 300,
             "skipCost": 50,
             "freeSkipSec": 0
@@ -1947,7 +2106,11 @@
               "level": 1,
               "count": 4
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_h",
+            "level": 3
+          }
         },
         {
           "name": "GL_H4",
@@ -1980,7 +2143,11 @@
               "level": 2,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_h",
+            "level": 4
+          }
         },
         {
           "name": "GL_H5",
@@ -2018,7 +2185,11 @@
               "level": 2,
               "count": 1
             }
-          ]
+          ],
+          "upgrade": {
+            "item": "upgrade_generator_gl_h",
+            "level": 5
+          }
         },
         {
           "name": "GL_H6",
@@ -2120,86 +2291,98 @@
         "level": 3
       },
       "m": {
+        "generator": "generator_gl_m",
+        "level": 1
+      },
+      "n": {
         "item": "chain_b",
         "level": 4
       },
-      "n": {
+      "o": {
         "item": "chain_a",
         "level": 2
       },
-      "o": {
+      "p": {
         "item": "chain_a",
         "level": 1
-      },
-      "p": {
-        "item": "chain_i",
-        "level": 6
       },
       "q": {
         "item": "chain_i",
-        "level": 3
+        "level": 6
       },
       "r": {
-        "item": "chain_c",
-        "level": 2
+        "item": "chain_i",
+        "level": 3
       },
       "s": {
         "item": "chain_c",
-        "level": 5
+        "level": 2
       },
       "t": {
-        "generator": "generator_bl",
+        "generator": "generator_gl_h",
         "level": 1
       },
       "u": {
-        "generator": "generator_or",
-        "level": 1
+        "item": "chain_c",
+        "level": 5
       },
       "v": {
-        "item": "chain_f",
+        "generator": "generator_bl",
         "level": 1
       },
       "w": {
-        "item": "chain_b",
-        "level": 3
+        "generator": "generator_or",
+        "level": 1
       },
       "x": {
         "item": "chain_f",
-        "level": 3
+        "level": 1
       },
       "y": {
-        "item": "chain_g",
-        "level": 1
+        "item": "chain_b",
+        "level": 3
       },
       "z": {
-        "item": "chain_c",
-        "level": 1
+        "item": "chain_f",
+        "level": 3
       },
       "A": {
         "item": "chain_g",
-        "level": 3
+        "level": 1
       },
       "B": {
+        "item": "chain_c",
+        "level": 1
+      },
+      "C": {
+        "item": "chain_g",
+        "level": 3
+      },
+      "D": {
+        "generator": "generator_rd",
+        "level": 1
+      },
+      "E": {
         "item": "chain_f",
         "level": 2
       },
-      "C": {
+      "F": {
         "item": "chain_f",
         "level": 6
       },
-      "D": {
+      "G": {
         "item": "chain_i",
         "level": 4
       }
     },
     "layout": [
-      "agkp.vxgB",
-      "bhlqscyAC",
-      "cil.d.rbD",
-      "dfmrtwz..",
-      "..fej.nld",
-      "ejn...new",
-      "f.o.u..fe"
+      "agkqtxzgE",
+      "bhlrucACF",
+      "cim.d.sbG",
+      "dfnsvyB..",
+      "..fej.oDd",
+      "ejo...oey",
+      "f.p.w..fe"
     ],
     "cells": [
       {
@@ -2294,7 +2477,7 @@
       },
       {
         "cell": [2, 2],
-        "requiredLevel": 8,
+        "requiredLevel": 9,
         "locked": true
       },
       {
@@ -2347,7 +2530,7 @@
       },
       {
         "cell": [4, 0],
-        "requiredLevel": 10
+        "requiredLevel": 9
       },
       {
         "cell": [4, 1],
@@ -2452,7 +2635,7 @@
       },
       {
         "cell": [7, 4],
-        "requiredLevel": 7,
+        "requiredLevel": 6,
         "closed": true,
         "locked": true
       },
@@ -2514,337 +2697,255 @@
     {
       "id": 5,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_or",
-          "level": 1
-        }
-      ]
+      "reward": []
     },
     {
       "id": 6,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_rd",
-          "level": 1
-        }
-      ]
+      "reward": []
     },
     {
       "id": 7,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_bl",
-          "level": 1
-        }
-      ]
+      "reward": []
     },
     {
       "id": 8,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_gl_m",
-          "level": 1
-        }
-      ]
+      "reward": []
     },
     {
       "id": 9,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_gl_h",
-          "level": 1
+          "type": "item",
+          "chain": "upgrade_generator_or",
+          "level": 1,
+          "count": 1
         }
       ]
     },
     {
       "id": 10,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_or",
-          "level": 2
-        }
-      ]
+      "reward": []
     },
     {
       "id": 11,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_rd",
-          "level": 2
+          "type": "item",
+          "chain": "upgrade_generator_rd",
+          "level": 1,
+          "count": 1
         }
       ]
     },
     {
       "id": 12,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_bl",
-          "level": 2
-        }
-      ]
+      "reward": []
     },
     {
       "id": 13,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_gl_m",
-          "level": 2
+          "type": "item",
+          "chain": "upgrade_generator_bl",
+          "level": 1,
+          "count": 1
         }
       ]
     },
     {
       "id": 14,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_gl_h",
-          "level": 2
-        }
-      ]
+      "reward": []
     },
     {
       "id": 15,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_or",
-          "level": 3
+          "type": "item",
+          "chain": "upgrade_generator_gl_m",
+          "level": 1,
+          "count": 1
         }
       ]
     },
     {
       "id": 16,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_rd",
-          "level": 3
-        }
-      ]
+      "reward": []
     },
     {
       "id": 17,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_bl",
-          "level": 3
+          "type": "item",
+          "chain": "upgrade_generator_or",
+          "level": 2,
+          "count": 1
         }
       ]
     },
     {
       "id": 18,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_gl_m",
-          "level": 3
-        }
-      ]
+      "reward": []
     },
     {
       "id": 19,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_gl_h",
-          "level": 3
+          "type": "item",
+          "chain": "upgrade_generator_rd",
+          "level": 2,
+          "count": 1
         }
       ]
     },
     {
       "id": 20,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_or",
-          "level": 4
-        }
-      ]
+      "reward": []
     },
     {
       "id": 21,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_rd",
-          "level": 4
+          "type": "item",
+          "chain": "upgrade_generator_gl_h",
+          "level": 1,
+          "count": 1
         }
       ]
     },
     {
       "id": 22,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_bl",
-          "level": 4
-        }
-      ]
+      "reward": []
     },
     {
       "id": 23,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_gl_m",
-          "level": 4
+          "type": "item",
+          "chain": "upgrade_generator_or",
+          "level": 3,
+          "count": 1
         }
       ]
     },
     {
       "id": 24,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_gl_h",
-          "level": 4
-        }
-      ]
+      "reward": []
     },
     {
       "id": 25,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_or",
-          "level": 5
+          "type": "item",
+          "chain": "upgrade_generator_bl",
+          "level": 2,
+          "count": 1
         }
       ]
     },
     {
       "id": 26,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_rd",
-          "level": 5
-        }
-      ]
+      "reward": []
     },
     {
       "id": 27,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_bl",
-          "level": 5
+          "type": "item",
+          "chain": "upgrade_generator_gl_m",
+          "level": 2,
+          "count": 1
         }
       ]
     },
     {
       "id": 28,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_gl_m",
-          "level": 5
-        }
-      ]
+      "reward": []
     },
     {
       "id": 29,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_gl_h",
-          "level": 5
+          "type": "item",
+          "chain": "upgrade_generator_rd",
+          "level": 3,
+          "count": 1
         }
       ]
     },
     {
       "id": 30,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_or",
-          "level": 6
-        }
-      ]
+      "reward": []
     },
     {
       "id": 31,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_rd",
-          "level": 6
+          "type": "item",
+          "chain": "upgrade_generator_or",
+          "level": 4,
+          "count": 1
         }
       ]
     },
     {
       "id": 32,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_bl",
-          "level": 6
-        }
-      ]
+      "reward": []
     },
     {
       "id": 33,
       "ordersRequired": 10,
       "reward": [
         {
-          "type": "generator",
-          "generator": "generator_gl_m",
-          "level": 6
+          "type": "item",
+          "chain": "upgrade_generator_gl_h",
+          "level": 2,
+          "count": 1
         }
       ]
     },
     {
       "id": 34,
       "ordersRequired": 10,
-      "reward": [
-        {
-          "type": "generator",
-          "generator": "generator_gl_h",
-          "level": 6
-        }
-      ]
+      "reward": []
     },
     {
       "id": 35,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_bl",
+          "level": 3,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 36,
@@ -2854,7 +2955,14 @@
     {
       "id": 37,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_rd",
+          "level": 4,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 38,
@@ -2864,7 +2972,14 @@
     {
       "id": 39,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_gl_m",
+          "level": 3,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 40,
@@ -2874,7 +2989,14 @@
     {
       "id": 41,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_gl_h",
+          "level": 3,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 42,
@@ -2884,7 +3006,14 @@
     {
       "id": 43,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_or",
+          "level": 5,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 44,
@@ -2894,7 +3023,14 @@
     {
       "id": 45,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_bl",
+          "level": 4,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 46,
@@ -2904,7 +3040,14 @@
     {
       "id": 47,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_gl_m",
+          "level": 4,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 48,
@@ -2914,7 +3057,14 @@
     {
       "id": 49,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_rd",
+          "level": 5,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 50,
@@ -2924,7 +3074,14 @@
     {
       "id": 51,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_gl_h",
+          "level": 4,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 52,
@@ -2934,7 +3091,14 @@
     {
       "id": 53,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_bl",
+          "level": 5,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 54,
@@ -2944,7 +3108,14 @@
     {
       "id": 55,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_gl_m",
+          "level": 5,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 56,
@@ -2954,7 +3125,14 @@
     {
       "id": 57,
       "ordersRequired": 10,
-      "reward": []
+      "reward": [
+        {
+          "type": "item",
+          "chain": "upgrade_generator_gl_h",
+          "level": 5,
+          "count": 1
+        }
+      ]
     },
     {
       "id": 58,
@@ -2985,7 +3163,7 @@
           "value": [8, 40],
           "rewards": [
             {
-              "weight": 100,
+              "weight": 35,
               "reward": {
                 "type": "item",
                 "chain": "chain_n",
@@ -2993,11 +3171,19 @@
               }
             },
             {
-              "weight": 90,
+              "weight": 50,
               "reward": {
                 "type": "item",
                 "chain": "chain_n",
                 "level": 2
+              }
+            },
+            {
+              "weight": 15,
+              "reward": {
+                "type": "item",
+                "chain": "chain_n",
+                "level": 3
               }
             }
           ]
@@ -3008,7 +3194,7 @@
           "value": [41, 70],
           "rewards": [
             {
-              "weight": 60,
+              "weight": 75,
               "reward": {
                 "type": "item",
                 "chain": "chain_n",
@@ -3016,11 +3202,11 @@
               }
             },
             {
-              "weight": 40,
+              "weight": 25,
               "reward": {
                 "type": "item",
                 "chain": "chain_n",
-                "level": 3
+                "level": 2
               }
             }
           ]
@@ -3031,7 +3217,7 @@
           "value": [71, 100],
           "rewards": [
             {
-              "weight": 80,
+              "weight": 10,
               "reward": {
                 "type": "item",
                 "chain": "chain_o",
@@ -3039,7 +3225,7 @@
               }
             },
             {
-              "weight": 60,
+              "weight": 35,
               "reward": {
                 "type": "item",
                 "chain": "chain_o",
@@ -3047,7 +3233,7 @@
               }
             },
             {
-              "weight": 40,
+              "weight": 55,
               "reward": {
                 "type": "item",
                 "chain": "chain_o",
@@ -3062,7 +3248,7 @@
           "value": [101, 200],
           "rewards": [
             {
-              "weight": 80,
+              "weight": 15,
               "reward": {
                 "type": "item",
                 "chain": "chain_t",
@@ -3070,7 +3256,7 @@
               }
             },
             {
-              "weight": 60,
+              "weight": 45,
               "reward": {
                 "type": "item",
                 "chain": "chain_t",

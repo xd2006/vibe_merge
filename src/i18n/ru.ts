@@ -158,6 +158,8 @@ export const ru = {
     'Предмет в замке «{name}» максимального уровня — его нельзя слить, клетка не откроется',
   'val.warnEnergyCost':
     'Стоимость генерации {cost} больше максимума энергии {max}: генератором нельзя воспользоваться',
+  'val.warnUpgradeLastLevel':
+    'У последнего уровня генератора «{generator}» задан апгрейд — улучшать некуда, предмет не пригодится',
   'val.warnNoGenerators': 'На стартовой доске нет ни одного генератора',
   'val.warnReachOff':
     'Проверка достижимости выключена: заказы могут требовать недоступные предметы',
@@ -216,6 +218,7 @@ export const ru = {
   'hint.warnLockNoSource': 'Добавьте генератор, который выдаёт эту цепочку не выше нужного уровня',
   'hint.warnLockMaxLevel': 'Поставьте в замок предмет ниже максимального уровня',
   'hint.warnEnergyCost': 'Уменьшите energyCost или увеличьте energy.max',
+  'hint.warnUpgradeLastLevel': 'Уберите upgrade у последнего уровня или добавьте следующий уровень',
   'hint.warnNoGenerators': 'Добавьте генератор в легенду и раскладку доски',
   'hint.warnReachOff': 'Включите orders.reachability.mode: "auto", если это не сделано намеренно',
 
@@ -277,7 +280,7 @@ export const ru = {
   'import.icons':
     'Иконки объектов (object_icon) не переносятся — картинки задаются во вкладке «Арт»',
   'import.energyReward':
-    'energy_reward листа Spice Chain Order не перенесён: энергия за специю в заказах кофейни — вне прототипа',
+    'energy_reward листа Spice Objects не перенесён: энергия за специю в заказах кофейни — вне прототипа',
   'import.spawnsAfterUsed':
     'Колонка «# Spawns After Used» листа Interactables не поддержана (значения: {list})',
   'import.unknownObject': 'Объект «{id}» ({where}) не найден в листах Objects / Chains — пропущен',
@@ -301,6 +304,12 @@ export const ru = {
   'import.ordersPerLevel': 'Новый уровень — за {count} выполненных заказов (решение Р11)',
   'import.lastLevel':
     'Уровни {from}–{to}: последний — наибольший из уровней поля, распределения заказов и очереди генераторов',
+  'import.upgrades':
+    'Апгрейды генераторов (колонка level листа Interactables): предмет выдаётся на указанном уровне игрока и сливается с генератором предыдущего уровня — {list}',
+  'import.upgradeTooEarly':
+    'Апгрейд «{id}» на уровне {level}: выдать нечем, игра начинается с уровня {start} — апгрейд пропущен',
+  'import.upgradeChainName': 'Апгрейд: {name}',
+  'import.upgradeItemName': 'Апгрейд до {name}',
   'import.generatorQueue':
     'Награда за уровень — генератор по очереди: {list} (решение Р17); дальше генераторы не выдаются',
   'import.prizeCollect':
