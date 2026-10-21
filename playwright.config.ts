@@ -11,7 +11,7 @@ const demoDraft = {
   origins: [
     {
       origin: `http://localhost:${port}`,
-      localStorage: [{ name: 'vibe-merge.draft.v1', value: JSON.stringify({ text: demoText }) }],
+      localStorage: [{ name: 'vibe-merge.draft.v2', value: JSON.stringify({ text: demoText }) }],
     },
   ],
 };

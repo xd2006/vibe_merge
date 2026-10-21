@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import demo from '../presets/demo.json';
+import spiceCore from '../presets/spice-core.json';
 import { BUNDLED_CONFIG_FILE, type GameConfig } from '@/config';
 import { t } from '@/i18n/ru';
 import { isNativeApp } from '@/platform';
@@ -11,14 +11,14 @@ const Editor = lazy(() => import('@/editor').then((m) => ({ default: m.Editor })
 
 type Bundled = { config: GameConfig | null; issues: Issue[] };
 
-/** Конфиг, зашитый в приложение при сборке; если файла нет — демо-пресет. */
+/** Конфиг, зашитый в приложение при сборке; если файла нет — пресет Core Merge Config. */
 async function loadBundledConfig(): Promise<Bundled> {
-  let input: unknown = demo;
+  let input: unknown = spiceCore;
   try {
     const res = await fetch(BUNDLED_CONFIG_FILE, { cache: 'no-store' });
     if (res.ok) input = await res.json();
   } catch {
-    // Нет файла — остаётся демо.
+    // Нет файла — остаётся пресет по умолчанию.
   }
   const r = validateConfig(input);
   return { config: r.ok ? r.config : null, issues: r.issues };

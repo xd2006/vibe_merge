@@ -5,7 +5,7 @@ import demo from '../../presets/demo.json';
 import empty from '../../presets/empty.json';
 import spiceCore from '../../presets/spice-core.json';
 
-const DRAFT_KEY = 'vibe-merge.draft.v1';
+const DRAFT_KEY = 'vibe-merge.draft.v2';
 
 export const PRESETS = [
   { id: 'spice-core', title: 'Spice merge: Core Merge Config (last)', config: spiceCore },
@@ -14,6 +14,12 @@ export const PRESETS = [
 ] as const;
 
 export const toText = (value: unknown) => JSON.stringify(value, null, 2) + '\n';
+
+const presetTexts = PRESETS.map((p) => ({ id: p.id, text: toText(p.config) }));
+
+/** Пресет, текст которого совпадает с текстом конфига; `''` — своя правка или загруженный файл. */
+export const presetIdOf = (text: string): string =>
+  presetTexts.find((p) => p.text === text)?.id ?? '';
 
 /** Последний черновик конфига (как текст — даже невалидный) или пресет по умолчанию (Core Merge Config). */
 export function loadDraft(): string {

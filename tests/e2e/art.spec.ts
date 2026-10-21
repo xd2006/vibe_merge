@@ -22,7 +22,7 @@ test('вкладка «Арт»: предметы, режим, копирова�
   // CodeMirror рисует только видимые строки, поэтому смотрим сохранённый черновик.
   const draft = () =>
     page.evaluate(
-      () => JSON.parse(JSON.parse(localStorage.getItem('vibe-merge.draft.v1')!).text).art.items,
+      () => JSON.parse(JSON.parse(localStorage.getItem('vibe-merge.draft.v2')!).text).art.items,
     );
   await expect.poll(draft).toMatchObject({ 'wood:2': { mode: 'auto' } });
   await expect(row.getByRole('button', { name: 'Сгенерировать' })).toBeVisible();

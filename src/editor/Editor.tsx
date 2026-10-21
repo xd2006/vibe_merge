@@ -8,7 +8,7 @@ import { validateText } from '@/validator';
 import { ArtPanel } from './ArtPanel';
 import { BlockForm, issuesToErrorSchema, pathSegments } from './BlockForm';
 import { BoardEditor } from './BoardEditor';
-import { PRESETS, toText, useDraft } from './draft';
+import { PRESETS, presetIdOf, toText, useDraft } from './draft';
 import { blockSchema, blocks } from './editorSchema';
 import { ImportReport } from './ImportReport';
 import { IssuesPanel } from './IssuesPanel';
@@ -126,7 +126,7 @@ export function Editor({ onRun }: { onRun: (config: GameConfig) => void }) {
         <h1>{t('editor.title')}</h1>
         <select
           aria-label={t('editor.preset')}
-          value=""
+          value={presetIdOf(text)}
           onChange={(e) => loadPreset(e.target.value)}
         >
           <option value="">{t('editor.preset')}</option>
