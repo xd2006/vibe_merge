@@ -20,16 +20,21 @@ export function refreshGates(ctx: Ctx): void {
   });
 }
 
-/**
- * Заблокированная клетка открыта слиянием: снимаем блокировку и расчищаем «песок»
- * в соседних клетках (по вертикали и горизонтали), если те уже не закрыты по уровню.
- * DECISION: «песок» расчищает только слияние в заблокированную клетку — по спеке
- * «мердж в открытой клетке не меняет состояние соседних закрытых клеток».
- */
+/** Заблокированная клетка открыта слиянием: снимаем блокировку (песок расчищает `clearSand`). */
 export function openLockedCell(ctx: Ctx, at: Cell): void {
-  const { s } = ctx;
-  const gate = s.board.gates[indexOf(s.board, at)];
+  const gate = ctx.s.board.gates[indexOf(ctx.s.board, at)];
   if (gate) gate.locked = false;
+  refreshGates(ctx);
+}
+
+/**
+ * Любое слияние расчищает «песок» в соседних клетках (по вертикали и горизонтали от клетки
+ * результата), если те не закрыты по уровню игрока и группа их замков открыта.
+ * DECISION: по спеке Spice merge (Интерфейс, п. 4) для открытия «песка» достаточно провести
+ * слияние рядом; прежнее правило «только слияние в заблокированную клетку» отменено.
+ */
+export function clearSand(ctx: Ctx, at: Cell): void {
+  const { s } = ctx;
   const uncovered: Cell[] = [];
   for (const n of neighbours(s.board, at)) {
     const g = s.board.gates[indexOf(s.board, n)];

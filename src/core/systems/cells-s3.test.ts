@@ -93,11 +93,62 @@ describe('«песок» и заблокированные клетки', () => 
     expect(e.apply(s, move(0, 1, 2, 1)).rejected).toBe('reject.cellClosed');
   });
 
-  it('слияние в открытой клетке не расчищает соседний «песок»', () => {
+  it('слияние в открытой клетке расчищает «песок» рядом с клеткой результата', () => {
     const e = engine();
     const r = run(e, e.initialState(), [move(0, 1, 0, 2)]);
-    expect([at(r.state, 0, 2), at(r.state, 1, 2)]).toEqual(['wood:2', 'closed:.']);
+    // Результат в (0,2): песок (1,2) рядом расчищен, песок (2,1) не рядом остаётся.
+    expect([at(r.state, 0, 2), at(r.state, 1, 2), at(r.state, 2, 1)]).toEqual([
+      'wood:2',
+      '.',
+      'closed:.',
+    ]);
+    expect(r.events).toContainEqual(
+      expect.objectContaining({ type: 'cells_uncovered', cells: [{ x: 1, y: 2 }] }),
+    );
+    // Расчищенная клетка обычная: в неё можно поставить предмет.
+    expect(e.apply(r.state, move(0, 2, 1, 2)).rejected).toBeUndefined();
+  });
+
+  it('песок, закрытый ещё и по уровню, слиянием рядом не расчищается; после уровня — расчищается', () => {
+    const e = engine();
+    // (1,1) — песок с requiredLevel 2; слияние в (0,1) соседствует с ним, но уровень не достигнут.
+    const before = run(e, e.initialState(), [move(0, 2, 0, 1)]);
+    expect(cellState(before.state, 4)).toEqual({ kind: 'level', level: 2 });
+    expect(before.events.some((ev) => ev.type === 'cells_uncovered')).toBe(false);
+    // Уровень снимает только своё условие: песок остаётся, пока рядом не пройдёт слияние.
+    const lvl2 = run(e, before.state, [skipLevel]).state;
+    expect(cellState(lvl2, 4)).toEqual({ kind: 'closed' });
+  });
+
+  it('слияние вдали от песка его не расчищает', () => {
+    const e = makeEngine((c) => {
+      c.board.layout = ['ww.', '...', '..W'];
+      c.board.cells = [{ cell: [2, 2], closed: true }];
+    });
+    const r = run(e, e.initialState(), [move(0, 0, 1, 0)]);
+    expect(at(r.state, 2, 2)).toBe('closed:wood:2');
     expect(r.events.some((ev) => ev.type === 'cells_uncovered')).toBe(false);
+  });
+
+  it('слияние генераторов тоже расчищает песок рядом', () => {
+    const e = makeEngine((c) => {
+      c.board.layout = ['SS.', '...', '...'];
+      c.board.cells = [{ cell: [0, 1], closed: true }];
+    });
+    const r = run(e, e.initialState(), [move(1, 0, 0, 0)]);
+    expect(at(r.state, 0, 0)).toBe('saw:2');
+    expect(at(r.state, 0, 1)).toBe('.');
+  });
+
+  it('апгрейд генератора предметом тоже расчищает песок рядом', () => {
+    const e = makeEngine((c) => {
+      c.board.layout = ['SW.', '...', '...'];
+      c.generators[0]!.levels[0]!.upgrade = { item: 'wood', level: 2 };
+      c.board.cells = [{ cell: [0, 1], closed: true }];
+    });
+    const r = run(e, e.initialState(), [move(1, 0, 0, 0)]);
+    expect(at(r.state, 0, 0)).toBe('saw:2');
+    expect(at(r.state, 0, 1)).toBe('.');
   });
 
   it('слияние в заблокированную клетку открывает её и расчищает соседний «песок»', () => {

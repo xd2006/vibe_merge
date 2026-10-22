@@ -3,7 +3,7 @@ import { cellState, inBoard, indexOf } from '../board';
 import { emitNow, newGenerator, newItem, subjectOf, type Ctx } from '../context';
 import type { Cell, CellState, Entity, RejectReason } from '../types';
 import { maybeBubbleOnMerge } from './bubbles';
-import { closedReason, openLockedCell, refreshGates } from './cells';
+import { clearSand, closedReason, openLockedCell, refreshGates } from './cells';
 
 /** Предмет-апгрейд генератора: слияние предмета с генератором его уровня даёт следующий уровень. */
 function upgradePair(
@@ -47,6 +47,12 @@ export function canOpenLock(ctx: Ctx, a: Entity, b: Entity, target: CellState): 
 
 /** Слияние `a` (из `fromIdx`) с предметом в `toIdx`; результат — в `toIdx`. */
 function merge(ctx: Ctx, a: Draft<Entity>, fromIdx: number, toIdx: number, at: Cell): void {
+  mergeEntities(ctx, a, fromIdx, toIdx, at);
+  // Любое слияние расчищает «песок» рядом с клеткой результата.
+  clearSand(ctx, at);
+}
+
+function mergeEntities(ctx: Ctx, a: Draft<Entity>, fromIdx: number, toIdx: number, at: Cell): void {
   const { s } = ctx;
   const b = s.board.cells[toIdx]!;
   const upgrade = upgradePair(ctx, a, b);
